@@ -1,0 +1,3 @@
+[submodule "municipio_SP"]
+	path = municipio_SP
+	url = git@github.com:covid19br/municipio_SP.git
