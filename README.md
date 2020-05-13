@@ -10,5 +10,6 @@ git submodule update --init
 Depois, para atualizar:
 
 ```bash
-git submodule update
+git pull
+git pull --recurse-submodules
 ```
