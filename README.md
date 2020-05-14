@@ -5,6 +5,7 @@ Deve ser clonado dentro do repo publico nowcast.
 
 ```bash
 git clone git@github.com:covid19br/central_covid_data.git
+cd central_covid_data
 git submodule update --init
 ```
 Depois, para atualizar:
