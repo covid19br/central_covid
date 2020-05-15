@@ -6,7 +6,7 @@ Repo centralizado para organizar os repos de análise e de dados numa estrutura 
 git clone git@github.com:covid19br/central_covid.git --recursive
 ```
 
-Se quiser economizar no tempo de download e não precisa de todo o histórico, adicione à linha acima: `-- depth 1`.
+Se quiser economizar no tempo de download e não precisa de todo o histórico, adicione à linha acima: `--depth 1`.
 
 # Estrutura
 
