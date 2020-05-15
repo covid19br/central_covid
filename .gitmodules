@@ -4,3 +4,9 @@
 [submodule "estados_nordeste"]
 	path = dados/estados_nordeste
 	url = git@github.com:covid19br/estados_nordeste.git
+[submodule "nowcasting"]
+	path = nowcasting
+	url = git@github.com:covid19br/nowcasting.git
+[submodule "site"]
+	path = site
+	url = git@github.com:covid19br/nowcasting.git
