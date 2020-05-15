@@ -35,6 +35,5 @@ Todo o trabalho dentro das pastas site e nowcasting deve ser incluida nesses rep
 É possível atualizar simultaneamente todos os sub-repositórios com:
 
 ```bash
-git pull
 git pull --recurse-submodules
 ```
