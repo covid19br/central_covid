@@ -1,6 +1,6 @@
 [submodule "municipio_SP"]
-	path = municipio_SP
+	path = dados/municipio_SP
 	url = git@github.com:covid19br/municipio_SP.git
 [submodule "estados_nordeste"]
-	path = estados_nordeste
+	path = dados/estados_nordeste
 	url = git@github.com:covid19br/estados_nordeste.git
