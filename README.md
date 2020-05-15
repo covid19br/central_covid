@@ -1,7 +1,6 @@
 # Meta repo para dados e analises
 
-Repo centralizado para organizar as pastes de dados privados.
-Deve ser clonado dentro do repo publico nowcast.
+Repo centralizado para organizar os repos de análise e de dados numa estrutura padronizada.
 
 ```bash
 git clone git@github.com:covid19br/central_covid.git
@@ -23,4 +22,12 @@ O repositório central covid funciona como um agregador de todos os reposítóri
 
 ## Dados
 
-Os repositorios sigilogoso 
+Os repositorios sigilogoso devem ficar dentro da pasta dados, e pode ser ignorados pelos usuários sem acesso aos dados sigilosos. 
+
+Para acrescentar um conjunto de dados novo, basta adicionar o repositorio novo na pasta de dados:
+
+```
+cd dados
+git submodule add URL_do_repo_novo
+```
+
