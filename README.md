@@ -32,7 +32,7 @@ Todo o trabalho dentro das pastas site e nowcasting deve ser incluida nesses rep
 
 ## Trazendo mudanças recentes do servidor
 
-É possível atualizar simultaneamente todos os sub-repositórios com:
+É possível atualizar simultaneamente o meta-repositorio e todos os sub-repositórios com:
 
 ```bash
 git pull --recurse-submodules
