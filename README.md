@@ -3,11 +3,10 @@
 Repo centralizado para organizar os repos de análise e de dados numa estrutura padronizada.
 
 ```bash
-git clone git@github.com:covid19br/central_covid.git
-cd central_covid
-git submodule update --init
+git clone git@github.com:covid19br/central_covid.git --recursive
 ```
 
+Se quiser economizar no tempo de download e não precisa de todo o histórico, adicione à linha acima: `-- depth 1`.
 
 # Estrutura
 
