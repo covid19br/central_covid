@@ -52,3 +52,7 @@ Após mudanças nesses sub-repositórios, é necessário atualizar no meta-repos
 ```bash
 git pull --recurse-submodules
 ```
+
+## Para saber mais sobre submodules
+
+Para uma introdução nada introdutória a git submodules, veja [https://git-scm.com/book/en/v2/Git-Tools-Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
