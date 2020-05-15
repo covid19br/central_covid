@@ -26,9 +26,12 @@ cd dados
 git submodule add URL_do_repo_novo
 ```
 
+Depois é necessário dar um commit no meta-repo para incluir essa o novo sub-repositório no histórico.
+
+
 ## Fazendo mudanças nos sub-repositório e no meta-repositório
 
-O primeiro pull dos sub-repositórios coloca esses repositórios num estado "detached HEAD", e mudanças feitas nesse estado NÃO SÃO INCLUIDAS NA ARVORE DO GIT. Para fazer mudanças, é necessário entrar em algum branch. Para isso, basta, entrar no repositório a ser modificado e dar um ```checkout``` no branch adequado:
+O primeiro pull dos sub-repositórios coloca esses repositórios num estado "detached HEAD", e mudanças feitas nesse estado **NÃO SÃO INCLUIDAS NO HISTÓRICO DO GIT**. Para fazer mudanças, é necessário entrar em algum branch. Para isso, basta, entrar no repositório a ser modificado e dar um ```checkout``` no branch adequado:
 
 ```
 cd nowcasting
