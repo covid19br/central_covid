@@ -26,7 +26,7 @@ cd dados
 git submodule add URL_do_repo_novo
 ```
 
-Depois é necessário dar um commit no meta-repo para incluir essa o novo sub-repositório no histórico.
+Depois é necessário dar um commit no meta-repo para incluir esse novo sub-repositório no histórico.
 
 
 ## Fazendo mudanças nos sub-repositório e no meta-repositório
