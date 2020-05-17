@@ -14,3 +14,4 @@
 	path = site
     url = git@github.com:covid19br/covid19br.github.io
     update = rebase
+	branch = dev_nowcasting
