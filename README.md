@@ -3,10 +3,12 @@
 Repo centralizado para organizar os repos de análise e de dados numa estrutura padronizada.
 
 ```bash
-git clone git@github.com:covid19br/central_covid.git --recursive
+git clone git@github.com:covid19br/central_covid.git
+cd central_covid
+git submodules update --init
+git clone git@github.com:covid19br/covid19br.github.io.git site
+git clone git@github.com:covid19br/nowcasting.git 
 ```
-
-Se quiser economizar no tempo de download e não precisa de todo o histórico, adicione à linha acima: `--depth 1`.
 
 # Estrutura
 
@@ -33,7 +35,7 @@ Depois é necessário dar um commit no meta-repo para incluir esse novo sub-repo
 O primeiro pull dos sub-repositórios coloca esses repositórios num estado "detached HEAD", e mudanças feitas nesse estado **NÃO SÃO INCLUIDAS NO HISTÓRICO DO GIT**. Para fazer mudanças, é necessário entrar em algum branch. Para isso, basta, entrar no repositório a ser modificado e dar um ```checkout``` no branch adequado:
 
 ```
-cd nowcasting
+cd dados/municipio_SP
 git checkout master
 ```
 
