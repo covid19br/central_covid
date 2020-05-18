@@ -6,12 +6,3 @@
 	path = dados/estados_nordeste
 	url = git@github.com:covid19br/estados_nordeste.git
     update = rebase
-[submodule "nowcasting"]
-	path = nowcasting
-	url = git@github.com:covid19br/nowcasting.git
-    update = rebase
-[submodule "site"]
-	path = site
-    url = git@github.com:covid19br/covid19br.github.io
-    update = rebase
-	branch = dev_nowcasting
