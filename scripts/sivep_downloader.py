@@ -21,7 +21,7 @@ if __name__ == '__main__':
     data = date.today()
 
     index_page_address = "http://plataforma.saude.gov.br/coronavirus/dados-abertos/"
-    output_folder = os.path.join(os.path.abspath(__file__), '../dados/SIVEP-Gripe')
+    output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/SIVEP-Gripe')
     output_fname = "SRAGHospitalizado_{data}.csv".format(data=data.strftime("%Y_%m_%d"))
     outfile = os.path.join(output_folder, output_fname)
     gitUpdate = False

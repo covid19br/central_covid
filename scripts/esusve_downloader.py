@@ -5,7 +5,7 @@ import requests
 import re
  
 def check_for_new_file(index_page_address, data):
-    page = requests.get(index_page_address, verify=False, timeout=1)
+    page = requests.get(index_page_address, verify=False, timeout=10)
     tree = html.fromstring(page.content)
     resources = tree.xpath('//li[@class="resource-item"]')
     reg = re.compile(r".*dados-nacionais.*Arquivo gerado no dia (\d\d/\d\d/\d\d\d\d).*",
@@ -19,7 +19,7 @@ def check_for_new_file(index_page_address, data):
     return False
 
 def get_file(download_address, output_file):
-    r = requests.get(download_address, verify=False, allow_redirects=True, timeout=1)
+    r = requests.get(download_address, verify=False, allow_redirects=True, timeout=10)
     open(output_file, 'wb').write(r.content)
 
 if __name__ == '__main__':
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     index_page_address = 'http://shiny.hmg.saude.gov.br/tr/dataset/casos-nacionais'
     download_address = 'http://ckan.saude.gov.br.s3.amazonaws.com/dados-nacional.csv'
-    output_folder = os.path.join(os.path.abspath(__file__), '../dados/eSUS-VE')
+    output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/eSUS-VE')
     output_fname = 'esus-ve_{data}.csv'.format(data=data.strftime("%Y_%m_%d"))
     outfile = os.path.join(output_folder, output_fname)
     gitUpdate = False
