@@ -40,3 +40,4 @@ vignettes/*.pdf
 site
 nowcasting
 central_covid.Rproj
+dados/estado_SP/
