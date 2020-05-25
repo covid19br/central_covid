@@ -9,3 +9,6 @@
 [submodule "dados/municipio_campinas"]
 	path = dados/municipio_campinas
 	url = git@github.com:covid19br/municipio_campinas.git
+[submodule "dados/estado_SP"]
+	path = dados/estado_SP
+	url = git@github.com:covid19br/estado_SP.git
