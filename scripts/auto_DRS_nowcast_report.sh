@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # script assume que é rodado dentro do meta-repo, numa pasta abaixo da raiz
+# ../nowcasting: repo nowcasting
 
 estado="SP"
 nDRS=`seq 1 17`
@@ -15,29 +16,36 @@ fi
 # TODO: discutir tamanho do trim
 trim=5
 
-today=`LANG=en date +'%b %-d'`
-today_=`date +'%Y_%m_%d'`
-todaydash=`date +'%Y-%m-%d'`
+#today=`LANG=en date +'%b %-d'`
+#today_=`date +'%Y_%m_%d'`
+#todaydash=`date +'%Y-%m-%d'`
+today="May 25"
+today_="2020_05_25"
+todaydash="2020-05-25"
+
 # csv pode já ter sido processado
 csv="$absdatafolder/dados/Pacientes_internados_com_SRAG_data${todaydash}.csv"
 csv2="$absdatafolder/dados/SRAGH_${today_}.csv"
 out="$absdatafolder/reports/relatorio_${today_}.html"
 RUNFILE="nowcasting_DRS_${estado}.run"
 
+# pull do meta-repo: *DANGER HERE*
+# este pull é pra você poder atualizar o meta-repo depois - se tiver base nova
+# o commit do submodulo dele estará *desatualizado*
 git pull --recurse-submodules --ff-only
 pushd $absdatafolder
+# AQUI pegamos alterações novas, sem detached HEAD no submodule
+git checkout master && git pull --ff-only &&
 git log -- dados/ | grep  "$today"
 newcommit=$?
 popd
 
-if [[ $newcommit && ( -f $csv ! -f $csv2 ) && ! -f $out && ! -f $RUNFILE ]]; then
+if [[ $newcommit && ( -f $csv || -f $csv2 ) && ! -f $out && ! -f $RUNFILE ]]; then
     touch $RUNFILE
 
     ## process file
     if [[ ! -f $csv2 ]]; then
         pushd $absdatafolder/dados
-        # fix issue of detached HEAD in submodules
-        git checkout master && git pull --ff-only &&
         git mv "Pacientes_internados_com_SRAG_data${todaydash}.csv" "SRAGH_${today_}.csv" &&
         # troca espaço por _ no cabeçalho
         sed -i '1 s/ /_/g' "SRAGH_${today_}.csv" &&
@@ -62,8 +70,7 @@ if [[ $newcommit && ( -f $csv ! -f $csv2 ) && ! -f $out && ! -f $RUNFILE ]]; the
     ## report
     pushd $absdatafolder/reports
     Rscript -e "rmarkdown::render(input = 'report.Rmd',
-                                  output_format = 'html_document',
-                                  output_file = 'relatorio_${today_}.base.html',
+                                  output_file = 'relatorio_${today_}.html',
                                   output_dir = './')"
     git add "relatorio_${today_}.html" &&
     git commit -m ":robot: relatório DRS ${estado} de hoje" &&
