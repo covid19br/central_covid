@@ -19,6 +19,8 @@ fi
 
 # TODO: discutir tamanho do trim
 trim=2
+# atualiza repo onde dados estão?
+UPDATE_GIT_DATA_REPO=FALSE # TRUE
 
 today=`LANG=en date +'%b %-d'`
 today_=`date +'%Y_%m_%d'`
@@ -46,26 +48,70 @@ git log -- dados/ | grep  "$today"
 newcommit=$?
 popd
 
+# esta é arcana...
+output_files="nowcasting_{acumulado,diario}_{,obitos_}{covid,srag}_${today_}.csv
+tempo_duplicacao_{,obitos_}{covid,srag}_${today_}.csv
+r_efetivo_{covid,srag}_${today_}.csv"
+web_output_files="last.update.txt
+data_{forecast_exp,tempo_dupli}_{,obitos_}{covid,srag}.csv
+data_Re_{covid,srag}.csv
+plot_nowcast_{,cum_}{,ob_}{covid,srag}.html
+plot_nowcast_{,cum_}{,ob_}{covid,srag}{,.ex,.lg,.md,.sm}.svg
+plot_tempo_dupl_{,ob_}{covid,srag}.html
+plot_tempo_dupl_{,ob_}{covid,srag}{,.ex,.lg,.md,.sm}.svg
+plot_estimate_R0_{covid,srag}.html
+plot_estimate_R0_{covid,srag}{,.ex,.lg,.md,.sm}.svg"
+# eval expande todos wildcards nas variáveis
+output_files=`eval echo $output_files`
+web_output_files=`eval echo $web_output_files`
+
 if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     touch $RUNFILE
 
     pushd $Rfolder
     for geocode in ${municipios[@]}; do
         ## nowcasting
-        Rscript update_nowcasting.R --dir $absdatafolder/dados --escala municipio --geocode $geocode --dataBase $today_ --outputDir $absdatafolder/outputs --trim $trim --updateGit TRUE
+        # ATENÇÃO: dados *não são* salvos, permanecem como cópia local, suja
+        # se deseja limpar, pode rodar depois:
+        # cd $absdatafolder/outputs; git clean -f
+        # que *apaga* todos arquivos untracked (DANGER)
+        Rscript update_nowcasting.R --dir $absdatafolder/dados --escala municipio --geocode $geocode --dataBase $today_ --outputDir $absdatafolder/outputs --trim $trim --updateGit $UPDATE_GIT_DATA_REPO
 
         ## mandando pro site
         munpath="municipios/${estado}/${nomes_municipios[$geocode]}"
-        cp -r $absdatafolder/outputs/$munpath/tabelas_nowcasting_para_grafico/*$today_.csv $SCRIPTROOT/../site/dados/$munpath/tabelas_nowcasting_para_grafico/
+        
+        # atualiza repo site
+        # isto é feito a cada passo do loop - mais seguro?
         pushd $SCRIPTROOT/../site/_src
+        git pull --ff-only
+
+        # cria destino se não existe
+        if [ ! -d ../dados/$munpath/tabelas_nowcasting_para_grafico/ ]; then
+            mkdir --parents ../dados/$munpath/tabelas_nowcasting_para_grafico
+        fi
+
+        pushd $absdatafolder/outputs/$munpath/tabelas_nowcasting_para_grafico/
+        cp $output_files $SCRIPTROOT/../site/dados/$munpath/tabelas_nowcasting_para_grafico/
+        popd
+
         Rscript update_plots_nowcasting.R --escala municipio --geocode $geocode --dataBase $today_
-        cd ..
-        ### DANGER DANGER DANGER ###
-        git add dados/$munpath/tabelas_nowcasting_para_grafico/*$today_.csv web/$munpath &&
-        git commit -m ":robot: outputs nowcasting ${estado}-${nomes_municipios[$geocode]} ${today_}"
+        pushd ../dados/$munpath/tabelas_nowcasting_para_grafico/
+        git add $output_files
+        popd
+        pushd ../web/$munpath
+        git add $web_output_files
+        popd
+        git commit -m ":robot: novas tabelas e plots ${estado}-${nomes_municipios[$geocode]} ${today_}" &&
+        git push
         popd
     done
     popd
+
+    if [ $UPDATE_GIT_DATA_REPO == "TRUE" ]; then
+        # update meta-repo pro novo commit
+        git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
+        git push
+    fi
 
     rm $RUNFILE
 fi

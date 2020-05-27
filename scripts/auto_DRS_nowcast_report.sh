@@ -16,12 +16,9 @@ fi
 # TODO: discutir tamanho do trim
 trim=5
 
-#today=`LANG=en date +'%b %-d'`
-#today_=`date +'%Y_%m_%d'`
-#todaydash=`date +'%Y-%m-%d'`
-today="May 25"
-today_="2020_05_25"
-todaydash="2020-05-25"
+today=`LANG=en date +'%b %-d'`
+today_=`date +'%Y_%m_%d'`
+todaydash=`date +'%Y-%m-%d'`
 
 # csv pode já ter sido processado
 csv="$absdatafolder/dados/Pacientes_internados_com_SRAG_data${todaydash}.csv"
@@ -55,7 +52,10 @@ if [[ $newcommit && ( -f $csv || -f $csv2 ) && ! -f $out && ! -f $RUNFILE ]]; th
         popd
         # commit no meta-repo ## DANGER HERE ##
         # TODO: path não é geral, tem solução geral?!
-        git commit ../dados/estado_$estado -m "Atualizando estado ${estado}" &&
+        # IMPORTANTE: isto é feito aqui (mesmo sendo repetido no fim do script)
+        # por precaução, porque os scripts abaixo podem (em tese, se eles forem
+        # alterados) dar pull no meta-repo e puxar o commit antigo do meta-repo
+        git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
         git push
     fi
 
@@ -64,6 +64,8 @@ if [[ $newcommit && ( -f $csv || -f $csv2 ) && ! -f $out && ! -f $RUNFILE ]]; th
     for DRS in $nDRS; do
         Rscript update_nowcasting.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --outputDir $absdatafolder/outputs --trim $trim --updateGit TRUE
         Rscript update_nowcasting.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --outputDir $absdatafolder/outputs --trim $trim --updateGit TRUE --plot TRUE
+        # TODO: add projecao leitos
+        # Rscript update_projecao_leitos.R --dir $absdatafolder/dados/ --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $absdatafolder/outputs/
     done
     popd
 
@@ -76,6 +78,10 @@ if [[ $newcommit && ( -f $csv || -f $csv2 ) && ! -f $out && ! -f $RUNFILE ]]; th
     git commit -m ":robot: relatório DRS ${estado} de hoje" &&
     git push
     popd
+
+    # atualizando meta-repo (de novo)
+    git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
+    git push
 
     rm $RUNFILE
 fi
