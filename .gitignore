@@ -40,4 +40,8 @@ vignettes/*.pdf
 site
 nowcasting
 central_covid.Rproj
+
+# vim temp files
+.*.swp
+
 dados/SIVEP-Gripe/*.xlsx
