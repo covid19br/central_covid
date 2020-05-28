@@ -8,7 +8,9 @@ SCRIPTROOT=$PWD
 
 estado="SP"
 # SP, Araraquara, Jundiaí
-municipios=("355030" "350320" "352590")
+#("355030" "350320" "352590")
+# toma lista de municípos dos argumentos de entrada
+municipios=( "$@" )
 datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
 Rfolder="../nowcasting"
 if [ ${datafolder:0:1} = '/' ]; then
@@ -20,7 +22,7 @@ fi
 # TODO: discutir tamanho do trim
 trim=2
 # atualiza repo onde dados estão?
-UPDATE_GIT_DATA_REPO=FALSE # TRUE
+UPDATE_GIT_DATA_REPO=TRUE
 
 today=`LANG=en date +'%b %-d'`
 today_=`date +'%Y_%m_%d'`
