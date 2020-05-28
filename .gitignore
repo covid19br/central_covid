@@ -47,3 +47,4 @@ dados/SIVEP-Gripe/*.xlsx
 
 #post
 dados_processados/nowcasting/*/*/*/output_nowcasting/*_post_*.csv
+nowcasting
