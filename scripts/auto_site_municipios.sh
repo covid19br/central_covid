@@ -7,8 +7,10 @@
 SCRIPTROOT=$PWD
 
 estado="SP"
-# SP #, Araraquara, Jundiaí
-municipios=("355030") # "350320" "352590")
+# SP, Araraquara, Jundiaí
+#("355030" "350320" "352590")
+# toma lista de municípos dos argumentos de entrada
+municipios=( "$@" )
 datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
 Rfolder="../nowcasting"
 if [ ${datafolder:0:1} = '/' ]; then
