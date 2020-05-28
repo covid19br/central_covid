@@ -38,10 +38,12 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 site
-nowcasting
 central_covid.Rproj
 
 # vim temp files
 .*.swp
 
 dados/SIVEP-Gripe/*.xlsx
+
+#post
+dados_processados/nowcasting/*/*/*/output_nowcasting/*_post_*.csv
