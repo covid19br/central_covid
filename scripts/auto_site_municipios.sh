@@ -13,11 +13,20 @@ estado="SP"
 municipios=( "$@" )
 datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
 Rfolder="../nowcasting"
+outfolder="../dados_processados/nowcasting"
+# convertendo caminhos relativos em absolutos
+# realpath é mais profissa, mas não é garantido ter em todo lugar
 if [ ${datafolder:0:1} = '/' ]; then
     absdatafolder=$datafolder
 else
     absdatafolder="$PWD/$datafolder"
 fi
+if [ ${outfolder:0:1} = '/' ]; then
+    absoutfolder=$absoutfolder
+else
+    absoutfolder="$PWD/$absoutfolder"
+fi
+
 
 # TODO: discutir tamanho do trim
 trim=2
@@ -36,7 +45,7 @@ done
 
 # csv: só usa já processado (depende do trabalho do auto_DRS_nowcast_report.sh)
 csv2="$absdatafolder/dados/SRAGH_${today_}.csv"
-out="../site/web/${estado}/${nomes_municipios[${municipios[0]}]}/last.update.txt"
+out="../site/web/municipios/${estado}/${nomes_municipios[${municipios[0]}]}/last.update.txt"
 RUNFILE="nowcasting_site_municipios_${estado}.run"
 
 # pull do meta-repo: *DANGER HERE*
@@ -73,11 +82,12 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     pushd $Rfolder
     for geocode in ${municipios[@]}; do
         ## nowcasting
-        # ATENÇÃO: dados *não são* salvos, permanecem como cópia local, suja
-        # se deseja limpar, pode rodar depois:
-        # cd $absdatafolder/outputs; git clean -f
+        # ATENÇÃO: se UPDATE_GIT_DATA_REPO for FALSE dados *não são* salvos,
+        # permanecem como cópia local, suja. Se deseja limpar, pode rodar
+        # depois:
+        # cd $absoutfolder/outputs; git clean -f
         # que *apaga* todos arquivos untracked (DANGER)
-        Rscript update_nowcasting.R --dir $absdatafolder/dados --escala municipio --geocode $geocode --dataBase $today_ --outputDir $absdatafolder/outputs --trim $trim --updateGit $UPDATE_GIT_DATA_REPO
+        Rscript update_nowcasting.R --dir $absdatafolder/dados --escala municipio --geocode $geocode --dataBase $today_ --outputDir $absoutfolder --trim $trim --updateGit $UPDATE_GIT_DATA_REPO
 
         ## mandando pro site
         munpath="municipios/${estado}/${nomes_municipios[$geocode]}"
@@ -92,7 +102,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
             mkdir --parents ../dados/$munpath/tabelas_nowcasting_para_grafico
         fi
 
-        pushd $absdatafolder/outputs/$munpath/tabelas_nowcasting_para_grafico/
+        pushd $absoutfolder/$munpath/tabelas_nowcasting_para_grafico/
         cp $output_files $SCRIPTROOT/../site/dados/$munpath/tabelas_nowcasting_para_grafico/
         popd
 
@@ -109,11 +119,12 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     done
     popd
 
-    if [ $UPDATE_GIT_DATA_REPO == "TRUE" ]; then
-        # update meta-repo pro novo commit
-        git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
-        git push
-    fi
+#    ## Isto só é necessário se o outfolder for dentro de um submodulo
+#    if [ $UPDATE_GIT_DATA_REPO == "TRUE" ]; then
+#        # update meta-repo pro novo commit
+#        git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
+#        git push
+#    fi
 
     rm $RUNFILE
 fi
