@@ -19,7 +19,7 @@ source("./site/_src/fct/funcoes.R")
 
 data_ultimo_boletim<-as.Date("2020-05-29")
 
-uol<-read_csv("./analise UOL/SRAGs-tabela-last-updated_revised-29_maio.csv")
+uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv")
 uol<-as.data.frame(uol)
 uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
 uol_melted<-reshape::melt(uol, id.vars = "Data")
@@ -39,8 +39,12 @@ p.uol
 ##########################
 ##      NOWCASTING      ##
 ##########################
+<<<<<<< HEAD:analise UOL/nowcasting_uol.R
 uol<-read_csv("./analise UOL/SRAGs-tabela-last-updated_revised-29.csv") ##load da CSV Utilizada
 uol<-as.data.frame(cbind(uol$Data, round(uol[,-1])))
+=======
+uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ##load da CSV Utilizada
+>>>>>>> 04cadd7c68d8afaf5cd66d08a0285be246fad6c2:analise_UOL/nowcasting_uol.R
 uol<-as.data.frame(uol)
 # uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
 uol2<-uol #variavel auxiliar
@@ -183,4 +187,8 @@ p.prev.ic.cumsum <- ggplot(uol_final4, aes(x = Data, y = `estimate Cumsum`)) +
 p.prev.ic.cumsum
 
 uol_final4<-uol_final4[,-c(2:5)]
+<<<<<<< HEAD:analise UOL/nowcasting_uol.R
 write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
+=======
+write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_08_05.csv", row.names = FALSE)
+>>>>>>> 04cadd7c68d8afaf5cd66d08a0285be246fad6c2:analise_UOL/nowcasting_uol.R

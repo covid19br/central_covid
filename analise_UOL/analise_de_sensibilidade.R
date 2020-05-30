@@ -23,7 +23,7 @@ source("https://raw.githubusercontent.com/covid19br/covid19br.github.io/master/_
 
 data_ultimo_boletim<-as.Date("2020-05-08")
 
-uol<-read.csv2("./analise UOL/SRAGs-tabela-last-updated_revised2.csv", as.is = TRUE, sep = ",")
+uol<-read.csv2("./analise_UOL/SRAGs-tabela-last-updated_revised2.csv", as.is = TRUE, sep = ",")
 
 lista_boletins<-list()
 for (i in 2:25) {
@@ -103,7 +103,7 @@ nowcasting6<- NobBS(data = uol_df,
 )
 betas6<-beta.summary(nowcasting6)
 now_csv<-write.csv(nowcasting6$estimates, 
-                   file = paste("analise UOL/spreasheet e CSV/nowcasting_", data_usada, ".csv",sep = ""), 
+                   file = paste("analise_UOL/spreasheet_e_CSV/nowcasting_", data_usada, ".csv",sep = ""), 
                    row.names = FALSE)
 
 uol_last<-uol[1:31,1:2]
@@ -144,7 +144,7 @@ uol_df2_cumsum<-as.data.frame(cbind(uol_df2_cumsum, uol_df2))
 names(uol_df2_cumsum)<-c("cumsum", "Death_date", "N")
 
 now_cumsum<-cbind(now_cumsum, ultimo = uol_last_cumsum$`ultimo cumsum`)
-write.csv(now_cumsum, file = "./analise UOL/spreasheet e CSV/nowcumsum_sensibilidade", row.names = FALSE)
+write.csv(now_cumsum, file = "./analise_UOL/spreasheet_e_CSV/nowcumsum_sensibilidade", row.names = FALSE)
 
 p.prev.ic.cumsum <- ggplot(now_cumsum, aes(x = onset_date, y = `estimate cumsum`)) +
   geom_line(data = uol_df2_cumsum, aes(x = Death_date, y = `cumsum`,
@@ -161,7 +161,7 @@ p.prev.ic.cumsum <- ggplot(now_cumsum, aes(x = onset_date, y = `estimate cumsum`
   scale_colour_manual(values = c("blue", "orange", "indianred3"), aesthetics = c("colour", "fill")) 
   # ggtitle("Nowcasting de óbitos de COVID-19")
 p.prev.ic.cumsum
-ggsave(plot = p.prev.ic.cumsum, filename = "./analise UOL/plots/sensibilidade_nowcasting_BE_MS_08_05_cumsum.png", dpi = 600, width = 9, height = 7)
+ggsave(plot = p.prev.ic.cumsum, filename = "./analise_UOL/plots/sensibilidade_nowcasting_BE_MS_08_05_cumsum.png", dpi = 600, width = 9, height = 7)
 
 ###########################
 ######SALVANDO EM SVG######
@@ -169,7 +169,7 @@ ggsave(plot = p.prev.ic.cumsum, filename = "./analise UOL/plots/sensibilidade_no
 # plots.para.atualizar<-p.prev.ic
 # filepath<-"./analise UOL/plots/plots SVG/sensibilidade_nowcasting_BE_MS_08_maio"
 plots.para.atualizar<-p.prev.ic.cumsum
-filepath<-"./analise UOL/plots/plots SVG/sensibilidade_nowcasting_BE_MS_08_maio_cumsum"
+filepath<-"./analise_UOL/plots/plots_SVG/sensibilidade_nowcasting_BE_MS_08_maio_cumsum"
 
 graph.svg <- plots.para.atualizar + theme(axis.text=element_text(size=6.65), # corrige a diferenca do tamanho do texto entre svg e html
                                           plot.margin = margin(10, 0, 0, 7, "pt")) # corrige a margem inserida pelo plotly
