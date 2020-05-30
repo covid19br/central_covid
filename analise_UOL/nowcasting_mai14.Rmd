@@ -1,0 +1,55 @@
+---
+title: "teste"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r}
+
+library("tidyverse")
+library("cowplot")
+library("plotly")
+library("gganimate")
+library("RColorBrewer")
+
+dados <- read.csv("./SRAGs-tabela-last-updated_revised2.csv", as.is = TRUE)
+dt.plot <- reshape2::melt(dados)
+dt.plot$Data <- as.Date(dt.plot$Data, format = "%d/%m/%Y")
+dt.plot$variable <- as.Date(gsub("X", "", dt.plot$variable), format = "%d.%m.%y")
+
+# Setting locale to Brasil
+Sys.setlocale(category = "LC_TIME", locale = "pt_BR.UTF-8")
+
+```
+
+
+```{r}
+
+nowc <-
+    ggplot(data = dt.plot) +
+    geom_line(aes(x = Data, y = value, colour = factor(variable)), size = 2) +
+    #geom_text(x = "2020-05-01", y = 250, label = "Data da Base: {frame_time}") +
+    scale_x_date(date_labels = "%d/%B") +
+    scale_colour_viridis_d(direction = -1) +
+    labs(x = "Data do Óbito", y = "Número de Óbitos", colour = "Data da Base", title = "Evolução de Óbitos por Data de Óbito", caption = "Fonte: Boletins Epidemiológicos do Ministério da Saúde") +
+    theme_cowplot() +
+    theme(legend.position = "none",
+          plot.title = element_text(hjust = 0.5, size = 22),
+          plot.subtitle = element_text(hjust = 0.5, size = 18),
+          axis.text.x = element_text(size = 16),
+          axis.text.y = element_text(size = 16),
+          axis.title.x = element_text(size = 18, face = "bold"),
+          axis.title.y = element_text(size = 18, face = "bold"),) +
+    transition_states(factor(variable)) +
+    shadow_mark(colour = "lightgrey", alpha = 0.5, size = 1)
+
+animate(nowc,
+        duration = 25,
+        end_pause = 5,
+        width = 800,
+        height = 800)
+
+```
