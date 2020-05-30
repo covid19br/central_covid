@@ -19,7 +19,7 @@ source("./site/_src/fct/funcoes.R")
 
 data_ultimo_boletim<-as.Date("2020-05-29")
 
-# uol<-read.csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
+# uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
 uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29.csv")
 ###SEGUIR IGUAL###
 
@@ -42,7 +42,7 @@ p.uol
 ##########################
 ##      NOWCASTING      ##
 ##########################
-# uol<-read.csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
+# uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
 uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29.csv") ##load da CSV Utilizada
 uol<-as.data.frame(cbind(uol$Data, round(uol[,-1]))) ###Somente pra que tem preenchimento, pra arredondar os números###
 uol<-as.data.frame(uol)
@@ -186,5 +186,11 @@ p.prev.ic.cumsum <- ggplot(uol_final4, aes(x = Data, y = `estimate Cumsum`)) +
     ggtitle("Nowcasting de óbitos de COVID-19 anunciados pelo MS para o Brasil")
 p.prev.ic.cumsum
 
+p.arrange<-ggpubr::ggarrange(p.prev.ic2, p.prev.ic.cumsum)
+p.arrange
+ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_filled_29_05.png", 
+       dpi = 600, width = 9, height = 7)
+
 uol_final4<-uol_final4[,-c(2:5)]
 write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
+  
