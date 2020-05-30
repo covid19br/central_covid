@@ -154,12 +154,12 @@ uol_final<-uol_final[, c("estimate", "lower", "upper")]
 uol_final2<-as.data.frame(cbind(uol_final, 
                                 "Data" = as.Date(uol_df2$Death_date, "%Y-%m-%d"), 
                                 "Boletim ultimo" = uol[,2]))
-write.csv(uol_final2, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
+write.csv(uol_final2, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
 uol_final3<-apply(t(uol_final2[,-4]), 1, cumsum)
 colnames(uol_final3)<-c("estimate Cumsum", "lower Cumsum", "upper Cumsum", "Boletim Cumsum")
 
 uol_final4<-as.data.frame(cbind("Data" = uol_final2$Data, uol_final2[,-4], uol_final3))
-write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_29_05_cumsum_filled.csv", row.names = FALSE)
+write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_cumsum_filled.csv", row.names = FALSE)
 
 
 p.prev.ic2 <- ggplot(uol_final4, aes(x = Data, y = `estimate`)) +
@@ -187,4 +187,4 @@ p.prev.ic.cumsum <- ggplot(uol_final4, aes(x = Data, y = `estimate Cumsum`)) +
 p.prev.ic.cumsum
 
 uol_final4<-uol_final4[,-c(2:5)]
-write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
+write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
