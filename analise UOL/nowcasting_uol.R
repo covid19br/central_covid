@@ -15,12 +15,11 @@ if(!require(viridis)){install.packages("viridis"); library(viridis)}
 
 PRJROOT  = rprojroot::find_root(".here")
 
-source("./funcoes.R")
-source("https://raw.githubusercontent.com/covid19br/covid19br.github.io/master/_src/funcoes.R")
+source("./site/_src/fct/funcoes.R")
 
-data_ultimo_boletim<-as.Date("2020-05-08")
+data_ultimo_boletim<-as.Date("2020-05-29")
 
-uol<-read_csv("./analise UOL/SRAGs-tabela-last-updated_revised2.csv")
+uol<-read_csv("./analise UOL/SRAGs-tabela-last-updated_revised-29_maio.csv")
 uol<-as.data.frame(uol)
 uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
 uol_melted<-reshape::melt(uol, id.vars = "Data")
@@ -40,7 +39,9 @@ p.uol
 ##########################
 ##      NOWCASTING      ##
 ##########################
-uol <- read.csv("./analise UOL/SRAGs-tabela-last-updated_revised2.csv") ##load da CSV Utilizada
+uol<-read_csv("./analise UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ##load da CSV Utilizada
+uol<-as.data.frame(uol)
+# uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
 uol2<-uol #variavel auxiliar
 uol2[is.na(uol2)] <- 0 ##preenchendo com 0 onde não há dados ###
 uol2.1<-uol2 ###variavel auxiliar
