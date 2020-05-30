@@ -39,7 +39,8 @@ p.uol
 ##########################
 ##      NOWCASTING      ##
 ##########################
-uol<-read_csv("./analise UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ##load da CSV Utilizada
+uol<-read_csv("./analise UOL/SRAGs-tabela-last-updated_revised-29.csv") ##load da CSV Utilizada
+uol<-as.data.frame(cbind(uol$Data, round(uol[,-1])))
 uol<-as.data.frame(uol)
 # uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
 uol2<-uol #variavel auxiliar
@@ -70,7 +71,7 @@ uol3.df <- as.data.frame(uol3)
 names(uol3.df) <- names(uol2)[-1]
 uol4 <- cbind(data=uol2[,1], uol3.df)
 ## Monta data.frame de datas de obito e de regitro
-datas.boletins <- as.character(as.Date(names(uol3.df), "X%d.%m.%y"))
+datas.boletins <- as.character(as.Date(names(uol3.df), "%d/%m/%y"))
 datas.obito <- as.character(as.Date(as.character(uol4$data), "%d/%m/%y"))
 ## Vetores para guardar as datas de evento e 
 onset.dates <- record.dates <- c()
@@ -149,12 +150,12 @@ uol_final<-uol_final[, c("estimate", "lower", "upper")]
 uol_final2<-as.data.frame(cbind(uol_final, 
                                 "Data" = as.Date(uol_df2$Death_date, "%Y-%m-%d"), 
                                 "Boletim ultimo" = uol[,2]))
-write.csv(uol_final2, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_08_05.csv", row.names = FALSE)
+write.csv(uol_final2, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
 uol_final3<-apply(t(uol_final2[,-4]), 1, cumsum)
 colnames(uol_final3)<-c("estimate Cumsum", "lower Cumsum", "upper Cumsum", "Boletim Cumsum")
 
 uol_final4<-as.data.frame(cbind("Data" = uol_final2$Data, uol_final2[,-4], uol_final3))
-write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_08_05_cumsum.csv", row.names = FALSE)
+write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_29_05_cumsum_filled.csv", row.names = FALSE)
 
 
 p.prev.ic2 <- ggplot(uol_final4, aes(x = Data, y = `estimate`)) +
@@ -165,7 +166,7 @@ p.prev.ic2 <- ggplot(uol_final4, aes(x = Data, y = `estimate`)) +
   ylab("Nº de Óbitos por dia") +
   theme_bw() +
   theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-  scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))
+  scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
   ggtitle("Nowcasting de óbitos de COVID-19 anunciados pelo MS para o  Brasil, até 08 de maio")
 p.prev.ic2
 
@@ -177,9 +178,9 @@ p.prev.ic.cumsum <- ggplot(uol_final4, aes(x = Data, y = `estimate Cumsum`)) +
     ylab("Nº de Óbitos Acumulados") +
     theme_bw() +
     theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-    scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill")) 
+    scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill")) +
     ggtitle("Nowcasting de óbitos de COVID-19 anunciados pelo MS para o Brasil, até 08 de maio")
 p.prev.ic.cumsum
 
 uol_final4<-uol_final4[,-c(2:5)]
-write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_08_05.csv", row.names = FALSE)
+write.csv(uol_final4, file = "./analise UOL/spreasheet e CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
