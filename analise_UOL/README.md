@@ -8,7 +8,7 @@ Essas análises são feitas e partir de raspagem dos gráficos publicados nos bo
     ├── plots/                             # Plots gerados
     ├── spreadsheet_e_CSV                  # CSVs gerados e usados para a análise
     ├── analise_de_sensibilidade.R         # Código para comparar a performace do nowcasting
-    ├── nowcasting_uol.R                   # 
+    ├── nowcasting_uol.R                   # Código da análise principal, roda nowcasting para os boleitns compilados.
     └── README.md
 
 Os scripts principais são `nowcasting_uol.R` e `analise_de_sensibilidade.R`. 
