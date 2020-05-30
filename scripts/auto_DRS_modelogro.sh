@@ -63,11 +63,18 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     # gera relatório unificado
     pdfunite projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf ../reports/projecao_leitos_srag_${todaydash}.pdf &&
     git add ../reports/projecao_leitos_srag_${todaydash}.pdf &&
-    git commit -m "Relatório unificado projecao leitos ${todaydash}" &&
+    git commit -m ":robot: relatório unificado projecao leitos ${todaydash}" &&
     git push
     popd
 
     # atualizando meta-repo (de novo)
+    # DANGER: altíssimo risco de conflito?
+    # tentando escapar ao máximo...
+    git pull --recurse-submodules --ff-only
+    pushd $absdatafolder
+    # pegamos alterações novas, sem detached HEAD no submodule
+    git checkout master && git pull --ff-only
+    popd
     git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
     git push
 
