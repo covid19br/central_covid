@@ -47,10 +47,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     ## nowcasting
     pushd $Rfolder
     for DRS in $nDRS; do
-        Rscript update_projecao_leitos.R --dir $absdatafolder/dados \\ 
-            --escala drs --sigla $estado --geocode $DRS --dataBase $today_ \\
-            --dataInicial 2020-03-16 --out_dir $absdatafolder/outputs/ \\
-            --check_report TRUE &&
+        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $absdatafolder/outputs/ --check_report TRUE &&
         cd $absdatafolder
         git pull &&
         git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/curve_fits/curve_fits_${todaydash}.Rds &&
