@@ -20,7 +20,7 @@ source("./site/_src/fct/funcoes.R")
 data_ultimo_boletim<-as.Date("2020-05-29")
 
 # uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
-uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29.csv")
+uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv")
 ###SEGUIR IGUAL###
 
 uol<-as.data.frame(uol)
@@ -32,19 +32,47 @@ p.uol <-
   geom_point(shape = 1)+
   geom_line()+
   geom_vline(xintercept = as.Date("2020-03-17", format = "%Y-%m-%d"), colour = "indianred3", size = 0.45, linetype = "dashed")+
-  scale_color_viridis_d(name = "Data Boletim", option = "Greens", direction = 1)+
+  scale_color_viridis_d(name = "Data Boletim", option = "cividis", direction = 1)+
   labs(x = "Data", y = "Número de Óbitos") +
   theme_bw() +
   theme(legend.position = "right")+
   theme(axis.text= element_text(size=14),
         axis.title = element_text(size=14))
 p.uol
+  
+uol2<-as.matrix(uol[,-1]) #variavel auxiliar
+rownames(uol2)<-uol$Data
+uol2<-normalize.rows(uol)
+
+uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
+uol_melted<-reshape::melt(uol, id.vars = "Data")
+
+
+p.uol.ridges <- ggplot(uol_melted, aes(x = Data, y = variable)) +
+  geom_joy(aes(colour = variable)) +
+  theme_ridges()+
+  xlab("Data de óbito")+
+  ylab("Boletins")+
+  ggtitle("Boletins Epidemiológicos - MS")
+p.uol.ridges
+
+ggplot(uol_melted, aes(x = Data, y = as.factor(variable), fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "Óbitos por dia", option = "C") +
+  labs(title = 'Boletins Epidemiológicos Ministério da Saúde') +
+  theme_ridges() +
+  theme(
+    legend.position="none",
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 8)
+  )
+
 ##########################
 ##      NOWCASTING      ##
 ##########################
 # uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
-uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29.csv") ##load da CSV Utilizada
-uol<-as.data.frame(cbind(uol$Data, round(uol[,-1]))) ###Somente pra que tem preenchimento, pra arredondar os números###
+uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv") ##load da CSV Utilizada
+# uol<-as.data.frame(cbind(uol$Data, round(uol[,-1]))) ###Somente pra que tem preenchimento, pra arredondar os números###
 uol<-as.data.frame(uol)
 # uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
 uol2<-uol #variavel auxiliar
@@ -154,12 +182,12 @@ uol_final<-uol_final[, c("estimate", "lower", "upper")]
 uol_final2<-as.data.frame(cbind(uol_final, 
                                 "Data" = as.Date(uol_df2$Death_date, "%Y-%m-%d"), 
                                 "Boletim ultimo" = uol[,2]))
-write.csv(uol_final2, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
+write.csv(uol_final2, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05.csv", row.names = FALSE)
 uol_final3<-apply(t(uol_final2[,-4]), 1, cumsum)
 colnames(uol_final3)<-c("estimate Cumsum", "lower Cumsum", "upper Cumsum", "Boletim Cumsum")
 
 uol_final4<-as.data.frame(cbind("Data" = uol_final2$Data, uol_final2[,-4], uol_final3))
-write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_cumsum_filled.csv", row.names = FALSE)
+write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_cumsum.csv", row.names = FALSE)
 
 
 p.prev.ic2 <- ggplot(uol_final4, aes(x = Data, y = `estimate`)) +
@@ -171,7 +199,7 @@ p.prev.ic2 <- ggplot(uol_final4, aes(x = Data, y = `estimate`)) +
   theme_bw() +
   theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
   scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
-  ggtitle("Nowcasting de óbitos de COVID-19 anunciados pelo MS para o  Brasil")
+  ggtitle("Diários")
 p.prev.ic2
 
 p.prev.ic.cumsum <- ggplot(uol_final4, aes(x = Data, y = `estimate Cumsum`)) +
@@ -182,15 +210,21 @@ p.prev.ic.cumsum <- ggplot(uol_final4, aes(x = Data, y = `estimate Cumsum`)) +
     ylab("Nº de Óbitos Acumulados") +
     theme_bw() +
     theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-    scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill")) +
-    ggtitle("Nowcasting de óbitos de COVID-19 anunciados pelo MS para o Brasil")
+    scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
+    ggtitle("Acumulados")
 p.prev.ic.cumsum
 
 p.arrange<-ggpubr::ggarrange(p.prev.ic2, p.prev.ic.cumsum)
 p.arrange
-ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_filled_29_05.png", 
+ggsave(p.annotate, filename = "./analise_UOL/plots/arrange_nowcasting_29_05.png", 
+       dpi = 600, width = 9, height = 7)
+
+p.annotate<-annotate_figure(p.arrange,
+                top = text_grob("Nowcasting via boletins epidemiológicos do ministério da Saúde", color = "black", face = "bold", size = 14)
+)
+p.annotate
+ggsave(p.annotate, filename = "./analise_UOL/plots/annotate_arrange_nowcasting_29_05.png", 
        dpi = 600, width = 9, height = 7)
 
 uol_final4<-uol_final4[,-c(2:5)]
-write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_filled.csv", row.names = FALSE)
-  
+write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05.csv", row.names = FALSE)
