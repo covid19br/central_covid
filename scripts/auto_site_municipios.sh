@@ -45,7 +45,7 @@ done
 
 # csv: só usa já processado (depende do trabalho do auto_DRS_nowcast_report.sh)
 csv2="$absdatafolder/dados/SRAGH_${today_}.csv"
-out="../site/web/municipios/${estado}/${nomes_municipios[${municipios[0]}]}/last.update.txt"
+out="../site/dados/municipios/${estado}/${nomes_municipios[${municipios[0]}]}/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_${today_}.csv"
 RUNFILE="nowcasting_site_municipios_${estado}.run"
 
 # pull do meta-repo: *DANGER HERE*
