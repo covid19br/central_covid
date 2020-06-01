@@ -27,7 +27,7 @@ todaydash=`date +'%Y-%m-%d'`
 # csv pode já ter sido processado
 #csv="$absdatafolder/dados/Pacientes_internados_com_SRAG_data${todaydash}.csv"
 csv2="$absdatafolder/dados/SRAGH_${today_}.csv"
-out="$absdatafolder/reports/relatorio_${today_}.html"
+out="$absdatafolder/reports/projecao_leitos_srag_${todaydash}.pdf"
 RUNFILE="projecao_leitos_DRS_${estado}.run"
 
 # pull do meta-repo: *DANGER HERE*
@@ -47,10 +47,14 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     ## nowcasting
     pushd $Rfolder
     for DRS in $nDRS; do
-        Rscript update_projecao_leitos.R --tipo srag --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $absdatafolder/outputs/projecao_leitos --report_dir $absdatafolder/reports
+        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $absdatafolder/outputs/ --check_report TRUE &&
         cd $absdatafolder
-        git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$nDRS]}/curve_fits/curve_fits_${todaydash}.Rds outputs/projecao_leitos/DRS/$estado/$nomeDRS/hospitalizados/hopitalized_${todaydash}.csv dados/municipio_SP/projecao_leitos/hospitalizados/hopitalized_UTI_${todaydash}.csv relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf &&
-        git commit -m ":robot: projecao leitos DRS ${estado}-${nomes_DRS[$nDRS]}" &&
+        git pull &&
+        git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/curve_fits/curve_fits_${todaydash}.Rds &&
+        git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_${todaydash}.csv &&
+        git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_UTI_${todaydash}.csv &&
+        git add relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf &&
+        git commit -m ":robot: projecao leitos DRS ${estado}-${nomes_DRS[$DRS]}" &&
         # DANGER: rebase é perigo: mantenha sua cópia local em ordem!
         # por outro lado, é a única solução com robôs concorrentes em outra máquina.
         git pull --rebase &&
@@ -62,6 +66,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     pushd $absdatafolder/outputs/
     # gera relatório unificado
     pdfunite projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf ../reports/projecao_leitos_srag_${todaydash}.pdf &&
+    git pull &&
     git add ../reports/projecao_leitos_srag_${todaydash}.pdf &&
     git commit -m ":robot: relatório unificado projecao leitos ${todaydash}" &&
     git push
