@@ -6,10 +6,9 @@
 
 usage(){
     echo -e "
-USO: $0 [escala] [trim] {geocodes}
+USO: $0 [escala] {geocodes}
 
-  escala: municipio | micro | meso | drs
-  trim: dias de trim do nowcasting, geralmente 2-5
+  escala: municipio | micro | meso | drs 
   geocodes: lista de geocodes, ou ids de DRSs
 "
 }
@@ -22,7 +21,7 @@ get_latest(){
     ls `eval echo $1` | grep "$greppat" | sed  's/^.*'$sedpat'/\1/' | sort -gr | head -n 1
 }
 
-if [ ${#@} -lt 3 ]; then
+if [ ${#@} -lt 2 ]; then
     usage
     exit 1
 fi
@@ -32,14 +31,11 @@ SCRIPTROOT=$PWD
 estado="SP"
 
 escala=$1
-# TODO: discutir tamanho do trim (atual: 2 pra municipio, 5 pra DRS?)
-trim=$2
-shift 2
+shift
 geocodes=( "$@" )
 
 datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
 Rfolder="../nowcasting"
-outfolder="../dados_processados/nowcasting"
 # convertendo caminhos relativos em absolutos
 # realpath é mais profissa, mas não é garantido ter em todo lugar
 if [ ${datafolder:0:1} = '/' ]; then
@@ -47,15 +43,6 @@ if [ ${datafolder:0:1} = '/' ]; then
 else
     absdatafolder="$PWD/$datafolder"
 fi
-if [ ${outfolder:0:1} = '/' ]; then
-    absoutfolder=$outfolder
-else
-    absoutfolder="$PWD/$outfolder"
-fi
-
-
-# atualiza repo onde dados estão?
-UPDATE_GIT_DATA_REPO=TRUE
 
 if [ $escala == "municipio" ]; then
     folder="municipios"
@@ -71,6 +58,7 @@ else
 fi
 
 # associative array of names
+# TODO: testar micro- e mesorregiões
 # requires iconv
 declare -A nomes
 for geocode in ${geocodes[@]}; do
@@ -91,12 +79,15 @@ done
 git pull --recurse-submodules --ff-only
 pushd $absdatafolder
 # AQUI pegamos alterações novas, sem detached HEAD no submodule
-git checkout master && git pull --ff-only
+git checkout master && git pull --ff-only &&
+git log -- dados/ | grep  "$today"
+newcommit=$?
 popd
 
-RUNFILE="nowcasting_site_${folder}_${estado}.run"
+RUNFILE="modelogro_site_${escala}_${estado}.run"
 last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
-last_output=`get_latest '../site/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_*.csv'`
+last_output=`get_latest '../site/dados/projecao_leitos/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/curve_fits/curve_fits_*.Rds'`
+last_output=`echo $last_output | sed 's/-/_/g'`
 
 if [[ -f $RUNFILE || ! $last_output < $last_input ]]; then
     # rodando ou atualizado
@@ -106,23 +97,18 @@ fi
 today_=$last_input
 todaydash=`echo $today_ | sed 's/_/-/g'`
 
-echo "Nova atualização nowcasting ${today_} ${escala} ${estado} ${geocodes[@]}"
+echo "Nova atualização modelogro ${today_} ${escala} ${estado} ${geocodes[@]}"
 
 # esta é arcana...
-output_files="nowcasting_{acumulado,diario}_{,obitos_}{covid,srag}_${today_}.csv
-tempo_duplicacao_{,obitos_}{covid,srag}_${today_}.csv
-r_efetivo_{covid,srag}_${today_}.csv"
-web_output_files="last.update.txt
-data_{forecast_exp,tempo_dupli}_{,obitos_}{covid,srag}.csv
-data_Re_{covid,srag}.csv
-plot_nowcast_{,cum_}{,ob_}{covid,srag}.html
-plot_nowcast_{,cum_}{,ob_}{covid,srag}{,.ex,.lg,.md,.sm}.svg
-plot_tempo_dupl_{,ob_}{covid,srag}.html
-plot_tempo_dupl_{,ob_}{covid,srag}{,.ex,.lg,.md,.sm}.svg
-plot_estimate_R0_{covid,srag}.html
-plot_estimate_R0_{covid,srag}{,.ex,.lg,.md,.sm}.svg"
+fit_output_files="curve_fits_${todaydash}.Rds"
+reports_files="${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.pdf"
+hosp_output_files="hopitalized_UTI_${todaydash}.csv 
+hopitalized_${todaydash}.csv"
+web_output_files="last.update.modelogro.txt
+plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.}svg
+plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.html"
 # eval expande todos wildcards nas variáveis
-output_files=`eval echo $output_files`
+reports_files=`eval echo $reports_files`
 web_output_files=`eval echo $web_output_files`
 
 touch $RUNFILE
@@ -130,48 +116,42 @@ touch $RUNFILE
 pushd $Rfolder
 for geocode in ${geocodes[@]}; do
     ## nowcasting
-    # ATENÇÃO: se UPDATE_GIT_DATA_REPO for FALSE dados *não são* salvos,
-    # permanecem como cópia local, suja. Se deseja limpar, pode rodar
-    # depois:
-    # cd $absoutfolder/outputs; git clean -f
-    # que *apaga* todos arquivos untracked (DANGER)
-    Rscript update_nowcasting.R --dir $absdatafolder/dados --escala $escala --sigla $estado --geocode $geocode --dataBase $today_ --outputDir $absoutfolder --trim $trim --updateGit $UPDATE_GIT_DATA_REPO
+    Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala $escala --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
 
     ## mandando pro site
-    path="${folder}/${estado}/${nomes[$geocode]}"
-
+    munpath="projecao_leitos/${folder}/${estado}/${nomes[$geocode]}"
+    
     # atualiza repo site
     # isto é feito a cada passo do loop - mais seguro?
     pushd $SCRIPTROOT/../site/_src
+    Rscript update_modelogro.R --escala $escala --sigla $estado --geocode $geocode
+
     git pull --ff-only
 
-    # cria destino se não existe
-    if [ ! -d ../dados/$path/tabelas_nowcasting_para_grafico/ ]; then
-        mkdir --parents ../dados/$path/tabelas_nowcasting_para_grafico
-    fi
-
-    pushd $absoutfolder/$path/tabelas_nowcasting_para_grafico/
-    cp $output_files $SCRIPTROOT/../site/dados/$path/tabelas_nowcasting_para_grafico/
+    pushd ../dados/$munpath/hospitalizados
+    git add $hosp_output_files
     popd
-
-    Rscript update_plots_nowcasting.R --escala $escala --sigla $estado --geocode $geocode --dataBase $today_
-    pushd ../dados/$path/tabelas_nowcasting_para_grafico/
-    git add $output_files
+    
+    pushd ../dados/$munpath/curve_fits
+    git add $fit_output_files
     popd
-    pushd ../web/$path
+    
+    pushd ../dados/$munpath/reports
+    git add $reports_files
+    popd
+    
+    # pushd ../dados/$munpath/figures
+    # git add $reports_files
+    # popd
+    
+    pushd ../web/$munpath
     git add $web_output_files
     popd
-    git commit -m ":robot: novas tabelas e plots ${escala} ${estado}-${nomes[$geocode]} ${today_}" &&
+    
+    git commit -m ":robot: novas projeções de leitos e plots $escala ${estado}-${nomes[$geocode]} ${today_}" &&
     git push
     popd
 done
 popd
-
-### Isto só é necessário se o outfolder for dentro de um submodulo
-#if [ $UPDATE_GIT_DATA_REPO == "TRUE" ]; then
-#    # update meta-repo pro novo commit
-#    git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
-#    git push
-#fi
 
 rm $RUNFILE
