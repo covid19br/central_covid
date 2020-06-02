@@ -65,7 +65,8 @@ reports_files="${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.
 hosp_output_files="hopitalized_UTI_${todaydash}.csv 
 hopitalized_${todaydash}.csv"
 web_output_files="last.update.modelogro.txt
-plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.municipio.{svg,html}"
+plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.}svg
+plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.html"
 # eval expande todos wildcards nas variáveis
 reports_files=`eval echo $reports_files`
 web_output_files=`eval echo $web_output_files`
@@ -81,7 +82,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         # depois:
         # cd $absoutfolder/outputs; git clean -f
         # que *apaga* todos arquivos untracked (DANGER)
-        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
+        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
 
         ## mandando pro site
         munpath="projecao_leitos/municipios/${estado}/${nomes_municipios[$geocode]}"
@@ -89,7 +90,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         # atualiza repo site
         # isto é feito a cada passo do loop - mais seguro?
         pushd $SCRIPTROOT/../site/_src
-        Rscript update_modelogro.R
+        Rscript update_modelogro.R --sigla $estado --geocode $geocode
 
         git pull --ff-only
 
@@ -109,7 +110,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         # git add $reports_files
         # popd
         
-        pushd ../web/
+        pushd ../web/$munpath
         git add $web_output_files
         popd
         
