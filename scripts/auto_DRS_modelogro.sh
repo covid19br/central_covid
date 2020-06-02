@@ -53,7 +53,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/curve_fits/curve_fits_${todaydash}.Rds &&
         git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_${todaydash}.csv &&
         git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_UTI_${todaydash}.csv &&
-        git add relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf &&
+        git add relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.pdf &&
         git commit -m ":robot: projecao leitos DRS ${estado}-${nomes_DRS[$DRS]}" &&
         # DANGER: rebase é perigo: mantenha sua cópia local em ordem!
         # por outro lado, é a única solução com robôs concorrentes em outra máquina.
