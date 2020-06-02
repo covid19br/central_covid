@@ -13,7 +13,6 @@ estado="SP"
 municipios=( "$@" )
 datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
 Rfolder="../nowcasting"
-outfolder="../dados_processados/nowcasting"
 # convertendo caminhos relativos em absolutos
 # realpath é mais profissa, mas não é garantido ter em todo lugar
 if [ ${datafolder:0:1} = '/' ]; then
@@ -21,17 +20,6 @@ if [ ${datafolder:0:1} = '/' ]; then
 else
     absdatafolder="$PWD/$datafolder"
 fi
-if [ ${outfolder:0:1} = '/' ]; then
-    absoutfolder=$absoutfolder
-else
-    absoutfolder="$PWD/$absoutfolder"
-fi
-
-
-# TODO: discutir tamanho do trim
-trim=2
-# atualiza repo onde dados estão?
-UPDATE_GIT_DATA_REPO=TRUE
 
 today=`LANG=en date +'%b %-d'`
 today_=`date +'%Y_%m_%d'`
@@ -45,7 +33,7 @@ done
 
 # csv: só usa já processado (depende do trabalho do auto_DRS_nowcast_report.sh)
 csv2="$absdatafolder/dados/SRAGH_${today_}.csv"
-out="../site/dados/projecao_leitos/municipios/${estado}/${nomes_municipios[${municipios[0]}]}/curve_fits/curve_fits_{todaydash}.Rds"
+out="../site/dados/projecao_leitos/municipios/${estado}/${nomes_municipios[${municipios[0]}]}/curve_fits/curve_fits_${todaydash}.Rds"
 RUNFILE="modelogro_site_municipios_${estado}.run"
 
 # pull do meta-repo: *DANGER HERE*
@@ -77,11 +65,6 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     pushd $Rfolder
     for geocode in ${municipios[@]}; do
         ## nowcasting
-        # ATENÇÃO: se UPDATE_GIT_DATA_REPO for FALSE dados *não são* salvos,
-        # permanecem como cópia local, suja. Se deseja limpar, pode rodar
-        # depois:
-        # cd $absoutfolder/outputs; git clean -f
-        # que *apaga* todos arquivos untracked (DANGER)
         Rscript update_projecao_leitos.R --dir $absdatafolder/dados --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
 
         ## mandando pro site
@@ -119,13 +102,6 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         popd
     done
     popd
-
-#    ## Isto só é necessário se o outfolder for dentro de um submodulo
-#    if [ $UPDATE_GIT_DATA_REPO == "TRUE" ]; then
-#        # update meta-repo pro novo commit
-#        git commit ../dados/estado_$estado -m ":robot: Atualizando commit estado ${estado}" &&
-#        git push
-#    fi
 
     rm $RUNFILE
 fi
