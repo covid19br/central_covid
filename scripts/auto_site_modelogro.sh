@@ -79,9 +79,7 @@ done
 git pull --recurse-submodules --ff-only
 pushd $absdatafolder
 # AQUI pegamos alterações novas, sem detached HEAD no submodule
-git checkout master && git pull --ff-only &&
-git log -- dados/ | grep  "$today"
-newcommit=$?
+git checkout master && git pull --ff-only
 popd
 
 RUNFILE="modelogro_site_${escala}_${estado}.run"
