@@ -49,7 +49,8 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     pushd $Rfolder
     for DRS in $nDRS; do
         Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $outfolder --check_report TRUE &&
-        cd $outfolder/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}
+        cd $outfolder/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]} &&
+        git checkout master &&
         git pull &&
         git add curve_fits/curve_fits_${todaydash}.Rds &&
         git add hospitalizados/hopitalized_${todaydash}.csv &&
@@ -60,8 +61,8 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         # DANGER: rebase é perigo: mantenha sua cópia local em ordem!
         # por outro lado, é a única solução com robôs concorrentes em outra máquina.
         git pull --rebase &&
-        git push
-        cd -
+        git push &&
+        cd - &&
     done
     popd
 
@@ -71,7 +72,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     git pull &&
     git add reports/projecao_leitos_srag_${todaydash}.pdf &&
     git commit -m ":robot: relatório unificado projecao leitos ${todaydash}" &&
-    git push
+    git push &&
     popd
 
     # atualizando meta-repo (de novo)
