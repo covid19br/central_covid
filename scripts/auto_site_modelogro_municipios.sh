@@ -33,7 +33,7 @@ done
 
 # csv: só usa já processado (depende do trabalho do auto_DRS_nowcast_report.sh)
 csv2="$absdatafolder/dados/SRAGH_${today_}.csv"
-out="../site/dados/projecao_leitos/municipios/${estado}/${nomes_municipios[${municipios[0]}]}/curve_fits/curve_fits_${todaydash}.Rds"
+out="../site/dados/projecao_leitos/municipios/${estado}/${nomes_municipios[${municipios[0]}]}/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf"
 RUNFILE="modelogro_site_municipios_${estado}.run"
 
 # pull do meta-repo: *DANGER HERE*
@@ -52,8 +52,7 @@ fit_output_files="curve_fits_${todaydash}.Rds"
 reports_files="${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.pdf"
 hosp_output_files="hopitalized_UTI_${todaydash}.csv 
 hopitalized_${todaydash}.csv"
-web_output_files="last.update.modelogro.txt
-plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.}svg
+web_output_files="plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.,ex.}svg
 plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.html"
 # eval expande todos wildcards nas variáveis
 reports_files=`eval echo $reports_files`
@@ -65,7 +64,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     pushd $Rfolder
     for geocode in ${municipios[@]}; do
         ## nowcasting
-        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
+        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ 
 
         ## mandando pro site
         munpath="projecao_leitos/municipios/${estado}/${nomes_municipios[$geocode]}"
@@ -85,7 +84,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         git add $fit_output_files
         popd
         
-        pushd ../dados/$munpath/reports
+        pushd ../dados/$munpath/relatorios
         git add $reports_files
         popd
         
@@ -93,6 +92,10 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         # git add $reports_files
         # popd
         
+        pushd ../web
+        git add last.update.modelogro.txt
+        popd
+
         pushd ../web/$munpath
         git add $web_output_files
         popd
