@@ -13,6 +13,7 @@ for drs in ${nDRS}; do
 done
 
 datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
+outfolder="../dados/estado_${estado}/SRAG_hospitalizados/outputs"
 Rfolder="../nowcasting"
 if [ ${datafolder:0:1} = '/' ]; then
     absdatafolder=$datafolder
@@ -47,12 +48,12 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     ## nowcasting
     pushd $Rfolder
     for DRS in $nDRS; do
-        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $absdatafolder/outputs/ --check_report TRUE &&
-        cd $absdatafolder
+        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $outfolder/outputs/ --check_report TRUE &&
+        cd $outfolder
         git pull &&
-        git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/curve_fits/curve_fits_${todaydash}.Rds &&
-        git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_${todaydash}.csv &&
-        git add outputs/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_UTI_${todaydash}.csv &&
+        git add projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/curve_fits/curve_fits_${todaydash}.Rds &&
+        git add projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_${todaydash}.csv &&
+        git add projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]}/hospitalizados/hopitalized_UTI_${todaydash}.csv &&
         git add relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.pdf &&
         git commit -m ":robot: projecao leitos DRS ${estado}-${nomes_DRS[$DRS]}" &&
         # DANGER: rebase é perigo: mantenha sua cópia local em ordem!
@@ -63,7 +64,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     done
     popd
 
-    pushd $absdatafolder/outputs/
+    pushd $outfolder
     # gera relatório unificado
     pdfunite projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf ../reports/projecao_leitos_srag_${todaydash}.pdf &&
     git pull &&
