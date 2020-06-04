@@ -48,8 +48,9 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     ## nowcasting
     pushd $Rfolder
     for DRS in $nDRS; do
-        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $outfolder --check_report TRUE &&
-        cd $outfolder/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]} &&
+        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $outfolder &&
+        #Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $outfolder --nowcasting FALSE --fit_models FALSE &&
+        pushd $outfolder/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]} &&
         git checkout master &&
         git pull &&
         git add curve_fits/curve_fits_${todaydash}.Rds &&
@@ -62,13 +63,13 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
         # por outro lado, é a única solução com robôs concorrentes em outra máquina.
         git pull --rebase &&
         git push &&
-        cd - &&
+        popd
     done
     popd
 
     pushd $outfolder
     # gera relatório unificado
-    pdfunite projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf reports/projecao_leitos_srag_${todaydash}.pdf &&
+    pdfunite projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf ../reports/projecao_leitos_srag_${todaydash}.pdf &&
     git pull &&
     git add reports/projecao_leitos_srag_${todaydash}.pdf &&
     git commit -m ":robot: relatório unificado projecao leitos ${todaydash}" &&
