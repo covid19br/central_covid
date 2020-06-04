@@ -22,9 +22,9 @@ else
     absdatafolder="$PWD/$datafolder"
 fi
 if [ ${outfolder:0:1} = '/' ]; then
-    absoutfolder=$absoutfolder
+    absoutfolder=$outfolder
 else
-    absoutfolder="$PWD/$absoutfolder"
+    absoutfolder="$PWD/$outfolder"
 fi
 
 
