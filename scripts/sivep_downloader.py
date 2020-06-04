@@ -6,10 +6,12 @@ import re
 from glob import glob
 
 def find_last_date(output_folder):
-    files = glob(output_folder + '/*.csv')
+    filescsv = glob(output_folder + '/*.csv')
+    fileszip = glob(output_folder + '/*.zip')
+    files = filescsv + fileszip
     date_max = date(year=2020, month=1, day=1)
     for f in files:
-        g = re.match(r'.*(\d\d\d\d_\d\d_\d\d).*.csv', os.path.basename(f))
+        g = re.match(r'.*(\d\d\d\d_\d\d_\d\d).*', os.path.basename(f))
         if g:
             data = datetime.strptime(g.groups()[0], "%Y_%m_%d").date()
             date_max = max(data, date_max)
@@ -53,12 +55,17 @@ if __name__ == '__main__':
         outfile = os.path.join(output_folder, output_fname)
         print("Downloading new SIVEP database...")
         get_file(newfile[1], outfile)
+        outzip = output_fname[:-3] + 'zip'
+        os.system('cd {folder} && zip {outzip} {outfile}'.format(
+            folder=output_folder, outfile=output_fname, outzip=outzip))
         # add to git and let the other robots work
         if gitUpdate:
             os.system('''cd {folder} &&
-                   git add {outfile} &&
+                   git add {outzip} &&
                    git commit -m "[auto] base SIVEP-Gripe de {data}" &&
+                   rm {outfile} &&
                    git push'''.format(folder=output_folder,
+                                    outzip=outzip,
                                     outfile=output_fname,
                                     data=newfile[0].strftime("%Y_%m_%d")))
 
