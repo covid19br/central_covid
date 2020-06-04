@@ -105,7 +105,9 @@ git checkout master && git pull --ff-only
 popd
 
 RUNFILE="nowcasting_site_${folder}_${estado}.run"
-last_input=`get_latest '$absdatafolder/SRAGH*_{data}.csv'`
+last_input_csv=`get_latest '$absdatafolder/SRAGH*_{data}.csv'`
+last_input_zip=`get_latest '$absdatafolder/SRAGH*_{data}.zip'`
+last_input=`echo -e "$last_input_csv\n$last_input_zip" | sort | tail -n1`
 last_output=`get_latest '../site/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
 
 if [[ -f $RUNFILE || ! $last_output < $last_input ]]; then
