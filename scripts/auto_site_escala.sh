@@ -6,23 +6,26 @@
 
 usage(){
     echo -e "
-USO: $0 [escala] [trim] {geocodes}
+USO: $0 [escala] [estado] [trim] {geocodes}
 
   escala: municipio | micro | meso | drs
+  estado: sigla do estado (não misturar geocodes de estados diferentes)
   trim: dias de trim do nowcasting, geralmente 2-5
   geocodes: lista de geocodes, ou ids de DRSs
 "
 }
 
-# careful: argument must be inside *single* quotes to avoid being expanded
+# cuidado: argumento precisa ter aspas *simples* pra não ser expandido
+# data deve vir no formato YYYY_MM_DD no nome do arquivo
 get_latest(){
     pattern=`basename "$1"`
-    greppat=`echo $pattern | sed 's/*/.*/'`
-    sedpat=`echo $pattern | sed 's/*/\\\\(.*\\\\)/'`
-    ls `eval echo $1` | grep "$greppat" | sed  's/^.*'$sedpat'/\1/' | sort -gr | head -n 1
+    lspat=`echo $1 | sed 's/{data}/*/'`
+    greppat=`echo $pattern | sed 's/*/.*/g; s/{data}/.*/'`
+    sedpat=`echo $pattern | sed 's/*/.*/g; s/{data}/\\\\([0-9][0-9][0-9][0-9]_[0-9][0-9]_[0-9][0-9]\\\\)/'`
+    ls `eval echo $lspat` | grep "$greppat" | sed  's/^.*'$sedpat'/\1/' | sort -gr | head -n 1
 }
 
-if [ ${#@} -lt 3 ]; then
+if [ ${#@} -lt 4 ]; then
     usage
     exit 1
 fi
@@ -33,11 +36,18 @@ estado="SP"
 
 escala=$1
 # TODO: discutir tamanho do trim (atual: 2 pra municipio, 5 pra DRS?)
-trim=$2
-shift 2
+estado=$2
+trim=$3
+shift 3
 geocodes=( "$@" )
 
-datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
+# cada estado pode ter uma base diferente
+# ATENÇÃO: não misturar municípios de estados diferentes!
+if [ $estado == "SP" ]; then
+    datafolder="../dados/estado_${estado}/SRAG_hospitalizados/dados"
+else
+    datafolder="../dados/SIVEP-Gripe"
+fi
 Rfolder="../nowcasting"
 outfolder="../dados_processados/nowcasting"
 # convertendo caminhos relativos em absolutos
@@ -95,8 +105,8 @@ git checkout master && git pull --ff-only
 popd
 
 RUNFILE="nowcasting_site_${folder}_${estado}.run"
-last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
-last_output=`get_latest '../site/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_*.csv'`
+last_input=`get_latest '$absdatafolder/SRAGH*_{data}.csv'`
+last_output=`get_latest '../site/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
 
 if [[ -f $RUNFILE || ! $last_output < $last_input ]]; then
     # rodando ou atualizado
@@ -135,7 +145,7 @@ for geocode in ${geocodes[@]}; do
     # depois:
     # cd $absoutfolder/outputs; git clean -f
     # que *apaga* todos arquivos untracked (DANGER)
-    Rscript update_nowcasting.R --dir $absdatafolder/dados --escala $escala --sigla $estado --geocode $geocode --dataBase $today_ --outputDir $absoutfolder --trim $trim --updateGit $UPDATE_GIT_DATA_REPO
+    Rscript update_nowcasting.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataBase $today_ --outputDir $absoutfolder --trim $trim --updateGit $UPDATE_GIT_DATA_REPO
 
     ## mandando pro site
     path="${folder}/${estado}/${nomes[$geocode]}"
