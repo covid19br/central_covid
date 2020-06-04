@@ -84,7 +84,8 @@ popd
 
 RUNFILE="modelogro_site_${escala}_${estado}.run"
 last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
-last_output=`get_latest '../site/dados/projecao_leitos/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/curve_fits/curve_fits_*.Rds'`
+last_output=`get_latest '../site/dados/projecao_leitos/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/relatorios/*_relatorio_projecoes_demanda_hospitalar_srag.pdf'`
+
 last_output=`echo $last_output | sed 's/-/_/g'`
 
 if [[ -f $RUNFILE || ! $last_output < $last_input ]]; then
@@ -101,11 +102,12 @@ echo "Nova atualização modelogro ${today_} ${escala} ${estado} ${geocodes[@]}"
 fit_output_files="curve_fits_${todaydash}.Rds"
 reports_files="${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.pdf"
 hosp_output_files="hopitalized_UTI_${todaydash}.csv 
-hopitalized_${todaydash}.csv"
-web_output_files="last.update.modelogro.txt
-plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.}svg
+hopitalized_${todaydash}.csv 
+${todaydash}_internacoes_por_dia_{covid,srag}.csv"
+web_output_files="plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.,ex.}svg
 plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.html"
 # eval expande todos wildcards nas variáveis
+hosp_output_files=`eval echo $hosp_output_files`
 reports_files=`eval echo $reports_files`
 web_output_files=`eval echo $web_output_files`
 
@@ -134,14 +136,19 @@ for geocode in ${geocodes[@]}; do
     git add $fit_output_files
     popd
     
-    pushd ../dados/$munpath/reports
-    git add $reports_files
+    pushd ../dados/$munpath/relatorios
+    cp ${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf relatorio_demanda_hospitalar_srag.pdf
+    git add $reports_files relatorio_demanda_hospitalar_srag.pdf
     popd
     
     # pushd ../dados/$munpath/figures
     # git add $reports_files
     # popd
     
+    pushd ../web
+    git add last.update.modelogro.txt
+    popd
+
     pushd ../web/$munpath
     git add $web_output_files
     popd
