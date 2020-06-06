@@ -135,18 +135,20 @@ a intervalos de 7 dias (as datas indicam o fim de cada um desses intervalos). A 
 library(zoo)
 library(kableExtra)
 
-data <- list.files(paste0(output.dir, "Grande_Sao_Paulo", "/tabelas_nowcasting_para_grafico/"), pattern="r_efetivo_covid_.*.csv") %>%
-    # regex para catar data
-    stringr::str_extract("(19|20)\\d\\d[_ /.](0[1-9]|1[012])[_ /.](0[1-9]|[12][0-9]|3[01])") %>%
-    as.Date(format = "%Y_%m_%d") %>%
-    max(na.rm = TRUE) %>%
-    format("%Y_%m_%d")
-
-cat(paste("Baseado em banco de dados de", data))
+output.dir <- "../"
 
 zoos <- list()
 for (covid in c("covid", "srag")){
     for (drs in list.files(output.dir)){
+        data <- list.files(paste0(output.dir, drs, "/tabelas_nowcasting_para_grafico/"), pattern="r_efetivo_covid_.*.csv") %>%
+            # regex para catar data
+            stringr::str_extract("(19|20)\\d\\d[_ /.](0[1-9]|1[012])[_ /.](0[1-9]|[12][0-9]|3[01])") %>%
+            as.Date(format = "%Y_%m_%d") %>%
+            max(na.rm = TRUE) %>%
+            format("%Y_%m_%d")
+        if(is.na(data))
+            next
+
         file <- paste0(output.dir, drs, "/tabelas_nowcasting_para_grafico/r_efetivo_", covid, "_", data, ".csv")
         d <- read.csv(file)
         z <- zoo(d$Median.R, as.Date(d$data))
