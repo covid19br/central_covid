@@ -45,6 +45,16 @@ geocodes=( "$@" )
 # ATENÇÃO: não misturar municípios de estados diferentes!
 if [ $estado == "SP" ]; then
     datafolder="../dados/estado_${estado}/SRAG_hospitalizados/dados"
+    last_input_csv=`get_latest '$datafolder/SRAGH*_{data}.csv'`
+    last_input_zip=`get_latest '$datafolder/SRAGH*_{data}.zip'`
+    last_input=`echo -e "$last_input_csv\n$last_input_zip" | sort | tail -n1`
+    datafolder="../dados/SIVEP-Gripe"
+    last_input_nacional=`get_latest '$datafolder/SRAGH*_{data}.zip'`
+    if [[ $last_input_nacional > $last_input ]]; then
+        datafolder="../dados/SIVEP-Gripe"
+    else
+        datafolder="../dados/estado_${estado}/SRAG_hospitalizados/dados"
+    fi
 else
     datafolder="../dados/SIVEP-Gripe"
 fi
