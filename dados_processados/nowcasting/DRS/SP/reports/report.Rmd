@@ -55,7 +55,7 @@ for (i in DRS.to.include) {
 
     # pula os que não têm gráficos
     if (! file.exists(paste0(output.dir,regiao.nome,'/plots/plot_nowcast_srag.svg')))
-        continue
+        next
 
     cat(str_interp("# DRS ${regiao.id} - ${regiao.nome}\n\n"))
 
