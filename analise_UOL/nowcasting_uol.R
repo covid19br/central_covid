@@ -1,4 +1,4 @@
-###Análise UOL###
+  ###Análise UOL###
 #################
 if(!require(plyr)){install.packages("plyr"); library(plyr)}
 if(!require(tidyverse)){install.packages("tidyverse"); library(tidyverse)}
@@ -17,7 +17,7 @@ PRJROOT  = rprojroot::find_root(".here")
 
 source("./site/_src/fct/funcoes.R")
 
-data_ultimo_boletim<-as.Date("2020-05-29")
+data_ultimo_boletim<-as.Date("2020-06-05")
 
 # uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
 uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv")
@@ -39,33 +39,33 @@ p.uol <-
   theme(axis.text= element_text(size=14),
         axis.title = element_text(size=14))
 p.uol
-  
-uol2<-as.matrix(uol[,-1]) #variavel auxiliar
-rownames(uol2)<-uol$Data
-uol2<-normalize.rows(uol)
-
-uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
-uol_melted<-reshape::melt(uol, id.vars = "Data")
-
-
-p.uol.ridges <- ggplot(uol_melted, aes(x = Data, y = variable)) +
-  geom_joy(aes(colour = variable)) +
-  theme_ridges()+
-  xlab("Data de óbito")+
-  ylab("Boletins")+
-  ggtitle("Boletins Epidemiológicos - MS")
-p.uol.ridges
-
-ggplot(uol_melted, aes(x = Data, y = as.factor(variable), fill = ..x..)) +
-  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
-  scale_fill_viridis(name = "Óbitos por dia", option = "C") +
-  labs(title = 'Boletins Epidemiológicos Ministério da Saúde') +
-  theme_ridges() +
-  theme(
-    legend.position="none",
-    panel.spacing = unit(0.1, "lines"),
-    strip.text.x = element_text(size = 8)
-  )
+#   
+# uol2<-as.matrix(uol[,-1]) #variavel auxiliar
+# rownames(uol2)<-uol$Data
+# uol2<-normalize.rows(uol)
+# 
+# uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
+# uol_melted<-reshape::melt(uol, id.vars = "Data")
+# 
+# 
+# p.uol.ridges <- ggplot(uol_melted, aes(x = Data, y = variable)) +
+#   geom_joy(aes(colour = variable)) +
+#   theme_ridges()+
+#   xlab("Data de óbito")+
+#   ylab("Boletins")+
+#   ggtitle("Boletins Epidemiológicos - MS")
+# p.uol.ridges
+# 
+# ggplot(uol_melted, aes(x = Data, y = as.factor(variable), fill = ..x..)) +
+#   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+#   scale_fill_viridis(name = "Óbitos por dia", option = "C") +
+#   labs(title = 'Boletins Epidemiológicos Ministério da Saúde') +
+#   theme_ridges() +
+#   theme(
+#     legend.position="none",
+#     panel.spacing = unit(0.1, "lines"),
+#     strip.text.x = element_text(size = 8)
+#   )
 
 ##########################
 ##      NOWCASTING      ##
@@ -182,12 +182,12 @@ uol_final<-uol_final[, c("estimate", "lower", "upper")]
 uol_final2<-as.data.frame(cbind(uol_final, 
                                 "Data" = as.Date(uol_df2$Death_date, "%Y-%m-%d"), 
                                 "Boletim ultimo" = uol[,2]))
-write.csv(uol_final2, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05.csv", row.names = FALSE)
+write.csv(uol_final2, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06.csv", row.names = FALSE)
 uol_final3<-apply(t(uol_final2[,-4]), 1, cumsum)
 colnames(uol_final3)<-c("estimate Cumsum", "lower Cumsum", "upper Cumsum", "Boletim Cumsum")
 
 uol_final4<-as.data.frame(cbind("Data" = uol_final2$Data, uol_final2[,-4], uol_final3))
-write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05_cumsum.csv", row.names = FALSE)
+write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06_cumsum.csv", row.names = FALSE)
 
 
 p.prev.ic2 <- ggplot(uol_final4, aes(x = Data, y = `estimate`)) +
@@ -206,7 +206,7 @@ p.prev.ic.cumsum <- ggplot(uol_final4, aes(x = Data, y = `estimate Cumsum`)) +
     geom_line(data = uol_final4, aes(x = Data, y = `Boletim Cumsum`, color="Notificados"), lwd = 1.5) +
     geom_line(aes(col = "Estimado")) +
     geom_ribbon(aes(ymin =`lower Cumsum`, ymax = `upper Cumsum`), fill="red", alpha =0.15) +
-    xlab("Dia do Óbito") +
+      xlab("Dia do Óbito") +
     ylab("Nº de Óbitos Acumulados") +
     theme_bw() +
     theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
@@ -216,7 +216,7 @@ p.prev.ic.cumsum
 
 p.arrange<-ggpubr::ggarrange(p.prev.ic2, p.prev.ic.cumsum)
 p.arrange
-ggsave(p.annotate, filename = "./analise_UOL/plots/arrange_nowcasting_29_05.png", 
+ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_03_06.png", 
        dpi = 600, width = 9, height = 7)
 
 p.annotate<-annotate_figure(p.arrange,
@@ -226,5 +226,33 @@ p.annotate
 ggsave(p.annotate, filename = "./analise_UOL/plots/annotate_arrange_nowcasting_29_05.png", 
        dpi = 600, width = 9, height = 7)
 
-uol_final4<-uol_final4[,-c(2:5)]
-write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05.csv", row.names = FALSE)
+# uol_final5<-uol_final4[,-c(2:5)]
+# write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05.csv", row.names = FALSE)
+
+
+###########################
+######SALVANDO EM SVG######
+###########################
+# plots.para.atualizar<-p.prev.ic
+# filepath<-"./analise UOL/plots/plots SVG/sensibilidade_nowcasting_BE_MS_08_maio"
+plots.para.atualizar<-p.prev.ic.cumsum
+filepath<-"./analise_UOL/plots/plots_SVG/nowcasting_BE_MS_05_junho_cumsum"
+
+graph.svg <- plots.para.atualizar + theme(axis.text=element_text(size=6.65), # corrige a diferenca do tamanho do texto entre svg e html
+                                          plot.margin = margin(10, 0, 0, 7, "pt")) # corrige a margem inserida pelo plotly
+ggsave(paste(filepath,".svg",sep=""), plot = graph.svg, device = svg, scale = 1, width = 215, height = 146, units = "mm")
+# tamanho calculado usando ppi = 141.21
+# o tamanho do texto no placeholder deve ser um fator de 0.665 do tamanho original
+# large
+graph.sm.svg <- graph.svg + theme(axis.text=element_text(size=8.65)) # corrige a diferenca do tamanho do texto entre svg e html
+ggsave(paste(filepath,".lg.svg",sep=""), plot = graph.sm.svg, device = svg, scale = 1, width = 215, height = 146, units = "mm")
+# medium
+graph.sm.svg <- graph.svg + theme(axis.text=element_text(size=12.65)) # corrige a diferenca do tamanho do texto entre svg e html
+ggsave(paste(filepath,".md.svg",sep=""), plot = graph.sm.svg, device = svg, scale = 1, width = 215, height = 146, units = "mm")
+# small
+graph.sm.svg <- graph.svg + theme(axis.text=element_text(size=16.65)) # corrige a diferenca do tamanho do texto entre svg e html
+ggsave(paste(filepath,".sm.svg",sep=""), plot = graph.sm.svg, device = svg, scale = 1, width = 215, height = 146, units = "mm")
+# extra small
+graph.sm.svg <- graph.svg + theme(axis.text=element_text(size=20.65)) # corrige a diferenca do tamanho do texto entre svg e html
+ggsave(paste(filepath,".ex.svg",sep=""), plot = graph.sm.svg, device = svg, scale = 1, width = 215, height = 146, units = "mm")
+
