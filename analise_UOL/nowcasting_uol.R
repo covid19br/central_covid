@@ -255,4 +255,4 @@ ggsave(paste(filepath,".sm.svg",sep=""), plot = graph.sm.svg, device = svg, scal
 # extra small
 graph.sm.svg <- graph.svg + theme(axis.text=element_text(size=20.65)) # corrige a diferenca do tamanho do texto entre svg e html
 ggsave(paste(filepath,".ex.svg",sep=""), plot = graph.sm.svg, device = svg, scale = 1, width = 215, height = 146, units = "mm")
-
+  
