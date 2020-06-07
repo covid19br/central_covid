@@ -19,7 +19,6 @@ source("./site/_src/fct/funcoes.R")
 
 data_ultimo_boletim<-as.Date("2020-06-05")
 
-# uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
 uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv")
 ###SEGUIR IGUAL###
 
@@ -39,42 +38,12 @@ p.uol <-
   theme(axis.text= element_text(size=14),
         axis.title = element_text(size=14))
 p.uol
-#   
-# uol2<-as.matrix(uol[,-1]) #variavel auxiliar
-# rownames(uol2)<-uol$Data
-# uol2<-normalize.rows(uol)
-# 
-# uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
-# uol_melted<-reshape::melt(uol, id.vars = "Data")
-# 
-# 
-# p.uol.ridges <- ggplot(uol_melted, aes(x = Data, y = variable)) +
-#   geom_joy(aes(colour = variable)) +
-#   theme_ridges()+
-#   xlab("Data de óbito")+
-#   ylab("Boletins")+
-#   ggtitle("Boletins Epidemiológicos - MS")
-# p.uol.ridges
-# 
-# ggplot(uol_melted, aes(x = Data, y = as.factor(variable), fill = ..x..)) +
-#   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
-#   scale_fill_viridis(name = "Óbitos por dia", option = "C") +
-#   labs(title = 'Boletins Epidemiológicos Ministério da Saúde') +
-#   theme_ridges() +
-#   theme(
-#     legend.position="none",
-#     panel.spacing = unit(0.1, "lines"),
-#     strip.text.x = element_text(size = 8)
-#   )
 
 ##########################
 ##      NOWCASTING      ##
 ##########################
-# uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
 uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv") ##load da CSV Utilizada
-# uol<-as.data.frame(cbind(uol$Data, round(uol[,-1]))) ###Somente pra que tem preenchimento, pra arredondar os números###
 uol<-as.data.frame(uol)
-# uol$Data<-as.Date(uol$Data, format = "%d/%m/%Y")
 uol2<-uol #variavel auxiliar
 uol2[is.na(uol2)] <- 0 ##preenchendo com 0 onde não há dados ###
 uol2.1<-uol2 ###variavel auxiliar
@@ -219,16 +188,12 @@ p.arrange
 ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_03_06.png", 
        dpi = 600, width = 9, height = 7)
 
-p.annotate<-annotate_figure(p.arrange,
-                top = text_grob("Nowcasting via boletins epidemiológicos do ministério da Saúde", color = "black", face = "bold", size = 14)
-)
-p.annotate
-ggsave(p.annotate, filename = "./analise_UOL/plots/annotate_arrange_nowcasting_29_05.png", 
-       dpi = 600, width = 9, height = 7)
-
-# uol_final5<-uol_final4[,-c(2:5)]
-# write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_29_05.csv", row.names = FALSE)
-
+# p.annotate<-annotate_figure(p.arrange,
+#                 top = text_grob("Nowcasting via boletins epidemiológicos do ministério da Saúde", color = "black", face = "bold", size = 14)
+# )
+# p.annotate
+# ggsave(p.annotate, filename = "./analise_UOL/plots/annotate_arrange_nowcasting_29_05.png", 
+#        dpi = 600, width = 9, height = 7)
 
 ###########################
 ######SALVANDO EM SVG######
@@ -255,4 +220,3 @@ ggsave(paste(filepath,".sm.svg",sep=""), plot = graph.sm.svg, device = svg, scal
 # extra small
 graph.sm.svg <- graph.svg + theme(axis.text=element_text(size=20.65)) # corrige a diferenca do tamanho do texto entre svg e html
 ggsave(paste(filepath,".ex.svg",sep=""), plot = graph.sm.svg, device = svg, scale = 1, width = 215, height = 146, units = "mm")
-  
