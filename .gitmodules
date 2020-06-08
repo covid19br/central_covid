@@ -12,3 +12,6 @@
 [submodule "dados/estado_SP"]
 	path = dados/estado_SP
 	url = git@github.com:covid19br/estado_SP.git
+[submodule "dados/estado_PB"]
+	path = dados/estado_PB
+	url = git@github.com:covid19br/estado_PB.git
