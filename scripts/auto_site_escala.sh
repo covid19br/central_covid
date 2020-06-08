@@ -142,7 +142,8 @@ plot_nowcast_{,cum_}{,ob_}{covid,srag}{,.ex,.lg,.md,.sm}.svg
 plot_tempo_dupl_{,ob_}{covid,srag}.html
 plot_tempo_dupl_{,ob_}{covid,srag}{,.ex,.lg,.md,.sm}.svg
 plot_estimate_R0_{covid,srag}.html
-plot_estimate_R0_{covid,srag}{,.ex,.lg,.md,.sm}.svg"
+plot_estimate_R0_{covid,srag}{,.ex,.lg,.md,.sm}.svg
+data_atualizacao_{,obitos_}{covid,srag}.csv"
 # eval expande todos wildcards nas variáveis
 output_files=`eval echo $output_files`
 web_output_files=`eval echo $web_output_files`
