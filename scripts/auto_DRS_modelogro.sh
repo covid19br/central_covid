@@ -74,7 +74,7 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     # gera relatório unificado
     pdfunite projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf ../reports/projecao_leitos_srag_${todaydash}.pdf &&
     git pull &&
-    git add reports/projecao_leitos_srag_${todaydash}.pdf &&
+    git add ..reports/projecao_leitos_srag_${todaydash}.pdf &&
     git commit -m ":robot: relatório unificado projecao leitos ${todaydash}" &&
     git push &&
     popd
