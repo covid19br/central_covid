@@ -21,9 +21,12 @@ else
     absdatafolder="$PWD/$datafolder"
 fi
 
-today=`LANG=en date +'%b %-d'`
-today_=`date +'%Y_%m_%d'`
-todaydash=`date +'%Y-%m-%d'`
+#today=`LANG=en date +'%b %-d'`
+#today_=`date +'%Y_%m_%d'`
+#todaydash=`date +'%Y-%m-%d'`
+today='Jun 6'
+today_='2020_06_06'
+todaydash='2020-06-06'
 
 # csv pode já ter sido processado
 #csv="$absdatafolder/dados/Pacientes_internados_com_SRAG_data${todaydash}.csv"
