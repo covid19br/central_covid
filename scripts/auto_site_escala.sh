@@ -15,22 +15,13 @@ USO: $0 [escala] [estado] [trim] {geocodes}
 "
 }
 
-# cuidado: argumento precisa ter aspas *simples* pra não ser expandido
-# data deve vir no formato YYYY_MM_DD no nome do arquivo
-get_latest(){
-    pattern=`basename "$1"`
-    lspat=`echo $1 | sed 's/{data}/*/'`
-    greppat=`echo $pattern | sed 's/*/.*/g; s/{data}/.*/'`
-    sedpat=`echo $pattern | sed 's/*/.*/g; s/{data}/\\\\([0-9][0-9][0-9][0-9]_[0-9][0-9]_[0-9][0-9]\\\\)/'`
-    ls `eval echo $lspat` | grep "$greppat" | sed  's/^.*'$sedpat'/\1/' | sort -gr | head -n 1
-}
-
 if [ ${#@} -lt 4 ]; then
     usage
     exit 1
 fi
 
 SCRIPTROOT=$PWD
+source functions.sh
 
 estado="SP"
 
@@ -41,84 +32,48 @@ trim=$3
 shift 3
 geocodes=( "$@" )
 
-# cada estado pode ter uma base diferente
-# ATENÇÃO: não misturar municípios de estados diferentes!
-if [ $estado == "SP" ]; then
-    datafolder="../dados/estado_${estado}/SRAG_hospitalizados/dados"
-    last_input_csv=`get_latest '$datafolder/SRAGH*_{data}.csv'`
-    last_input_zip=`get_latest '$datafolder/SRAGH*_{data}.zip'`
-    last_input=`echo -e "$last_input_csv\n$last_input_zip" | sort | tail -n1`
-    datafolder="../dados/SIVEP-Gripe"
-    last_input_nacional=`get_latest '$datafolder/SRAGH*_{data}.zip'`
-    if [[ $last_input_nacional > $last_input ]]; then
-        datafolder="../dados/SIVEP-Gripe"
-    else
-        datafolder="../dados/estado_${estado}/SRAG_hospitalizados/dados"
-    fi
-else
-    datafolder="../dados/SIVEP-Gripe"
-fi
-Rfolder="../nowcasting"
-outfolder="../dados_processados/nowcasting"
-# convertendo caminhos relativos em absolutos
-# realpath é mais profissa, mas não é garantido ter em todo lugar
-if [ ${datafolder:0:1} = '/' ]; then
-    absdatafolder=$datafolder
-else
-    absdatafolder="$PWD/$datafolder"
-fi
-if [ ${outfolder:0:1} = '/' ]; then
-    absoutfolder=$outfolder
-else
-    absoutfolder="$PWD/$outfolder"
-fi
-
-
 # atualiza repo onde dados estão?
 UPDATE_GIT_DATA_REPO=TRUE
 
-if [ $escala == "municipio" ]; then
-    folder="municipios"
-elif [ $escala == "drs" ]; then
-    folder="DRS"
-elif [ $escala == "meso" ]; then
-    folder="mesorregioes"
-elif [ $escala == "micro" ]; then
-    folder="microrregioes"
-else
+Rfolder="../nowcasting"
+SITEfolder="../site"
+abssitefolder=`get_abspath $SITEfolder`
+outfolder="../dados_processados/nowcasting"
+absoutfolder=`get_abspath $outfolder`
+
+folder=`get_folder $escala`
+if [ -z $folder ]; then
     usage
     exit 1
 fi
 
-# associative array of names
-# requires iconv
 declare -A nomes
-for geocode in ${geocodes[@]}; do
-    if [ $escala == "municipio" ]; then
-        nomes[$geocode]=`awk -F, '/'"$geocode"'/ {gsub(/"/, "", $13); print $13}' ../nowcasting/dados/geocode_ibge.csv`
-    elif [ $escala == "drs" ]; then
-        nomes[$geocode]=`awk -F, '{ if($2 == '"$geocode"') {gsub(/"/, "", $5); print $5}}' ../nowcasting/dados/DRS_SP.csv | head -n1`
-    elif [ $escala == "meso" ]; then
-        nomes[$geocode]=`awk -F, '{if($5 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $6; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
-    elif [ $escala == "micro" ]; then
-        nomes[$geocode]=`awk -F, '{if($3 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $4; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
-    fi
-done
+get_names nomes $escala "${geocodes[@]}"
+
+## pastas de dados
+# cada estado pode ter uma base diferente
+# ATENÇÃO: não misturar municípios de estados diferentes!
+dados_estado="../dados/estado_${estado}/SRAG_hospitalizados/dados"
 
 # pull do meta-repo: *DANGER HERE*
 # este pull é pra você poder atualizar o meta-repo depois - se tiver base nova
 # o commit do submodulo dele estará *desatualizado*
 git pull --recurse-submodules --ff-only
-pushd $absdatafolder
-# AQUI pegamos alterações novas, sem detached HEAD no submodule
-git checkout master && git pull --ff-only
-popd
+if [ -d $dados_estado ]; then
+    pushd $dados_estado
+    # AQUI pegamos alterações novas, sem detached HEAD no submodule
+    git checkout master && git pull --ff-only
+    popd
+fi
+
+read last_input datafolder < <(
+    compare_get_latest "$dados_estado/SRAGH*_{data}.csv" \
+                       "$dados_estado/SRAGH*_{data}.zip")
+#                       "../dados/SIVEP-Gripe/SRAGH*_{data}.zip")
+absdatafolder=`get_abspath $datafolder`
 
 RUNFILE="nowcasting_site_${folder}_${estado}.run"
-last_input_csv=`get_latest '$absdatafolder/SRAGH*_{data}.csv'`
-last_input_zip=`get_latest '$absdatafolder/SRAGH*_{data}.zip'`
-last_input=`echo -e "$last_input_csv\n$last_input_zip" | sort | tail -n1`
-last_output=`get_latest '../site/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
+last_output=`get_latest ${SITEfolder}'/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
 
 if [[ -f $RUNFILE || ! $last_output < $last_input ]]; then
     # rodando ou atualizado
@@ -165,7 +120,7 @@ for geocode in ${geocodes[@]}; do
 
     # atualiza repo site
     # isto é feito a cada passo do loop - mais seguro?
-    pushd $SCRIPTROOT/../site/_src
+    pushd $abssitefolder/_src
     git pull --ff-only
 
     # cria destino se não existe
@@ -174,7 +129,7 @@ for geocode in ${geocodes[@]}; do
     fi
 
     pushd $absoutfolder/$path/tabelas_nowcasting_para_grafico/
-    cp $output_files $SCRIPTROOT/../site/dados/$path/tabelas_nowcasting_para_grafico/
+    cp $output_files $abssitefolder/dados/$path/tabelas_nowcasting_para_grafico/
     popd
 
     Rscript update_plots_nowcasting.R --escala $escala --sigla $estado --geocode $geocode --dataBase $today_
