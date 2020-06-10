@@ -13,7 +13,7 @@ for drs in ${nDRS}; do
 done
 
 datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
-outfolder="../dados/estado_${estado}/SRAG_hospitalizados/outputs"
+outfolder="../site/dados"
 Rfolder="../nowcasting"
 if [ ${datafolder:0:1} = '/' ]; then
     absdatafolder=$datafolder
@@ -21,16 +21,16 @@ else
     absdatafolder="$PWD/$datafolder"
 fi
 
-#today=`LANG=en date +'%b %-d'`
-#today_=`date +'%Y_%m_%d'`
-#todaydash=`date +'%Y-%m-%d'`
-today='Jun 6'
-today_='2020_06_06'
-todaydash='2020-06-06'
+today=`LANG=en date +'%b %-d'`
+today_=`date +'%Y_%m_%d'`
+todaydash=`date +'%Y-%m-%d'`
+#today='Jun 6'
+#today_='2020_06_08'
+#todaydash='2020-06-08'
 
 # csv pode já ter sido processado
 #csv="$absdatafolder/dados/Pacientes_internados_com_SRAG_data${todaydash}.csv"
-csv2="$absdatafolder/dados/SRAGH_${today_}.csv"
+csv2="$absdatafolder/dados/SRAGH_${today_}.zip"
 out="$absdatafolder/reports/projecao_leitos_srag_${todaydash}.pdf"
 RUNFILE="projecao_leitos_DRS_${estado}.run"
 
@@ -70,11 +70,11 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     done
     popd
 
-    pushd $outfolder
+    pushd ../dados/estado_${estado}/SRAG_hospitalizados
     # gera relatório unificado
-    pdfunite projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf ../reports/projecao_leitos_srag_${todaydash}.pdf &&
+    pdfunite ../../../site/dados/projecao_leitos/DRS/$estado/*/relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_srag.pdf reports/projecao_leitos_srag_${todaydash}.pdf &&
     git pull &&
-    git add ..reports/projecao_leitos_srag_${todaydash}.pdf &&
+    git add reports/projecao_leitos_srag_${todaydash}.pdf &&
     git commit -m ":robot: relatório unificado projecao leitos ${todaydash}" &&
     git push &&
     popd
