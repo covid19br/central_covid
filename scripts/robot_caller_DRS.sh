@@ -18,8 +18,9 @@ for geocode in `seq 1 17`; do
     echo "Rodando ./auto_site_escala.sh municipio $estado $trim $geocode"
     ./auto_site_escala.sh drs $estado $trim $geocode
     # atualiza plots
+    latest=`get_latest '../dados_processados/nowcasting/DRS/SP/Grande_Sao_Paulo/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
     pushd $Rfolder
-    Rscript update_nowcasting.R --escala drs --sigla $estado --geocode $geocode --dataBase $today_ --outputDir ../dados_processados/nowcasting --trim $trim --updateGit TRUE --plot TRUE
+    Rscript update_nowcasting.R --escala drs --sigla $estado --geocode $geocode --dataBase $latest --outputDir ../dados_processados/nowcasting --trim $trim --updateGit TRUE --plot TRUE
     popd
 done
 
