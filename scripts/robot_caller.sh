@@ -8,7 +8,7 @@ fi
 
 touch $RUNFILE
 
-cat municipios.txt | grep "SP" | while read line; do
+cat municipios.txt | while read line; do
     estado=${line%% *}
     geocode=${line#* }
     echo "Rodando ./auto_site_escala.sh municipio $estado 2 $geocode"
