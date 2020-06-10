@@ -34,7 +34,8 @@ escala=$1
 shift
 geocodes=( "$@" )
 
-datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
+#datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
+datafolder="../dados/SIVEP-Gripe"
 Rfolder="../nowcasting"
 # convertendo caminhos relativos em absolutos
 # realpath é mais profissa, mas não é garantido ter em todo lugar
@@ -83,7 +84,8 @@ git checkout master && git pull --ff-only
 popd
 
 RUNFILE="modelogro_site_${escala}_${estado}.run"
-last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
+#last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
+last_input=`get_latest '$absdatafolder/SRAGHospitalizado_*.zip'`
 last_output=`get_latest '../site/dados/projecao_leitos/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/relatorios/*_relatorio_projecoes_demanda_hospitalar_srag.pdf'`
 
 last_output=`echo $last_output | sed 's/-/_/g'`
@@ -104,7 +106,8 @@ reports_files="${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.
 hosp_output_files="hopitalized_UTI_${todaydash}.csv 
 hopitalized_${todaydash}.csv 
 ${todaydash}_internacoes_por_dia_{covid,srag}.csv"
-web_output_files="plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.,ex.}svg
+web_output_files="last.update.modelogro.txt
+plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.{,lg.,md.,sm.,ex.}svg
 plot.{covid,srag}.{leitos,uti}.forecast.{exp,logistic}.html"
 # eval expande todos wildcards nas variáveis
 hosp_output_files=`eval echo $hosp_output_files`
@@ -116,7 +119,7 @@ touch $RUNFILE
 pushd $Rfolder
 for geocode in ${geocodes[@]}; do
     ## nowcasting
-    Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala $escala --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
+    Rscript update_projecao_leitos.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
 
     ## mandando pro site
     munpath="projecao_leitos/${folder}/${estado}/${nomes[$geocode]}"
@@ -144,10 +147,6 @@ for geocode in ${geocodes[@]}; do
     # pushd ../dados/$munpath/figures
     # git add $reports_files
     # popd
-    
-    pushd ../web
-    git add last.update.modelogro.txt
-    popd
 
     pushd ../web/$munpath
     git add $web_output_files
