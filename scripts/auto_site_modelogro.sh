@@ -34,8 +34,8 @@ escala=$1
 shift
 geocodes=( "$@" )
 
-#datafolder="../dados/estado_${estado}/SRAG_hospitalizados"
-datafolder="../dados/SIVEP-Gripe"
+datafolder="../dados/estado_${estado}/SRAG_hospitalizados/dados"
+#datafolder="../dados/SIVEP-Gripe"
 Rfolder="../nowcasting"
 # convertendo caminhos relativos em absolutos
 # realpath é mais profissa, mas não é garantido ter em todo lugar
@@ -84,8 +84,8 @@ git checkout master && git pull --ff-only
 popd
 
 RUNFILE="modelogro_site_${escala}_${estado}.run"
-#last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
-last_input=`get_latest '$absdatafolder/SRAGHospitalizado_*.zip'`
+last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
+#last_input=`get_latest '$absdatafolder/SRAGHospitalizado_*.zip'`
 last_output=`get_latest '../site/dados/projecao_leitos/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/relatorios/*_relatorio_projecoes_demanda_hospitalar_srag.pdf'`
 
 last_output=`echo $last_output | sed 's/-/_/g'`
