@@ -18,7 +18,7 @@ get_latest(){
     pattern=`basename "$1"`
     greppat=`echo $pattern | sed 's/*/.*/'`
     sedpat=`echo $pattern | sed 's/*/\\\\(.*\\\\)/'`
-    ls `eval echo $1` | grep "$greppat" | sed  's/^.*'$sedpat'/\1/' | sort -gr | head -n 1
+    ls `eval echo $1` | grep "$greppat" | xargs -I{} basename {} | sed  's/'$sedpat'/\1/' | sort -gr | head -n 1
 }
 
 if [ ${#@} -lt 2 ]; then
