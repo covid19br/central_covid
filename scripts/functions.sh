@@ -36,15 +36,17 @@ get_folder(){
 # requer iconv para escalas micro e meso
 get_names(){
     declare -n my_local_array="$1"
-    for geocode in $3; do
-        if [ $2 == "municipio" ]; then
+    local escala=$2
+    shift 2
+    for geocode in $@; do
+        if [ $escala == "municipio" ]; then
             my_local_array[$geocode]=`awk -F, '/'"$geocode"'/ {gsub(/"/, "", $13); print $13}' ../nowcasting/dados/geocode_ibge.csv`
-        elif [ $2 == "drs" ]; then
+        elif [ $escala == "drs" ]; then
             # TODO: DRS de outros estados
             my_local_array[$geocode]=`awk -F, '{ if($2 == '"$geocode"') {gsub(/"/, "", $5); print $5}}' ../nowcasting/dados/DRS_SP.csv | head -n1`
-        elif [ $2 == "meso" ]; then
+        elif [ $escala == "meso" ]; then
             my_local_array[$geocode]=`awk -F, '{if($5 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $6; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
-        elif [ $2 == "micro" ]; then
+        elif [ $escala == "micro" ]; then
             my_local_array[$geocode]=`awk -F, '{if($3 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $4; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
         fi
     done

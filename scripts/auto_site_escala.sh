@@ -23,8 +23,6 @@ fi
 SCRIPTROOT=$PWD
 source functions.sh
 
-estado="SP"
-
 escala=$1
 # TODO: discutir tamanho do trim (atual: 2 pra municipio, 5 pra DRS?)
 estado=$2
@@ -47,7 +45,7 @@ if [ -z $folder ]; then
     exit 1
 fi
 
-declare -A nomes
+declare -A nomes=()
 get_names nomes $escala "${geocodes[@]}"
 
 ## pastas de dados
@@ -104,11 +102,16 @@ touch $RUNFILE
 
 pushd $Rfolder
 for geocode in ${geocodes[@]}; do
-    last_output=`get_latest ${SITEfolder}'/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[$geocode]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
+    if [ -z ${nomes[$geocode]} ]; then
+        echo $escala $geocode não encontrado
+        rm $RUNFILE
+        exit 1
+    fi
+    last_output=`get_latest ${SITEfolder}'/dados/'${folder}'/'${estado}'/'${nomes[$geocode]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
     if [[ ! $last_output < $last_input ]]; then
         continue
     fi
-    echo "Nova atualização nowcasting ${today_} ${escala} ${estado} ${geocodes[$geocode]}"
+    echo "Nova atualização nowcasting ${today_} ${escala} ${estado} ${nomes[$geocode]}"
 
     ## nowcasting
     # ATENÇÃO: se UPDATE_GIT_DATA_REPO for FALSE dados *não são* salvos,

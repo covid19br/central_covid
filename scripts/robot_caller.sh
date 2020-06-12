@@ -16,9 +16,11 @@ while read -r estado geocode; do
     estado_geo=`get_estado municipio $geocode`
     if [ -z $estado_geo ]; then
         echo "Município $geocode não encontrado"
+        rm $RUNFILE
         exit 1
     elif [ "$estado_geo" != "$estado" ]; then
         echo "Município $geocode pertence a ${estado_geo}, não a $estado"
+        rm $RUNFILE
         exit 1
     fi
     estados[$estado]="${estados[$estado]} $geocode"
@@ -26,7 +28,7 @@ done <<<`cat municipios.txt`
 
 for estado in "${!estados[@]}"; do
     echo "Rodando ./auto_site_escala.sh municipio $estado $trim ${estados[$estado]}"
-    #./auto_site_escala.sh municipio $estado $trim ${estados[$estado]}
+    ./auto_site_escala.sh municipio $estado $trim ${estados[$estado]}
 done
 
 rm $RUNFILE
