@@ -50,6 +50,22 @@ get_names(){
     done
 }
 
+# recebe
+#   - escala (municipio|micro|meso)
+#   - geocode
+# retorna sigla do estado
+#
+# não funciona pra DRS, só municipio, micro e meso
+get_estado(){
+    if [ $1 == "municipio" ]; then
+        awk -F, '/'"$geocode"'/ {gsub(/"/, "", $8); print $8}' ../nowcasting/dados/geocode_ibge.csv | head -n1
+    elif [ $1 == "meso" ]; then
+        awk -F, '{ if($5 == '"$2"') {gsub(/"/, "", $8); print $8}}' ../nowcasting/dados/geocode_ibge.csv | head -n1
+    elif [ $1 == "micro" ]; then
+        awk -F, '{ if($3 == '"$2"') {gsub(/"/, "", $8); print $8}}' ../nowcasting/dados/geocode_ibge.csv | head -n1
+    fi
+}
+
 # recebe lista de patterns (ver doc get_latest)
 # retorna maior data e *pasta* (não pattern) correspondente
 compare_get_latest(){

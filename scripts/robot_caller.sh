@@ -1,6 +1,7 @@
 #!/bin/bash
 
 RUNFILE="nowcasting_robot_caller.run"
+trim=5
 
 if [ -f $RUNFILE ]; then
     exit
@@ -8,11 +9,24 @@ fi
 
 touch $RUNFILE
 
-cat municipios.txt | while read line; do
-    estado=${line%% *}
-    geocode=${line#* }
-    echo "Rodando ./auto_site_escala.sh municipio $estado 2 $geocode"
-    ./auto_site_escala.sh municipio $estado 2 $geocode
+source functions.sh
+declare -A estados=()
+
+while read -r estado geocode; do
+    estado_geo=`get_estado municipio $geocode`
+    if [ -z $estado_geo ]; then
+        echo "Município $geocode não encontrado"
+        exit 1
+    elif [ "$estado_geo" != "$estado" ]; then
+        echo "Município $geocode pertence a ${estado_geo}, não a $estado"
+        exit 1
+    fi
+    estados[$estado]="${estados[$estado]} $geocode"
+done <<<`cat municipios.txt`
+
+for estado in "${!estados[@]}"; do
+    echo "Rodando ./auto_site_escala.sh municipio $estado $trim ${estados[$estado]}"
+    #./auto_site_escala.sh municipio $estado $trim ${estados[$estado]}
 done
 
 rm $RUNFILE

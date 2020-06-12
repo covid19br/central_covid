@@ -73,17 +73,14 @@ read last_input datafolder < <(
 absdatafolder=`get_abspath $datafolder`
 
 RUNFILE="nowcasting_site_${folder}_${estado}.run"
-last_output=`get_latest ${SITEfolder}'/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
 
-if [[ -f $RUNFILE || ! $last_output < $last_input ]]; then
+if [[ -f $RUNFILE  ]]; then
     # rodando ou atualizado
     exit
 fi
 
 today_=$last_input
 todaydash=`echo $today_ | sed 's/_/-/g'`
-
-echo "Nova atualização nowcasting ${today_} ${escala} ${estado} ${geocodes[@]}"
 
 # esta é arcana...
 output_files="nowcasting_{acumulado,diario}_{,obitos_}{covid,srag}_${today_}.csv
@@ -107,6 +104,12 @@ touch $RUNFILE
 
 pushd $Rfolder
 for geocode in ${geocodes[@]}; do
+    last_output=`get_latest ${SITEfolder}'/dados/'${folder}'/'${estado}'/'${nomes[${geocodes[$geocode]}]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
+    if [[ ! $last_output < $last_input ]]; then
+        continue
+    fi
+    echo "Nova atualização nowcasting ${today_} ${escala} ${estado} ${geocodes[$geocode]}"
+
     ## nowcasting
     # ATENÇÃO: se UPDATE_GIT_DATA_REPO for FALSE dados *não são* salvos,
     # permanecem como cópia local, suja. Se deseja limpar, pode rodar
