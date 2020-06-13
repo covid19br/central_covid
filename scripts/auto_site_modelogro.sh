@@ -84,7 +84,7 @@ git checkout master && git pull --ff-only
 popd
 
 RUNFILE="modelogro_site_${escala}_${estado}.run"
-last_input=`get_latest '$absdatafolder/dados/SRAGH_*.csv'`
+last_input=`get_latest '$absdatafolder/SRAGH_*.zip'`
 #last_input=`get_latest '$absdatafolder/SRAGHospitalizado_*.zip'`
 last_output=`get_latest '../site/dados/projecao_leitos/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/relatorios/*_relatorio_projecoes_demanda_hospitalar_srag.pdf'`
 
