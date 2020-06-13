@@ -14,9 +14,10 @@ source functions.sh
 estado="SP"
 trim=5
 
+echo Rodando ./auto_site_escala.sh municipio $estado $trim `seq 1 17`
+./auto_site_escala.sh drs $estado $trim `seq 1 17`
+
 for geocode in `seq 1 17`; do
-    echo "Rodando ./auto_site_escala.sh municipio $estado $trim $geocode"
-    ./auto_site_escala.sh drs $estado $trim $geocode
     # atualiza plots
     latest=`get_latest '../dados_processados/nowcasting/DRS/SP/Grande_Sao_Paulo/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
     pushd $Rfolder
@@ -35,6 +36,5 @@ git add "relatorio_${latest}.html" &&
 git commit -m ":robot: relatório DRS ${estado} de ${latest}" &&
 git push
 popd
-
 
 rm $RUNFILE
