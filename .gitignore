@@ -43,6 +43,7 @@ central_covid.Rproj
 .*.swp
 
 /dados/SIVEP-Gripe/*.xlsx
+/dados/eSUS-VE/*.csv
 #post
 /dados_processados/nowcasting/*/*/*/output_nowcasting/*_post_*.csv
 /nowcasting
