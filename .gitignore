@@ -48,4 +48,5 @@ central_covid.Rproj
 /dados_processados/nowcasting/*/*/*/output_nowcasting/*_post_*.csv
 /nowcasting
 /site
+/R_eff
 /scripts/*.run
