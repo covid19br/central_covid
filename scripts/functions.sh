@@ -8,9 +8,9 @@
 # data deve vir no formato YYYY_MM_DD no nome do arquivo
 get_latest(){
     local pattern=`basename "$1"`
-    local lspat=`echo $1 | sed 's/{data}/*/'`
-    local greppat=`echo $pattern | sed 's/*/.*/g; s/{data}/.*/'`
-    local sedpat=`echo $pattern | sed 's/*/.*/g; s/{data}/\\\\([0-9][0-9][0-9][0-9]_[0-9][0-9]_[0-9][0-9]\\\\)/'`
+    local lspat=`echo $1 | sed 's/{data\(dash\)*}/*/'`
+    local greppat=`echo $pattern | sed 's/*/.*/g; s/{data\(dash\)*}/.*/'`
+    local sedpat=`echo $pattern | sed 's/*/.*/g; s/{data}/\\\\([0-9][0-9][0-9][0-9]_[0-9][0-9]_[0-9][0-9]\\\\)/; s/{datadash}/\\\\([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\\\\)/'`
     ls `eval echo $lspat` | grep "$greppat" | sed  's/^.*'$sedpat'/\1/' | sort -gr | head -n 1
 }
 

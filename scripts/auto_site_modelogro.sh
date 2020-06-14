@@ -13,92 +13,67 @@ USO: $0 [escala] {geocodes}
 "
 }
 
-# careful: argument must be inside *single* quotes to avoid being expanded
-get_latest(){
-    pattern=`basename "$1"`
-    greppat=`echo $pattern | sed 's/*/.*/'`
-    sedpat=`echo $pattern | sed 's/*/\\\\(.*\\\\)/'`
-    ls `eval echo $1` | grep "$greppat" | xargs -I{} basename {} | sed  's/'$sedpat'/\1/' | sort -gr | head -n 1
-}
-
 if [ ${#@} -lt 2 ]; then
     usage
     exit 1
 fi
 
 SCRIPTROOT=$PWD
-
-estado="SP"
+source functions.sh
 
 escala=$1
 shift
 geocodes=( "$@" )
 
-datafolder="../dados/estado_${estado}/SRAG_hospitalizados/dados"
-#datafolder="../dados/SIVEP-Gripe"
 Rfolder="../nowcasting"
-# convertendo caminhos relativos em absolutos
-# realpath é mais profissa, mas não é garantido ter em todo lugar
-if [ ${datafolder:0:1} = '/' ]; then
-    absdatafolder=$datafolder
-else
-    absdatafolder="$PWD/$datafolder"
-fi
+SITEfolder="../site"
+abssitefolder=`get_abspath $SITEfolder`
+outfolder="$SITEfolder/dados"
+absoutfolder=`get_abspath $outfolder`
 
-if [ $escala == "municipio" ]; then
-    folder="municipios"
-elif [ $escala == "drs" ]; then
-    folder="DRS"
-elif [ $escala == "meso" ]; then
-    folder="mesorregioes"
-elif [ $escala == "micro" ]; then
-    folder="microrregioes"
-else
+folder=`get_folder $escala`
+if [ -z $folder ]; then
     usage
     exit 1
 fi
 
-# associative array of names
-# TODO: testar micro- e mesorregiões
-# requires iconv
-declare -A nomes
-for geocode in ${geocodes[@]}; do
-    if [ $escala == "municipio" ]; then
-        nomes[$geocode]=`awk -F, '/'"$geocode"'/ {gsub(/"/, "", $13); print $13}' ../nowcasting/dados/geocode_ibge.csv`
-    elif [ $escala == "drs" ]; then
-        nomes[$geocode]=`awk -F, '{ if($2 == '"$geocode"') {gsub(/"/, "", $5); print $5}}' ../nowcasting/dados/DRS_SP.csv | head -n1`
-    elif [ $escala == "meso" ]; then
-        nomes[$geocode]=`awk -F, '{if($5 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $6; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
-    elif [ $escala == "micro" ]; then
-        nomes[$geocode]=`awk -F, '{if($3 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $4; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
-    fi
-done
+# escala = drs assume estado = SP
+declare -A nomes=()
+get_names nomes $escala "${geocodes[@]}"
+
+# pega o estado do 1o geocode
+# ATENÇÃO: não misturar municípios de estados diferentes!
+estado=`get_estado $escala ${geocodes[1]}`
+
+## pastas de dados
+# cada estado pode ter uma base diferente
+dados_estado="../dados/estado_${estado}/SRAG_hospitalizados/dados"
 
 # pull do meta-repo: *DANGER HERE*
 # este pull é pra você poder atualizar o meta-repo depois - se tiver base nova
 # o commit do submodulo dele estará *desatualizado*
 git pull --recurse-submodules --ff-only
-pushd $absdatafolder
-# AQUI pegamos alterações novas, sem detached HEAD no submodule
-git checkout master && git pull --ff-only
-popd
-
-RUNFILE="modelogro_site_${escala}_${estado}.run"
-last_input=`get_latest '$absdatafolder/SRAGH_*.zip'`
-#last_input=`get_latest '$absdatafolder/SRAGHospitalizado_*.zip'`
-last_output=`get_latest '../site/dados/projecao_leitos/'${folder}'/'${estado}'/'${nomes[${geocodes[0]}]}'/relatorios/*_relatorio_projecoes_demanda_hospitalar_srag.pdf'`
-
-last_output=`echo $last_output | sed 's/-/_/g'`
-
-if [[ -f $RUNFILE || ! $last_output < $last_input ]]; then
-    # rodando ou atualizado
-    exit
+if [ -d $dados_estado ]; then
+    pushd $dados_estado
+    # AQUI pegamos alterações novas, sem detached HEAD no submodule
+    git checkout master && git pull --ff-only
+    popd
 fi
 
+read last_input datafolder < <(
+    compare_get_latest "$dados_estado/SRAGH*_{data}.csv" \
+                       "$dados_estado/SRAGH*_{data}.zip" \
+                       "../dados/SIVEP-Gripe/SRAGH*_{data}.zip")
+absdatafolder=`get_abspath $datafolder`
 today_=$last_input
 todaydash=`echo $today_ | sed 's/_/-/g'`
 
-echo "Nova atualização modelogro ${today_} ${escala} ${estado} ${geocodes[@]}"
+RUNFILE="modelogro_site_${escala}_${estado}.run"
+if [[ -f $RUNFILE  ]]; then
+    # rodando
+    exit
+fi
+touch $RUNFILE
 
 # esta é arcana...
 fit_output_files="curve_fits_${todaydash}.Rds"
@@ -114,19 +89,31 @@ hosp_output_files=`eval echo $hosp_output_files`
 reports_files=`eval echo $reports_files`
 web_output_files=`eval echo $web_output_files`
 
-touch $RUNFILE
-
 pushd $Rfolder
 for geocode in ${geocodes[@]}; do
+    if [ -z ${nomes[$geocode]} ]; then
+        echo $escala $geocode não encontrado
+        rm $RUNFILE
+        exit 1
+    fi
+
+    munpath="projecao_leitos/${folder}/${estado}/${nomes[$geocode]}"
+
+    last_output=`get_latest ${SITEfolder}'/dados/'${munpath}'/relatorios/{datadash}_relatorio_projecoes_demanda_hospitalar_srag.pdf'`
+    last_output=`echo $last_output | sed 's/-/_/g'`
+    if [[ ! $last_output < $last_input ]]; then
+        continue
+    fi
+
+    echo "Nova atualização modelogro ${today_} ${escala} ${estado} ${nomes[$geocode]}"
+
     ## nowcasting
-    Rscript update_projecao_leitos.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir ../site/dados/ --check_report TRUE
+    Rscript update_projecao_leitos.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir $absoutfolder --check_report TRUE
 
     ## mandando pro site
-    munpath="projecao_leitos/${folder}/${estado}/${nomes[$geocode]}"
-    
     # atualiza repo site
     # isto é feito a cada passo do loop - mais seguro?
-    pushd $SCRIPTROOT/../site/_src
+    pushd $SITEfolder/_src
     Rscript update_modelogro.R --escala $escala --sigla $estado --geocode $geocode
 
     git pull --ff-only
