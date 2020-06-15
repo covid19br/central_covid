@@ -10,7 +10,7 @@ def find_last_date(output_folder):
     fileszip = glob(output_folder + '/*.zip')
     filesxz = glob(output_folder + '/*.xz')
     filesbz2 = glob(output_folder + '/*.bz2')
-    files = filescsv + fileszip + filesxz
+    files = filescsv + fileszip + filesxz + filesbz2
     date_max = date(year=2020, month=1, day=1)
     for f in files:
         g = re.match(r'.*(\d\d\d\d_\d\d_\d\d).*', os.path.basename(f))
