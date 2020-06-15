@@ -9,6 +9,7 @@ def find_last_date(output_folder):
     filescsv = glob(output_folder + '/*.csv')
     fileszip = glob(output_folder + '/*.zip')
     filesxz = glob(output_folder + '/*.xz')
+    filesbz2 = glob(output_folder + '/*.bz2')
     files = filescsv + fileszip + filesxz
     date_max = date(year=2020, month=1, day=1)
     for f in files:
@@ -50,6 +51,7 @@ if __name__ == '__main__':
             output_file = output_folder + '/esus-ve_{estado}-{data}.csv'.format(estado=estado,
                     data=data.strftime("%Y_%m_%d"))
             get_file(download_address.format(estado=estado), output_file)
+            os.system("bzip2 " + output_file)
         # add to git and let the other robots work
         if gitUpdate:
             os.system('''cd {folder} &&
