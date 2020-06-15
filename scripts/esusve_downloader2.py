@@ -39,7 +39,7 @@ if __name__ == '__main__':
     output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/eSUS-VE')
     gitUpdate = False
 
-    estados = ["ac", "al", "am", "ap", "ba", "br", "ce", "df", "es", "go",
+    estados = ["ac", "al", "am", "ap", "ba", "ce", "df", "es", "go",
             "ma", "mg", "ms", "mt", "pa", "pb", "pe", "pi", "pr", "rj", "rn",
             "ro", "rr", "rs", "sc", "se", "sp", "to"]
 
@@ -47,16 +47,18 @@ if __name__ == '__main__':
     data = check_new_update_date(index_page_address, last_date)
     if data:
         print("Downloading new esus-ve database...")
+        new_files = []
         for estado in estados:
             output_file = output_folder + '/esus-ve_{estado}-{data}.csv'.format(estado=estado,
                     data=data.strftime("%Y_%m_%d"))
             get_file(download_address.format(estado=estado), output_file)
             os.system("bzip2 " + output_file)
+            new_files.append(output_file + '.bz2')
         # add to git and let the other robots work
         if gitUpdate:
             os.system('''cd {folder} &&
-                   git add {outfile} &&
+                   git add {outfiles} &&
                    git commit -m "[auto] base esus-ve de hoje" &&
                    git push'''.format(folder=output_folder,
-                                    outfile=output_fname))
+                                    outfiles=' '.join(new_files)))
 
