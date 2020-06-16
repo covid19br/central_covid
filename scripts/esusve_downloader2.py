@@ -37,7 +37,7 @@ if __name__ == '__main__':
     index_page_address = 'https://opendatasus.saude.gov.br/dataset/casos-nacionais'
     download_address = "https://s3-sa-east-1.amazonaws.com/ckan.saude.gov.br/dados-{estado}.csv"
     output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/eSUS-VE')
-    gitUpdate = False
+    gitUpdate = True
 
     estados = ["ac", "al", "am", "ap", "ba", "ce", "df", "es", "go",
             "ma", "mg", "ms", "mt", "pa", "pb", "pe", "pi", "pr", "rj", "rn",
@@ -56,9 +56,11 @@ if __name__ == '__main__':
             new_files.append(output_file + '.bz2')
         # add to git and let the other robots work
         if gitUpdate:
+            os.system("cd {folder} && git pull --ff-only".format(
+                folder=output_folder))
             os.system('''cd {folder} &&
                    git add {outfiles} &&
-                   git commit -m "[auto] base esus-ve de hoje" &&
+                   git commit -m "[auto] bases esus-ve de hoje" &&
                    git push'''.format(folder=output_folder,
                                     outfiles=' '.join(new_files)))
 
