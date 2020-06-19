@@ -13,19 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 <!-- # Nowcasting de óbitos a partir dos boletins epidemiológicos do Ministério da Saúde -->
 
 ```{r libraries, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
-if(!require(plyr)){install.packages("plyr"); library(plyr)}
-if(!require(tidyverse)){install.packages("tidyverse"); library(tidyverse)}
-if(!require(NobBS)){install.packages("NobBS"); library(NobBS)}
-if(!require(aweek)){install.packages("aweek"); library(aweek)}
-if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
-if(!require(lubridate)){install.packages("lubridate"); library(lubridate)}
-if(!require(zoo)){install.packages("zoo"); library(zoo)}
-if(!require(EpiEstim)){install.packages("EpiEstim"); library(EpiEstim)}
-if(!require(foreign)){install.packages("foreign"); library(foreign)}
-if(!require(viridis)){install.packages("viridis"); library(viridis)}
-if(!require(ggpubr)){install.packages("ggpubr"); library(ggpubr)}
 
-source("https://raw.githubusercontent.com/covid19br/covid19br.github.io/master/_src/funcoes.R")
+source("load.R")
+# sources functions
+funcoes <- list.files("./nowcasting/fct", full.names = TRUE)
+invisible(purrr::map(funcoes, source)) #in object so it doesnt print
 ```
 
 ## Boletins do Ministério da Saúde
@@ -100,8 +92,8 @@ all(apply(uol3, 1, sum) == uol2[,2]) ## ok!
 head(uol3)
 ```
 
-As colunas mais a esquerda são os boletins mais recentes.
-As linhas são as data em que ocorreram óbitos, mais a abaixo mais perto do presente.
+As colunas mais à esquerda são os boletins mais recentes.
+As linhas são as data em que ocorreram óbitos, mais abaixo mais perto do presente.
 
 ```{r Criação de vetores de datas, echo=TRUE}
 ## Junta com coluna de datas dos boletins e nomeia as colunas

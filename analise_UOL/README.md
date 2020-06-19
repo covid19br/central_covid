@@ -3,12 +3,15 @@
 Essas análises são feitas e partir de raspagem dos gráficos publicados nos boletins epidemiológicos do Ministério da Saúde. Esse gráfico é o número de óbitos pela data de óbito, ou seja, cada óbito ali contabilizado ocorreu realmente naquela data. Com a falta de atualização da SIVEP-Gripe nacional, esse é um modo de estimar os óbitos no momento atual.
 
      .
-    ├── boletins_epidemiologicos_MS/       # Pasta contendo o material original do qual são raspados os dados para análise
-    ├── codes/                             # Pasta com código em deseuso ou ainda não terminados
+    ├── dados
+          ├── spreadsheet_e_CSV                  # CSVs gerados e usados para a análise
+          └── boletins_epidemiologicos_MS/       # Pasta contendo o material 
+                                        original do qual são raspados os dados para análise
+    ├── codes/                             # Pasta com código em desuso ou ainda não terminados
     ├── plots/                             # Plots gerados
-    ├── spreadsheet_e_CSV                  # CSVs gerados e usados para a análise
-    ├── analise_de_sensibilidade.R         # Código para comparar a performace do nowcasting
-    ├── nowcasting_uol.R                   # Código da análise principal, roda nowcasting para os boleitns compilados.
+                                             nowcasting para os boletins compilados.
+    ├── nowcasting_uol.R                   # Código da análise principal, roda 
+    ├── analise_de_sensibilidade.R         # Código para comparar a performance do nowcasting
     └── README.md
 
 Os scripts principais são `nowcasting_uol.R` e `analise_de_sensibilidade.R`. 
