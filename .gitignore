@@ -46,6 +46,7 @@ central_covid.Rproj
 /dados/eSUS-VE/*.csv
 #post
 /dados_processados/nowcasting/*/*/*/output_nowcasting/*_post_*.csv
+/dados_processados/nowcasting/*/*/*/output_nowcasting/*_traj_*.csv
 /nowcasting
 /site
 /R_eff
