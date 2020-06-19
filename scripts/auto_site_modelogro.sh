@@ -108,7 +108,7 @@ for geocode in ${geocodes[@]}; do
     echo "Nova atualização modelogro ${today_} ${escala} ${estado} ${nomes[$geocode]}"
 
     ## nowcasting
-    Rscript update_projecao_leitos.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataInicial "2020-03-08" --out_dir $absoutfolder --check_report TRUE
+    Rscript update_projecao_leitos.R --dir $absdatafolder --escala $escala --sigla SP --geocode $geocode --dataInicial "2020-03-08" --out_dir $absoutfolder --check_report TRUE
 
     ## mandando pro site
     # atualiza repo site
