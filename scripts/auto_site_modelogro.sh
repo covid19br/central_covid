@@ -116,7 +116,8 @@ for geocode in ${geocodes[@]}; do
     pushd $SITEfolder/_src
     Rscript update_modelogro.R --escala $escala --sigla $estado --geocode $geocode
 
-    git pull --ff-only
+    git fetch
+    git merge -s recursive origin/master master
 
     pushd ../dados/$munpath/hospitalizados
     git add $hosp_output_files
@@ -140,6 +141,8 @@ for geocode in ${geocodes[@]}; do
     popd
     
     git commit -m ":robot: novas projeções de leitos e plots $escala ${estado}-${nomes[$geocode]} ${today_}" &&
+    git fetch
+    git merge -s recursive origin/master master
     git push
     popd
 done
