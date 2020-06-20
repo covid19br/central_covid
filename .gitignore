@@ -52,3 +52,6 @@ central_covid.Rproj
 /R_eff
 /subprefeituras_SP
 /scripts/*.run
+/site
+/nowcasting
+/now_fcts
