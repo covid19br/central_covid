@@ -15,11 +15,12 @@ if(!require(viridis)){install.packages("viridis"); library(viridis)}
 
 PRJROOT  = rprojroot::find_root(".here")
 
-source("./site/_src/fct/funcoes.R")
+devtools::load_all("./now_fcts/") ##loading de funções necessárias##
 
 data_ultimo_boletim<-as.Date("2020-06-05")
-
+  
 uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv")
+uol<-read_csv("./analise_UOL/alternativa.csv")
 ###SEGUIR IGUAL###
 
 uol<-as.data.frame(uol)
@@ -31,7 +32,12 @@ p.uol <-
   geom_point(shape = 1)+
   geom_line()+
   geom_vline(xintercept = as.Date("2020-03-17", format = "%Y-%m-%d"), colour = "indianred3", size = 0.45, linetype = "dashed")+
-  scale_color_viridis_d(name = "Data Boletim", option = "cividis", direction = 1)+
+  scale_color_viridis_d(name = "Data Boletim", 
+                        option = "plasma", 
+                        direction = 1, 
+                        alpha = 1, 
+                        # begin = 0, 
+                        end = 1)+
   labs(x = "Data", y = "Número de Óbitos") +
   theme_bw() +
   theme(legend.position = "right")+
@@ -43,6 +49,7 @@ p.uol
 ##      NOWCASTING      ##
 ##########################
 uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv") ##load da CSV Utilizada
+uol<-read_csv("./analise_UOL/alternativa.csv") ##load de CSV alternativa###
 uol<-as.data.frame(uol)
 uol2<-uol #variavel auxiliar
 uol2[is.na(uol2)] <- 0 ##preenchendo com 0 onde não há dados ###
@@ -110,9 +117,21 @@ nowcasting<- NobBS(data = uol_df,
                     onset_date = "Death_date",
                     report_date = "Report_date",
                     units = "1 day",
-                    specs = list(nAdapt = 3000, nBurnin = 3000, nThin = 1, nSamp = 10000)
+                    specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000)
 )
-betas<-beta.summary(nowcasting) #### função em funcoes.R
+betas<-beta.summary(nowcasting) #### função em funcoes.R`
+betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
+
+nowcasting80<- NobBS(data = uol_df,
+                   now = max(uol_df$Death_date),
+                   onset_date = "Death_date",
+                   report_date = "Report_date",
+                   units = "1 day",
+                   moving_window = 80,
+                   specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000)
+)
+betas80<-beta.summary(nowcasting80) #### função em funcoes.R
+betas80_cumsum<-beta.cumsum(nowcasting80, samples = 5000)
 ################################################################################
 ## Plots: objetos ggplot2
 ################################################################################
@@ -128,11 +147,34 @@ p.betas <-
   ggtitle("Atraso de notificação de óbitos COVID por SRAG")
 p.betas
 
+p.betas80 <-
+  ggplot(betas80, aes(atraso, mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.25) +
+  xlab("Dias após dia do óbito") +
+  ylab("Probabilidade de notificação") +
+  theme_bw() +
+  theme(legend.position="none") +
+  ggtitle("Atraso de notificação de óbitos COVID por SRAG")
+p.betas80
+
+p.df4 <-
+  ggplot(betas_cumsum, aes(atraso, mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.25) +
+  xlab("Dias após dia do óbito") +
+  ylab("Probabilidade de notificação") +
+  theme_bw() +
+  theme(legend.position="none") +
+  ggtitle("Atraso de notificação de óbitos COVID por SRAG")
+p.df4
+
+
 ## N de casos previstos e seus ICS ##
 p.prev.ic <- ggplot(nowcasting$estimates, aes(x = onset_date, y = estimate)) +
   geom_line(data = uol_df2, aes(x = Death_date, y = N),
             col = "skyblue", lwd = 1.2) +
-  geom_line(aes(x = onset_date, y = n.reported), col = "blue", lwd = 1.2)+
+  # geom_line(aes(x = onset_date, y = n.reported), col = "blue", lwd = 1.2)+
   geom_line(col = "indianred3") +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha =0.15, fill = "indianred3") +
   xlab("Dia do Óbito") +
@@ -141,6 +183,19 @@ p.prev.ic <- ggplot(nowcasting$estimates, aes(x = onset_date, y = estimate)) +
   theme(legend.position = "none") +
   ggtitle("Nowcasting de óbitos de COVID-19")
 p.prev.ic
+
+p.prev.ic50 <- ggplot(nowcasting80$estimates, aes(x = onset_date, y = estimate)) +
+  geom_line(data = uol_df2, aes(x = Death_date, y = N),
+            col = "skyblue", lwd = 1.2) +
+  # geom_line(aes(x = onset_date, y = n.reported), col = "blue", lwd = 1.2)+
+  geom_line(col = "indianred3") +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha =0.15, fill = "indianred3") +
+  xlab("Dia do Óbito") +
+  ylab("Nº de Óbitos") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ggtitle("Nowcasting de óbitos de COVID-19")
+p.prev.ic50
 
 
 #############################
@@ -157,7 +212,38 @@ colnames(uol_final3)<-c("estimate Cumsum", "lower Cumsum", "upper Cumsum", "Bole
 
 uol_final4<-as.data.frame(cbind("Data" = uol_final2$Data, uol_final2[,-4], uol_final3))
 write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06_cumsum.csv", row.names = FALSE)
+uol_final4<-read_csv("./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06_cumsum.csv")
 
+uol_betas<-betas
+write.csv(uol_betas, file = "./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06.csv", row.names = FALSE)
+uol_betas2<-apply(t(uol_betas[,-1]), 1, cumsum)
+colnames(uol_betas2)<-c("mean Cumsum", "lower Cumsum", "upper Cumsum")
+
+uol_betas3<-as.data.frame(cbind(uol_betas, uol_betas2))
+write.csv(uol_betas3, file = "./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06_cumsum.csv", row.names = FALSE)
+uol_betas3<-read_csv("./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06_cumsum.csv")
+
+# uol_final4<-uol_final4%>%
+#   mutate(add_ic_inf = (`lower Cumsum`/`Boletim Cumsum`) -1,
+#          add_ic_sup = (`upper Cumsum`/`Boletim Cumsum`) -1)%>%
+#   as.data.frame()
+
+p.betascumsum <-
+  ggplot(uol_betas3, aes(atraso,100*`mean Cumsum`)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = 100*`lower Cumsum`, ymax = 100*`upper Cumsum`), alpha = 0.15) +
+  xlab("Dias após dia do óbito") +
+  ylab("Probabilidade de notificação") +
+  theme_bw() +
+  theme(legend.position="none") +
+  geom_segment(aes(x = 10, xend = 10, y = 0, yend = 39.8)) + 
+  geom_segment(aes(x = 0, xend = 10, y = 39.8, yend = 39.8))+
+  geom_segment(aes(x = 30, xend = 30, y = 0, yend = 72.6)) + 
+  geom_segment(aes(x = 0, xend = 30, y = 72.6, yend = 72.6))+
+  geom_segment(aes(x = 60, xend = 60, y = 0, yend = 88.0)) + 
+  geom_segment(aes(x = 0, xend = 60, y = 88.0, yend = 88.0))+
+  ggtitle("Atraso de notificação de óbitos COVID por SRAG")
+p.betascumsum
 
 p.prev.ic2 <- ggplot(uol_final4, aes(x = Data, y = `estimate`)) +
   geom_line(data = uol_final4, aes(x = Data, y = `Boletim ultimo`, color="Notificados"), lwd = 1.5) +
