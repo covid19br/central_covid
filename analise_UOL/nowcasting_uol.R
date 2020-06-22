@@ -68,7 +68,7 @@ uol2<-uol2.1 ###devolvendo o resultado na variável utilizada ###
 uol3 <- matrix( nrow=nrow(uol2), ncol=ncol(uol2)-1)
 ## Coloca a ultima coluna dos dados na ultima coluna da matriz
 uol3[,ncol(uol3)] <- uol2[,ncol(uol2)]
-## Loop que vai preenchendo a nova matriz com a difreença da coluna mais a direita pra seguinte
+## Loop que vai preenchendo a nova matriz com a diferença da coluna mais a direita pra seguinte
 for(i in ncol(uol2):3){
   uol3[,(i-2)] <- uol2[,(i-1)] - uol2[,i]
 }
