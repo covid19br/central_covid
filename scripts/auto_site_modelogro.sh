@@ -43,7 +43,8 @@ get_names nomes $escala "${geocodes[@]}"
 
 # pega o estado do 1o geocode
 # ATENÇÃO: não misturar municípios de estados diferentes!
-estado=`get_estado $escala ${geocodes[1]}`
+#estado=`get_estado $escala ${geocodes[1]}`
+estado=SP
 
 ## pastas de dados
 # cada estado pode ter uma base diferente
