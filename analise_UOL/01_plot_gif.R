@@ -4,8 +4,7 @@ source("./analise_UOL/load.R")
 PRJROOT <- rprojroot::find_root(".here")
 
 # sources functions
-funcoes <- list.files("./nowcasting/fct", full.names = TRUE)
-purrr::map(funcoes, source) #in object so it doesnt print
+devtools::load_all("./now_fcts/") ##loading de funções necessárias##
 
 # plot
 data_ultimo_boletim <- as.Date("2020-05-29")
@@ -37,7 +36,7 @@ p.uol.ridges <-
   ggplot(uol_melted, aes(x = Data, height = value, y = variable, fill = ..x..)) +
   ggridges::geom_density_ridges_gradient(scale = 3, stat = "identity", rel_min_height = 0.01) +
   ggridges::theme_ridges() +
-  viridis::scale_fill_viridis(name = "Óbitos por dia", option = "C") +
+  viridis::scale_fill_viridis(name = "Óbitos por dia", option = "viridis") +
   xlab("Data de óbito") +
   ylab("Boletins") +
   ggtitle("Boletins Epidemiológicos - Ministério da Saúde") +

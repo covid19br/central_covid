@@ -2,9 +2,9 @@ library("tidyverse")
 library("cowplot")
 library("RColorBrewer")
 
-uol_betas3 <- read.csv("./dados/uol_final_betas_03_06_cumsum.csv", as.is = TRUE)
+# uol_betas3 <- read.csv("./dados/uol_final_betas_03_06_cumsum.csv", as.is = TRUE)
 
-uol_betas3<-betas_cumsum
+uol_betas3<-betas_maxd_cumsum
 
 uol_betas3$upper[uol_betas3$upper > 1] <- 1
 

@@ -19,8 +19,7 @@ devtools::load_all("./now_fcts/") ##loading de funções necessárias##
 
 data_ultimo_boletim<-as.Date("2020-06-05")
   
-uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv")
-uol<-read_csv("./analise_UOL/alternativa.csv")
+uol<-read_csv("./analise_UOL/dados/SRAGs-tabela-last-updated.csv")
 ###SEGUIR IGUAL###
 
 uol<-as.data.frame(uol)
@@ -48,8 +47,7 @@ p.uol
 ##########################
 ##      NOWCASTING      ##
 ##########################
-uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised3.csv") ##load da CSV Utilizada
-uol<-read_csv("./analise_UOL/alternativa.csv") ##load de CSV alternativa###
+uol<-read_csv("./analise_UOL/dados/SRAGs-tabela-last-updated.csv")
 uol<-as.data.frame(uol)
 uol2<-uol #variavel auxiliar
 uol2[is.na(uol2)] <- 0 ##preenchendo com 0 onde não há dados ###
@@ -122,16 +120,25 @@ nowcasting<- NobBS(data = uol_df,
 betas<-beta.summary(nowcasting) #### função em funcoes.R`
 betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
 
-nowcasting80<- NobBS(data = uol_df,
+nowcasting.post<-NobBS.posterior(data = uol_df,
+                                 now = max(uol_df$Death_date),
+                                 onset_date = "Death_date",
+                                 report_date = "Report_date",
+                                 units = "1 day",
+                                 specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+nowcasting.post_cumsum<-nowcasting.cumsum(nowcasting.post, samples = 5000)
+
+max_d = 30
+nowcasting_maxd<- NobBS(data = uol_df,
                    now = max(uol_df$Death_date),
                    onset_date = "Death_date",
                    report_date = "Report_date",
                    units = "1 day",
-                   moving_window = 80,
+                   max_D = max_d,
                    specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000)
 )
-betas80<-beta.summary(nowcasting80) #### função em funcoes.R
-betas80_cumsum<-beta.cumsum(nowcasting80, samples = 5000)
+betas_maxd<-beta.summary(nowcasting_maxd) #### função em funcoes.R
+betas_maxd_cumsum<-beta.cumsum(nowcasting_maxd, samples = 5000)
 ################################################################################
 ## Plots: objetos ggplot2
 ################################################################################
@@ -147,34 +154,26 @@ p.betas <-
   ggtitle("Atraso de notificação de óbitos COVID por SRAG")
 p.betas
 
-p.betas80 <-
-  ggplot(betas80, aes(atraso, mean)) +
-  geom_line() +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.25) +
-  xlab("Dias após dia do óbito") +
-  ylab("Probabilidade de notificação") +
-  theme_bw() +
-  theme(legend.position="none") +
-  ggtitle("Atraso de notificação de óbitos COVID por SRAG")
-p.betas80
+## Tempos de atraso cumulativo ##
+p.betas_cumsum <- p.betas %+% betas_cumsum +
+  ylab("Probabilidade Acumulada de notificação")
+p.betas_cumsum
 
-p.df4 <-
-  ggplot(betas_cumsum, aes(atraso, mean)) +
-  geom_line() +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.25) +
-  xlab("Dias após dia do óbito") +
-  ylab("Probabilidade de notificação") +
-  theme_bw() +
-  theme(legend.position="none") +
-  ggtitle("Atraso de notificação de óbitos COVID por SRAG")
-p.df4
+## Tempos de atraso max_d ##
+p.betas_maxd <-p.betas %+% betas_maxd + 
+  ggtitle(paste0("Atraso de notificação de óbitos COVID por SRAG - max D =", max_d, " dias"))
+p.betas_maxd
 
+## Tempos de atraso cumulativo ##
+p.betas_cumsum_maxd <- p.betas %+% betas_maxd_cumsum +
+  ylab("Probabilidade Acumulada de notificação") +
+  ggtitle(paste0("Atraso de notificação de óbitos COVID por SRAG - max D = ", max_d, " dias"))
+p.betas_cumsum_maxd
 
 ## N de casos previstos e seus ICS ##
 p.prev.ic <- ggplot(nowcasting$estimates, aes(x = onset_date, y = estimate)) +
   geom_line(data = uol_df2, aes(x = Death_date, y = N),
             col = "skyblue", lwd = 1.2) +
-  # geom_line(aes(x = onset_date, y = n.reported), col = "blue", lwd = 1.2)+
   geom_line(col = "indianred3") +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha =0.15, fill = "indianred3") +
   xlab("Dia do Óbito") +
@@ -184,19 +183,21 @@ p.prev.ic <- ggplot(nowcasting$estimates, aes(x = onset_date, y = estimate)) +
   ggtitle("Nowcasting de óbitos de COVID-19")
 p.prev.ic
 
-p.prev.ic50 <- ggplot(nowcasting80$estimates, aes(x = onset_date, y = estimate)) +
-  geom_line(data = uol_df2, aes(x = Death_date, y = N),
-            col = "skyblue", lwd = 1.2) +
-  # geom_line(aes(x = onset_date, y = n.reported), col = "blue", lwd = 1.2)+
-  geom_line(col = "indianred3") +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha =0.15, fill = "indianred3") +
-  xlab("Dia do Óbito") +
-  ylab("Nº de Óbitos") +
-  theme_bw() +
-  theme(legend.position = "none") +
-  ggtitle("Nowcasting de óbitos de COVID-19")
-p.prev.ic50
+p.prev.ic_maxd <- p.prev.ic %+% nowcasting_maxd$estimates +
+  ggtitle(paste0("Nowcasting de óbitos de COVID-19 - max D = ", max_d, " dias"))
+p.prev.ic_maxd
 
+p.prev.ic.cumsum<-ggplot(nowcasting.post_cumsum, aes(x= Dates, y = mean))+
+  geom_line(data = uol_final4, aes(x = Data, y = `Boletim Cumsum`, color="Notificados"), lwd = 1.5) +
+  geom_line(aes(col = "Estimado")) +
+  geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
+  xlab("Dia do Óbito") +
+  ylab("Nº de Óbitos Acumulados") +
+  theme_bw() +
+  theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
+  scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
+  ggtitle("Acumulados")
+p.prev.ic.cumsum
 
 #############################
 ######### Gráficos ##########
@@ -206,27 +207,29 @@ uol_final<-uol_final[, c("estimate", "lower", "upper")]
 uol_final2<-as.data.frame(cbind(uol_final, 
                                 "Data" = as.Date(uol_df2$Death_date, "%Y-%m-%d"), 
                                 "Boletim ultimo" = uol[,2]))
-write.csv(uol_final2, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06.csv", row.names = FALSE)
+# write.csv(uol_final2, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06.csv", row.names = FALSE)
 uol_final3<-apply(t(uol_final2[,-4]), 1, cumsum)
 colnames(uol_final3)<-c("estimate Cumsum", "lower Cumsum", "upper Cumsum", "Boletim Cumsum")
 
 uol_final4<-as.data.frame(cbind("Data" = uol_final2$Data, uol_final2[,-4], uol_final3))
-write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06_cumsum.csv", row.names = FALSE)
-uol_final4<-read_csv("./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06_cumsum.csv")
+# write.csv(uol_final4, file = "./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06_cumsum.csv", row.names = FALSE)
+# uol_final4<-read_csv("./analise_UOL/spreasheet_e_CSV/uol_final_nowcasting_03_06_cumsum.csv")
 
 uol_betas<-betas
-write.csv(uol_betas, file = "./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06.csv", row.names = FALSE)
+# write.csv(uol_betas, file = "./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06.csv", row.names = FALSE)
 uol_betas2<-apply(t(uol_betas[,-1]), 1, cumsum)
 colnames(uol_betas2)<-c("mean Cumsum", "lower Cumsum", "upper Cumsum")
 
 uol_betas3<-as.data.frame(cbind(uol_betas, uol_betas2))
-write.csv(uol_betas3, file = "./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06_cumsum.csv", row.names = FALSE)
-uol_betas3<-read_csv("./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06_cumsum.csv")
+# write.csv(uol_betas3, file = "./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06_cumsum.csv", row.names = FALSE)
+# uol_betas3<-read_csv("./analise_UOL/spreasheet_e_CSV/uol_final_betas_03_06_cumsum.csv")
 
 # uol_final4<-uol_final4%>%
 #   mutate(add_ic_inf = (`lower Cumsum`/`Boletim Cumsum`) -1,
 #          add_ic_sup = (`upper Cumsum`/`Boletim Cumsum`) -1)%>%
 #   as.data.frame()
+
+
 
 p.betascumsum <-
   ggplot(uol_betas3, aes(atraso,100*`mean Cumsum`)) +
