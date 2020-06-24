@@ -68,5 +68,7 @@ if __name__ == '__main__':
                                     outzip=outzip,
                                     outfile=output_fname,
                                     data=newfile[0].strftime("%Y_%m_%d")))
-
+            nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
+            os.system('''cd ../{nowcast_folder} &&
+                    Rscript checa_bases.R --updateGit TRUE'''.format(nowcast_folder = nowcast_folder))
 
