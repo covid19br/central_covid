@@ -1,4 +1,4 @@
-  ###Análise UOL###
+###Análise UOL###
 #################
 if(!require(plyr)){install.packages("plyr"); library(plyr)}
 if(!require(tidyverse)){install.packages("tidyverse"); library(tidyverse)}
@@ -15,9 +15,7 @@ if(!require(viridis)){install.packages("viridis"); library(viridis)}
 
 PRJROOT  = rprojroot::find_root(".here")
 
-devtools::load_all("./now_fcts/") ##loading de funções necessárias##
-
-data_ultimo_boletim<-as.Date("2020-06-05")
+devtools::load_all("./now_fcts/R/") ##loading de funções necessárias##
   
 uol<-read_csv("./analise_UOL/dados/SRAGs-tabela-last-updated.csv")
 ###SEGUIR IGUAL###
@@ -124,7 +122,7 @@ uol_df2 = uol_df2 %>%
 # betas<-beta.summary(nowcasting) #### função em funcoes.R`
 # betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
 
-nowcasting<-NobBS.posterior(data = uol_df,
+nowcasting<-NobBS.posterior2(data = uol_df,
                                  now = max(uol_df$Death_date),
                                  onset_date = "Death_date",
                                  report_date = "Report_date",
@@ -199,7 +197,7 @@ p.prev.ic_maxd <- p.prev.ic %+% nowcasting_maxd$estimates +
   ggtitle(paste0("Nowcasting de óbitos de COVID-19 - max D = ", max_d, " dias"))
 p.prev.ic_maxd
 
-p.prev.ic.cumsum<-ggplot(nowcasting.post_cumsum, aes(x= Dates, y = mean))+
+p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
   geom_line(data = uol_df2, aes(x = Death_date, y = Cum, color="Notificados"), lwd = 1.5) +
   geom_line(aes(col = "Estimado")) +
   geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
