@@ -61,10 +61,13 @@ if [ -d $dados_estado ]; then
     popd
 fi
 
+#read last_input datafolder < <(
+    #compare_get_latest "$dados_estado/SRAGH*_{data}.csv" \
+                       #"$dados_estado/SRAGH*_{data}.zip" \
+                       #"../dados/SIVEP-Gripe/SRAGH*_{data}.zip")
 read last_input datafolder < <(
     compare_get_latest "$dados_estado/SRAGH*_{data}.csv" \
-                       "$dados_estado/SRAGH*_{data}.zip" \
-                       "../dados/SIVEP-Gripe/SRAGH*_{data}.zip")
+                       "$dados_estado/SRAGH*_{data}.zip")
 absdatafolder=`get_abspath $datafolder`
 today_=$last_input
 todaydash=`echo $today_ | sed 's/_/-/g'`
