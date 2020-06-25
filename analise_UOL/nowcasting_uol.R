@@ -121,9 +121,10 @@ uol_df2 = uol_df2 %>%
 # )
 # betas<-beta.summary(nowcasting) #### função em funcoes.R`
 # betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
+trim<-5
 
 nowcasting<-NobBS.posterior2(data = uol_df,
-                                 now = max(uol_df$Death_date),
+                                 now = max(uol_df$Death_date)-trim,
                                  onset_date = "Death_date",
                                  report_date = "Report_date",
                                  units = "1 day",
@@ -132,9 +133,9 @@ betas<-beta.summary(nowcasting) #### função em funcoes.R`
 betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
 nowcasting_cumsum<-nowcasting.cumsum(nowcasting, samples = 5000)
 
-max_d = 30
-nowcasting_maxd<- NobBS.posterior(data = uol_df,
-                                  now = max(uol_df$Death_date),
+max_d = as.integer(max(uol_df$Death_date) - min(uol_df$Death_date))-5
+nowcasting_maxd<- NobBS.posterior2(data = uol_df,
+                                  now = max(uol_df$Death_date)-trim,
                                   onset_date = "Death_date",
                                   report_date = "Report_date",
                                   units = "1 day",
@@ -194,7 +195,7 @@ p.prev.ic <- ggplot(nowcasting$estimates, aes(x = onset_date, y = estimate)) +
 p.prev.ic
 
 p.prev.ic_maxd <- p.prev.ic %+% nowcasting_maxd$estimates +
-  ggtitle(paste0("Nowcasting de óbitos de COVID-19 - max D = ", max_d, " dias"))
+  ggtitle(paste0("Diários max D = ", max_d, " dias"))
 p.prev.ic_maxd
 
 p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
@@ -209,14 +210,23 @@ p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
   ggtitle("Acumulados")
 p.prev.ic.cumsum
 
-p.arrange<-ggpubr::ggarrange(p.prev.ic, p.prev.ic.cumsum)
+p.prev.ic.cumsum_maxd<-p.prev.ic.cumsum %+% nowcasting_maxd_cumsum +
+  ggtitle(paste0("Acumulados max D = ", max_d, " dias"))
+p.prev.ic.cumsum_maxd
+
+p.arrange<-ggpubr::ggarrange(p.prev.ic, p.prev.ic.cumsum, 
+                             p.prev.ic_maxd, p.prev.ic.cumsum_maxd)
 p.arrange
-ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_03_06.png", 
+
+p.arrange_betas<-ggpubr::ggarrange(p.betas, p.betas_cumsum,
+                                   p.betas_maxd, p.betas_cumsum_maxd)
+p.arrange_betas
+  ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_13_06.png", 
        dpi = 600, width = 9, height = 7)
 
 ###########################
 ######SALVANDO EM SVG######
-###########################
+########################### 
 # plots.para.atualizar<-p.prev.ic
 # filepath<-"./analise UOL/plots/plots SVG/sensibilidade_nowcasting_BE_MS_08_maio"
 plots.para.atualizar<-p.prev.ic.cumsum
