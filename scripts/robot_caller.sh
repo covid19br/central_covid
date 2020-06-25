@@ -26,7 +26,9 @@ while read -r estado geocode; do
     estados[$estado]="${estados[$estado]} $geocode"
 done <<<`cat municipios.txt`
 
-for estado in "${!estados[@]}"; do
+IFS=$'\n' estados_ord=($(sort <<<"${!estados[*]}"))
+unset IFS
+for estado in "${estados_ord[@]}"; do
     echo "Rodando ./auto_site_escala.sh municipio $estado $trim ${estados[$estado]}"
     ./auto_site_escala.sh municipio $estado $trim ${estados[$estado]}
 done
