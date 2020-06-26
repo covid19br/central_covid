@@ -71,4 +71,13 @@ if __name__ == '__main__':
             nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
             os.system('''cd ../{nowcast_folder} &&
                     Rscript checa_base.R --updateGit TRUE'''.format(nowcast_folder = nowcast_folder))
+            emails = [ "renato.coutinho@gmail.com", "lopes1313@gmail.com",
+                    "piklprado@gmail.com"]
+            os.system('''echo -e "Nova base SIVEP-Gripe atualizada.\n
+            O relatório de integridade se encontra em {link}\n
+            Atenciosamente,\nRobot mailer" | 
+                    mail -s "nova base SIVEP-Gripe de {data}" {emails}'''.format(
+                        data=newfile[0].strftime("%Y_%m_%d"),
+                        link="https://github.com/covid19br/central_covid/blob/master/dados_processados/integridade_SIVEP/integridade_SIVEP_{data}.html".format(data=newfile[0].strftime("%Y-%m-%d")),
+                        emails=' '.join(emails)))
 
