@@ -12,6 +12,8 @@ if(!require(zoo)){install.packages("zoo"); library(zoo)}
 if(!require(EpiEstim)){install.packages("EpiEstim"); library(EpiEstim)}
 if(!require(foreign)){install.packages("foreign"); library(foreign)}
 if(!require(viridis)){install.packages("viridis"); library(viridis)}
+if(!require(aweek)){install.packages("aweek"); library(aweek)}
+if(!require(lubridate)){install.packages("lubridate"); library(lubridate)}
 
 PRJROOT  = rprojroot::find_root(".here")
 
@@ -99,30 +101,30 @@ uol_df <- data.frame(uol_death_date = as.Date(onset.dates), uol_report_date = as
 ## Transformando em datas que entram no nowcasting##
 uol_df = uol_df %>%
   mutate(Death_date = as.Date(uol_df$uol_death_date, format = "%d/%m/%Y"), 
-         Report_date = as.Date(uol_df$uol_report_date, format = "%d/%m/%Y")) %>%
+         Report_date = as.Date(uol_df$uol_report_date, format = "%d/%m/%Y"),
+         Death_week = date2week(Death_date, start = "sun", floor_day = TRUE),
+         Report_week = date2week(Report_date, start = "sun", floor_day = TRUE),
+         Death_wd = week2date(Death_week, floor_day = TRUE),
+         Report_wd = week2date(Report_date, floor_day = TRUE)
+         ) %>%
   as.data.frame()
 ### somando os óbitos ###
 uol_df2 = uol_df %>%
   group_by(Death_date)%>%
   dplyr::summarise(N=n())%>%
-  as.data.frame()
-### acumulado de óbitos ###
-uol_df2 = uol_df2 %>%
   mutate(Cum=cumsum(N))%>%
   as.data.frame()
 
-###Nowcasting ###
-# nowcasting<- NobBS(data = uol_df,
-#                     now = max(uol_df$Death_date),
-#                     onset_date = "Death_date",
-#                     report_date = "Report_date",
-#                     units = "1 day",
-#                     specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000)
-# )
-# betas<-beta.summary(nowcasting) #### função em funcoes.R`
-# betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
-trim<-5
+### somando os óbitos ###
+uol_df3 = uol_df %>%
+  group_by(Death_wd)%>%
+  dplyr::summarise(N=n())%>%
+  mutate(Cum=cumsum(N))%>%
+  as.data.frame()
 
+trim<-3 ## cortando o fim da sequência de datas para evitar ruídos demais ##
+
+## Daily ##
 nowcasting<-NobBS.posterior2(data = uol_df,
                                  now = max(uol_df$Death_date)-trim,
                                  onset_date = "Death_date",
@@ -133,18 +135,17 @@ betas<-beta.summary(nowcasting) #### função em funcoes.R`
 betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
 nowcasting_cumsum<-nowcasting.cumsum(nowcasting, samples = 5000)
 
-max_d = as.integer(max(uol_df$Death_date) - min(uol_df$Death_date))-5
-nowcasting_maxd<- NobBS.posterior2(data = uol_df,
-                                  now = max(uol_df$Death_date)-trim,
-                                  onset_date = "Death_date",
-                                  report_date = "Report_date",
-                                  units = "1 day",
-                                  max_D = max_d,
-                                  specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000)
-)
-betas_maxd<-beta.summary(nowcasting_maxd) #### função em funcoes.R
-betas_maxd_cumsum<-beta.cumsum(nowcasting_maxd, samples = 5000)
-nowcasting_maxd_cumsum<-nowcasting.cumsum(nowcasting_maxd, samples = 5000)
+## Weekly ##
+nowcasting_w<-NobBS.posterior2(data = uol_df,
+                             now = max(uol_df$Death_wd),
+                             onset_date = "Death_wd",
+                             report_date = "Report_wd",
+                             units = "1 week",
+                             specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+betas_w<-beta.summary(nowcasting_w) #### função em funcoes.R`
+betas_cumsum_w<-beta.cumsum(nowcasting_w, samples = 5000)
+nowcasting_cumsum_w<-nowcasting.cumsum(nowcasting_w, samples = 5000)
+
 #############################
 ######### Gráficos ##########
 #############################
@@ -165,24 +166,21 @@ p.betas <-
   ggtitle("Atraso de notificação de óbitos COVID por SRAG")
 p.betas
 
+p.betas_w<-p.betas %+% betas_w +
+  xlab("Semanas após dia do óbito")
+p.betas_w
+
 ## Tempos de atraso cumulativo ##
 p.betas_cumsum <- p.betas %+% betas_cumsum +
   ylab("Probabilidade Acumulada de notificação")
 p.betas_cumsum
 
-## Tempos de atraso max_d ##
-p.betas_maxd <-p.betas %+% betas_maxd + 
-  ggtitle(paste0("Atraso de notificação de óbitos COVID por SRAG - max D =", max_d, " dias"))
-p.betas_maxd
-
-## Tempos de atraso cumulativo ##
-p.betas_cumsum_maxd <- p.betas %+% betas_maxd_cumsum +
-  ylab("Probabilidade Acumulada de notificação") +
-  ggtitle(paste0("Atraso de notificação de óbitos COVID por SRAG - max D = ", max_d, " dias"))
-p.betas_cumsum_maxd
+p.betas_cumsum_w <- p.betas_cumsum %+% betas_cumsum_w +
+  xlab("Semanas após dia do óbito")
+p.betas_cumsum_w
 
 ## N de casos previstos e seus ICS ##
-p.prev.ic <- ggplot(nowcasting$estimates, aes(x = onset_date, y = estimate)) +
+p.prev.ic <- nowcasting$estimates %>% ggplot(aes(x = onset_date, y = estimate)) +
   geom_line(data = uol_df2, aes(x = Death_date, y = N, color="Notificados"), lwd = 1.5) +
   geom_line(aes(col = "Estimado")) +
   geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
@@ -194,9 +192,17 @@ p.prev.ic <- ggplot(nowcasting$estimates, aes(x = onset_date, y = estimate)) +
   ggtitle("Diários")
 p.prev.ic
 
-p.prev.ic_maxd <- p.prev.ic %+% nowcasting_maxd$estimates +
-  ggtitle(paste0("Diários max D = ", max_d, " dias"))
-p.prev.ic_maxd
+p.prev.ic_w<-nowcasting_w$estimates %>% ggplot(aes(x = onset_date, y = estimate)) +
+  geom_line(data = uol_df3, aes(x = Death_wd, y = N, color="Notificados"), lwd = 1.5) +
+  geom_line(aes(col = "Estimado")) +
+  geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
+  xlab("Semana do Óbito") +
+  ylab("Nº de Óbitos por semana") +
+  theme_bw() +
+  theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
+  scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
+  ggtitle("Semanal")
+p.prev.ic_w
 
 p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
   geom_line(data = uol_df2, aes(x = Death_date, y = Cum, color="Notificados"), lwd = 1.5) +
@@ -207,21 +213,26 @@ p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
   theme_bw() +
   theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
   scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
-  ggtitle("Acumulados")
+  ggtitle("Acumulados Diários")
 p.prev.ic.cumsum
 
-p.prev.ic.cumsum_maxd<-p.prev.ic.cumsum %+% nowcasting_maxd_cumsum +
-  ggtitle(paste0("Acumulados max D = ", max_d, " dias"))
-p.prev.ic.cumsum_maxd
+p.prev.ic.cumsum_w<-ggplot(nowcasting_cumsum_w, aes(x= Dates, y = mean))+
+  geom_line(data = uol_df3, aes(x = Death_wd, y = Cum, color="Notificados"), lwd = 1.5) +
+  geom_line(aes(col = "Estimado")) +
+  geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
+  xlab("Semana do Óbito") +
+  ylab("Nº de Óbitos Acumulados") +
+  theme_bw() +
+  theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
+  scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
+  ggtitle("Acumulados Semanal")
+p.prev.ic.cumsum_w
 
-p.arrange<-ggpubr::ggarrange(p.prev.ic, p.prev.ic.cumsum, 
-                             p.prev.ic_maxd, p.prev.ic.cumsum_maxd)
+p.arrange<-ggpubr::ggarrange(p.betas, p.betas_cumsum, p.prev.ic, p.prev.ic.cumsum)
 p.arrange
-
-p.arrange_betas<-ggpubr::ggarrange(p.betas, p.betas_cumsum,
-                                   p.betas_maxd, p.betas_cumsum_maxd)
-p.arrange_betas
-  ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_13_06.png", 
+p.arrange_w<-ggpubr::ggarrange(p.betas_w, p.betas_cumsum_w, p.prev.ic_w, p.prev.ic.cumsum_w)
+p.arrange_w
+ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_13_06.png", 
        dpi = 600, width = 9, height = 7)
 
 ###########################
