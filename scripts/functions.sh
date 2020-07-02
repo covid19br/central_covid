@@ -40,7 +40,7 @@ get_names(){
     shift 2
     for geocode in $@; do
         if [ $escala == "municipio" ]; then
-            my_local_array[$geocode]=`awk -F, '/'"$geocode"'/ {gsub(/"/, "", $13); print $13}' ../nowcasting/dados/geocode_ibge.csv`
+            my_local_array[$geocode]=`awk -F, '/^'"$geocode"'/ {gsub(/"/, "", $13); print $13}' ../nowcasting/dados/geocode_ibge.csv`
         elif [ $escala == "drs" ]; then
             # TODO: DRS de outros estados
             my_local_array[$geocode]=`awk -F, '{ if($2 == '"$geocode"') {gsub(/"/, "", $5); print $5}}' ../nowcasting/dados/DRS_SP.csv | head -n1`
