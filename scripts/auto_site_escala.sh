@@ -32,6 +32,10 @@ geocodes=( "$@" )
 
 # atualiza repo onde dados estão?
 UPDATE_GIT_DATA_REPO=TRUE
+# método de cálculo de R efetivo = Cori | old_Cori
+RMETHOD="Cori"
+# n cores
+NCORES=4
 
 Rfolder="../nowcasting"
 SITEfolder="../site"
@@ -119,7 +123,7 @@ for geocode in ${geocodes[@]}; do
     # depois:
     # cd $absoutfolder/outputs; git clean -f
     # que *apaga* todos arquivos untracked (DANGER)
-    Rscript update_nowcasting.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataBase $today_ --outputDir $absoutfolder --trim $trim --updateGit $UPDATE_GIT_DATA_REPO
+    Rscript update_nowcasting.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataBase $today_ --outputDir $absoutfolder --trim $trim --updateGit $UPDATE_GIT_DATA_REPO --Rmethod $RMETHOD --ncores $NCORES
 
     ## mandando pro site
     path="${folder}/${estado}/${nomes[$geocode]}"
