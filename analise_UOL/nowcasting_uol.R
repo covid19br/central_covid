@@ -122,7 +122,7 @@ uol_df3 = uol_df %>%
   mutate(Cum=cumsum(N))%>%
   as.data.frame()
 
-trim<-3 ## cortando o fim da sequência de datas para evitar ruídos demais ##
+trim<-5 ## cortando o fim da sequência de datas para evitar ruídos demais ##
 
 ## Daily ##
 nowcasting<-NobBS.posterior2(data = uol_df,
@@ -130,7 +130,7 @@ nowcasting<-NobBS.posterior2(data = uol_df,
                                  onset_date = "Death_date",
                                  report_date = "Report_date",
                                  units = "1 day",
-                                 specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+                                 specs = list(nAdapt = 8000, nBurnin = 3000, nThin = 1, nSamp = 10000))
 betas<-beta.summary(nowcasting) #### função em funcoes.R`
 betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
 nowcasting_cumsum<-nowcasting.cumsum(nowcasting, samples = 5000)
@@ -172,7 +172,7 @@ p.betas_w
 
 ## Tempos de atraso cumulativo ##
 p.betas_cumsum <- p.betas %+% betas_cumsum +
-  ylab("Probabilidade Acumulada de notificação")
+  ylab("Probabilidade Acumulada\n de notificação")
 p.betas_cumsum
 
 p.betas_cumsum_w <- p.betas_cumsum %+% betas_cumsum_w +
