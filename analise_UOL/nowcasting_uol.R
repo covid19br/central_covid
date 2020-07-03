@@ -122,7 +122,7 @@ uol_df3 = uol_df %>%
   mutate(Cum=cumsum(N))%>%
   as.data.frame()
 
-trim<-5 ## cortando o fim da sequência de datas para evitar ruídos demais ##
+trim<-0 ## cortando o fim da sequência de datas para evitar ruídos demais ##
 
 ## Daily ##
 nowcasting<-NobBS.posterior2(data = uol_df,

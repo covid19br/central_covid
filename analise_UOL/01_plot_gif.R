@@ -7,7 +7,7 @@ PRJROOT <- rprojroot::find_root(".here")
 devtools::load_all("./now_fcts/") ##loading de funções necessárias##
 
 # plot
-data_ultimo_boletim <- as.Date("2020-05-29")
+data_ultimo_boletim <- as.Date("2020-06-30")
 #ast: o ideal aqui seria usar get.last.date de uma pasta com tudo organizado
 # e com relação aos dados seria ótimo ter um só arquivo para ler -
 # uol<-read_csv("./analise_UOL/SRAGs-tabela-last-updated_revised-29_maio.csv") ### load da CSV, essa é sem preenchimento dos BE faltantes
