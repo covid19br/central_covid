@@ -230,9 +230,11 @@ p.prev.ic.cumsum_w
 
 p.arrange<-ggpubr::ggarrange(p.betas, p.betas_cumsum, p.prev.ic, p.prev.ic.cumsum)
 p.arrange
+ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_30_06.png", 
+       dpi = 600, width = 9, height = 7)
 p.arrange_w<-ggpubr::ggarrange(p.betas_w, p.betas_cumsum_w, p.prev.ic_w, p.prev.ic.cumsum_w)
 p.arrange_w
-ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_13_06.png", 
+ggsave(p.arrange_w, filename = "./analise_UOL/plots/arrange_nowcasting_30_06.png", 
        dpi = 600, width = 9, height = 7)
 
 ###########################
