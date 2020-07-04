@@ -1,19 +1,25 @@
-#library(tmap)
+#-------------------------------------------------------
+# Script para gerar tabela consolidada por DRS
+# pega tabelas de Re, casos e obitos COVID mais recente
+#-------------------------------------------------------
+
 library(dplyr)
-#library(geobr)
 library(data.table)
-#library(maptools)
-#remotes::install_github("covid19br/now_fcts", ref = 'plot')
+library(textclean)
 library(nowfcts)
+library(tools)
 
 ## funcao para facilitar juntar os dados para a data mais recente
 get.max.values <- function(tipo, path){
   drs.path <- list.dirs(path, recursive = FALSE)
   drs.name <- list.dirs(path, recursive = FALSE, full.names = FALSE)
-  data.max <- get.last.date(paste0(drs.path[1], "/tabelas_nowcasting_para_grafico"))
-  drs.val <- lapply(drs.path, function(x) list.files(path = paste0(x, "/tabelas_nowcasting_para_grafico"),
-                                                     pattern = paste0(tipo, data.max, "*.csv"),
-                                                     full.names = TRUE))
+  data.max <- sapply(drs.path, function(x) get.last.date(paste0(x, "/tabelas_nowcasting_para_grafico")))
+  drs.val <- list()
+  for (i in 1:length(drs.name)) {
+    drs.val[[i]] <- list.files(path = paste0(drs.path[i], "/tabelas_nowcasting_para_grafico"),
+                               pattern = paste0(tipo, data.max[i], "*.csv"),
+                               full.names = TRUE)
+  }
   names(drs.val) <- drs.name
   ## df com Re para todas as DRS
   df.drs <- bind_rows(lapply(drs.val, fread), .id = "DRS.nome.nonascii")
@@ -27,20 +33,22 @@ get.max.values <- function(tipo, path){
       filter(!is.na(not.mean.c)) %>%
       filter(data == max(data, na.rm = TRUE))
   }
+  df.data <-  data.frame(data.base.sivep = data.max, DRS.nome.nonascii = drs.name)
+  df.res <- left_join(df.drs, df.data, by = "DRS.nome.nonascii")
 
-  return(df.drs)
+  return(df.res)
 }
 
 
-data.max <- get.last.date(list.dirs(vals.path)[3])
-
 # info DRS e municipios ---------------------------------------------------
-drs <- read.csv("../site/dados/DRS_SP.csv")
-drs.df <- distinct(drs[, c("DRS", "DRS.nome.nonascii")])
+drs.df <- read.csv("../dados/DRS_com_coordenadas.csv", dec = ",")
+drs.df$DRS.nome.nonascii <- replace_non_ascii(gsub(" ", "_", drs.df$DRS))
 
 # pegando os dados mais recentes ---------------------------------------------------------------
 ## usa a funcao get.max.values
 vals.path <- "../site/dados/DRS/SP"
+## guarda data max
+data.max <- get.last.date(list.dirs(vals.path)[3])
 
 ## r efetivo
 re.drs <- get.max.values(tipo = "r_efetivo_covid_", path = vals.path) %>%
@@ -50,10 +58,16 @@ caso.drs <- get.max.values("nowcasting_acumulado_covid_", path = vals.path) %>%
   select(DRS.nome.nonascii, casos = not.mean.c)
 ## obitos
 obito.drs <- get.max.values("nowcasting_acumulado_obitos_covid_", path = vals.path)  %>%
-  select(DRS.nome.nonascii, obitos = not.mean.c)
+  select(DRS.nome.nonascii, obitos = not.mean.c, data.base.sivep)
 
+# juntando todos os dados em uma unica tabela
 dados.drs <- left_join(drs.df, re.drs) %>%
   left_join(caso.drs) %>%
-  left_join(obito.drs)
+  left_join(obito.drs) %>%
+  select(-DRS.nome.nonascii) %>%
+  rename(óbitos = obitos)
 
-head(dados.drs)
+names(dados.drs) <- toTitleCase(gsub(".", " ", names(dados.drs), fixed = TRUE))
+
+write.csv(dados.drs, "../dados_processados/tabelas_consolidadas_divulgacao/dados_DRS_SP_para_mapa.csv",
+          row.names = FALSE)
