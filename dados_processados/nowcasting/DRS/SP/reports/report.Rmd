@@ -138,6 +138,7 @@ library(kableExtra)
 output.dir <- "../"
 
 zoos <- list()
+zoos.max <- list()
 for (covid in c("covid", "srag")){
     for (drs in list.files(output.dir)){
         data <- list.files(paste0(output.dir, drs, "/tabelas_nowcasting_para_grafico/"), pattern="r_efetivo_covid_.*.csv") %>%
@@ -153,13 +154,26 @@ for (covid in c("covid", "srag")){
         d <- read.csv(file)
         z <- zoo(d$Median.R, as.Date(d$data))
         zoos[[paste(drs, covid, sep=".")]] <- z
+        z.max <- zoo(d$Quantile.0.975.R)
+        zoos.max[[paste(drs, covid, sep=".")]] <- z.max
     }
 }
 
 R.median <- as.data.frame(do.call(merge, zoos))
 R.median <- R.median[order(rownames(R.median), decreasing=TRUE),]
+write.zoo(R.median, paste0("Rt_DRS_median_", data, ".csv"), row.names = FALSE, index.name = "data")
+R.max <- as.data.frame(do.call(merge, zoos.max))
+R.max <- R.max[order(rownames(R.max), decreasing=TRUE),]
+write.zoo(R.max, paste0("Rt_DRS_max_", data, ".csv"), row.names = FALSE, index.name = "data")
 
-kable(R.median, row.names=TRUE, digits=2) %>%
+kable(R.max, row.names=TRUE, digits=2,
+      caption="Estimativas do quantil de 97,5% de R efetivo") %>%
+  kable_styling(fixed_thead = T) %>%
+  scroll_box(height = "700px")
+  
+
+kable(R.median, row.names=TRUE, digits=2,
+      caption="Estimativas da mediana de R efetivo") %>%
   kable_styling(fixed_thead = T) %>%
   scroll_box(height = "700px")
 ```
