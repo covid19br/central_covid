@@ -146,6 +146,22 @@ betas_w<-beta.summary(nowcasting_w) #### função em funcoes.R`
 betas_cumsum_w<-beta.cumsum(nowcasting_w, samples = 5000)
 nowcasting_cumsum_w<-nowcasting.cumsum(nowcasting_w, samples = 5000)
 
+## From Sivep directly ##
+sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_30_junho.csv")
+sivep_direct<-sivep_direct%>%
+  mutate(dt_encerra = as.Date(dt_encerra, "%Y-%m-%d"),
+         dt_evoluca = as.Date(dt_evoluca, "%Y-%m-%d"))%>%
+  as.data.frame()
+nowcasting_direct<-NobBS.posterior2(data = sivep_direct,
+                                    now = max(sivep_direct$dt_evoluca)-trim,
+                                    onset_date = "dt_evoluca",
+                                    report_date = "dt_encerra",
+                                    units = "1 day",
+                                    specs = list(nAdapt = 8000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+betas_direct<-beta.summary(nowcasting_direct) #### função em funcoes.R`
+betas_cumsum_direct<-beta.cumsum(nowcasting_direct, samples = 5000)
+nowcasting_cumsum_direct<-nowcasting.cumsum(nowcasting_direct, samples = 5000)
+
 #############################
 ######### Gráficos ##########
 #############################
@@ -170,10 +186,17 @@ p.betas_w<-p.betas %+% betas_w +
   xlab("Semanas após dia do óbito")
 p.betas_w
 
+p.betas.direct<-p.betas %+% betas_direct
+p.betas.direct
+
 ## Tempos de atraso cumulativo ##
 p.betas_cumsum <- p.betas %+% betas_cumsum +
   ylab("Probabilidade Acumulada\n de notificação")
 p.betas_cumsum
+
+p.betas_cumsum_direct <- p.betas %+% betas_cumsum_direct +
+  ylab("Probabilidade Acumulada\n de notificação")
+p.betas_cumsum_direct
 
 p.betas_cumsum_w <- p.betas_cumsum %+% betas_cumsum_w +
   xlab("Semanas após dia do óbito")
@@ -191,6 +214,9 @@ p.prev.ic <- nowcasting$estimates %>% ggplot(aes(x = onset_date, y = estimate)) 
   scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
   ggtitle("Diários")
 p.prev.ic
+
+p.prev.ic_direct<-p.prev.ic %+% nowcasting_direct$estimates
+p.prev.ic_direct
 
 p.prev.ic_w<-nowcasting_w$estimates %>% ggplot(aes(x = onset_date, y = estimate)) +
   geom_line(data = uol_df3, aes(x = Death_wd, y = N, color="Notificados"), lwd = 1.5) +
@@ -216,6 +242,9 @@ p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
   ggtitle("Acumulados Diários")
 p.prev.ic.cumsum
 
+p.prev.ic.cumsum_direct<-p.prev.ic.cumsum %+% nowcasting_cumsum_direct
+p.prev.ic.cumsum_direct
+
 p.prev.ic.cumsum_w<-ggplot(nowcasting_cumsum_w, aes(x= Dates, y = mean))+
   geom_line(data = uol_df3, aes(x = Death_wd, y = Cum, color="Notificados"), lwd = 1.5) +
   geom_line(aes(col = "Estimado")) +
@@ -231,6 +260,10 @@ p.prev.ic.cumsum_w
 p.arrange<-ggpubr::ggarrange(p.betas, p.betas_cumsum, p.prev.ic, p.prev.ic.cumsum)
 p.arrange
 ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_30_06.png", 
+       dpi = 600, width = 9, height = 7)
+p.arrange_direct<-ggpubr::ggarrange(p.betas.direct, p.betas_cumsum_direct, p.prev.ic_direct, p.prev.ic.cumsum_direct)
+p.arrange_direct
+ggsave(p.arrange_direct, filename = "./analise_UOL/plots/direct_arrange_nowcasting_30_06.png", 
        dpi = 600, width = 9, height = 7)
 p.arrange_w<-ggpubr::ggarrange(p.betas_w, p.betas_cumsum_w, p.prev.ic_w, p.prev.ic.cumsum_w)
 p.arrange_w
