@@ -154,17 +154,17 @@ for (covid in c("covid", "srag")){
         d <- read.csv(file)
         z <- zoo(d$Median.R, as.Date(d$data))
         zoos[[paste(drs, covid, sep=".")]] <- z
-        z.max <- zoo(d$Quantile.0.975.R)
+        z.max <- zoo(d$Quantile.0.975.R, as.Date(d$data))
         zoos.max[[paste(drs, covid, sep=".")]] <- z.max
     }
 }
 
 R.median <- as.data.frame(do.call(merge, zoos))
 R.median <- R.median[order(rownames(R.median), decreasing=TRUE),]
-write.zoo(R.median, paste0("Rt_DRS_median_", data, ".csv"), row.names = FALSE, index.name = "data")
+write.zoo(R.median, paste0("Rt_DRS_median_", data, ".csv"), row.names=TRUE, index.name="data")
 R.max <- as.data.frame(do.call(merge, zoos.max))
 R.max <- R.max[order(rownames(R.max), decreasing=TRUE),]
-write.zoo(R.max, paste0("Rt_DRS_max_", data, ".csv"), row.names = FALSE, index.name = "data")
+write.zoo(R.max, paste0("Rt_DRS_max_", data, ".csv"), row.names=TRUE, index.name="data")
 
 kable(R.max, row.names=TRUE, digits=2,
       caption="Estimativas do quantil de 97,5% de R efetivo") %>%
