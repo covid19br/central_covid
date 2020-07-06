@@ -24,6 +24,8 @@ get_folder(){
         echo "mesorregioes"
     elif [ $1 == "micro" ]; then
         echo "microrregioes"
+    elif [ $1 == "estado" ]; then
+        echo "estado"
     fi
 }
 
@@ -48,6 +50,8 @@ get_names(){
             my_local_array[$geocode]=`awk -F, '{if($5 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $6; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
         elif [ $escala == "micro" ]; then
             my_local_array[$geocode]=`awk -F, '{if($3 == '"$geocode"') {gsub(/ /, "_"); gsub(/"/, ""); print $4; exit}}' ../nowcasting/dados/geocode_ibge.csv | iconv -f utf8 -t ascii//TRANSLIT -`
+        elif [ $escala == "estado" ]; then
+            my_local_array[$geocode]=${ESTADOS[$geocodes]}
         fi
     done
 }
@@ -91,3 +95,7 @@ get_abspath(){
         echo "$PWD/$1"
     fi
 }
+
+# lista de siglas e geocodes de estados
+declare -A ESTADOS=([12]=AC [27]=AL [13]=AM [16]=AP [29]=BA [23]=CE [53]=DF [32]=ES [52]=GO [21]=MA [31]=MG [50]=MS [51]=MT [15]=PA [25]=PB [26]=PE [22]=PI [41]=PR [33]=RJ [24]=RN [11]=RO [14]=RR [43]=RS [42]=SC [28]=SE [35]=SP [17]=TO)
+
