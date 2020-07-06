@@ -111,7 +111,14 @@ for geocode in ${geocodes[@]}; do
         rm $RUNFILE
         exit 1
     fi
-    last_output=`get_latest ${SITEfolder}'/dados/'${folder}'/'${estado}'/'${nomes[$geocode]}'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
+
+    if [ $escala == "estado" ]; then
+        path="${folder}/${estado}"
+    else
+        path="${folder}/${estado}/${nomes[$geocode]}"
+    fi
+
+    last_output=`get_latest ${SITEfolder}'/dados/'$path'/tabelas_nowcasting_para_grafico/nowcasting_acumulado_covid_{data}.csv'`
     if [[ ! $last_output < $last_input ]]; then
         continue
     fi
@@ -126,7 +133,6 @@ for geocode in ${geocodes[@]}; do
     Rscript update_nowcasting.R --dir $absdatafolder --escala $escala --sigla $estado --geocode $geocode --dataBase $today_ --outputDir $absoutfolder --trim $trim --updateGit $UPDATE_GIT_DATA_REPO --Rmethod $RMETHOD --ncores $NCORES
 
     ## mandando pro site
-    path="${folder}/${estado}/${nomes[$geocode]}"
 
     # atualiza repo site
     # isto é feito a cada passo do loop - mais seguro?
