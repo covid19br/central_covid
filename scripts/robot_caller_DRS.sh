@@ -32,7 +32,7 @@ pushd ../dados_processados/nowcasting/DRS/SP/reports/
 Rscript -e "rmarkdown::render(input = 'report.Rmd',
                               output_file = 'relatorio_${latest}.html',
                               output_dir = './')" &&
-git add "relatorio_${latest}.html Rt_DRS_max_${latest}.csv Rt_DRS_median_${latest}.csv" &&
+git add relatorio_${latest}.html Rt_DRS_max_${latest}.csv Rt_DRS_median_${latest}.csv &&
 git commit -m ":robot: relatório DRS ${estado} de ${latest}" &&
 git push
 popd
