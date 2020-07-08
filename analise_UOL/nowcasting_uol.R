@@ -130,7 +130,7 @@ nowcasting<-NobBS.posterior2(data = uol_df,
                                  onset_date = "Death_date",
                                  report_date = "Report_date",
                                  units = "1 day",
-                                 specs = list(nAdapt = 8000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+                                 specs = list(nAdapt = 15000, nBurnin = 3000, nThin = 1, nSamp = 10000))
 betas<-beta.summary(nowcasting) #### função em funcoes.R`
 betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
 nowcasting_cumsum<-nowcasting.cumsum(nowcasting, samples = 5000)
@@ -147,7 +147,7 @@ betas_cumsum_w<-beta.cumsum(nowcasting_w, samples = 5000)
 nowcasting_cumsum_w<-nowcasting.cumsum(nowcasting_w, samples = 5000)
 
 ## From Sivep directly ##
-sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_30_junho.csv")
+sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_07_julho.csv")
 sivep_direct<-sivep_direct%>%
   mutate(dt_encerra = as.Date(dt_encerra, "%Y-%m-%d"),
          dt_evoluca = as.Date(dt_evoluca, "%Y-%m-%d"))%>%
@@ -157,7 +157,7 @@ nowcasting_direct<-NobBS.posterior2(data = sivep_direct,
                                     onset_date = "dt_evoluca",
                                     report_date = "dt_encerra",
                                     units = "1 day",
-                                    specs = list(nAdapt = 8000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+                                    specs = list(nAdapt = 15000, nBurnin = 3000, nThin = 1, nSamp = 10000))
 betas_direct<-beta.summary(nowcasting_direct) #### função em funcoes.R`
 betas_cumsum_direct<-beta.cumsum(nowcasting_direct, samples = 5000)
 nowcasting_cumsum_direct<-nowcasting.cumsum(nowcasting_direct, samples = 5000)
@@ -259,15 +259,15 @@ p.prev.ic.cumsum_w
 
 p.arrange<-ggpubr::ggarrange(p.betas, p.betas_cumsum, p.prev.ic, p.prev.ic.cumsum)
 p.arrange
-ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_30_06.png", 
+ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_07_07.png", 
        dpi = 600, width = 9, height = 7)
 p.arrange_direct<-ggpubr::ggarrange(p.betas.direct, p.betas_cumsum_direct, p.prev.ic_direct, p.prev.ic.cumsum_direct)
 p.arrange_direct
-ggsave(p.arrange_direct, filename = "./analise_UOL/plots/direct_arrange_nowcasting_30_06.png", 
+ggsave(p.arrange_direct, filename = "./analise_UOL/plots/direct_arrange_nowcasting_07_07.png", 
        dpi = 600, width = 9, height = 7)
 p.arrange_w<-ggpubr::ggarrange(p.betas_w, p.betas_cumsum_w, p.prev.ic_w, p.prev.ic.cumsum_w)
 p.arrange_w
-ggsave(p.arrange_w, filename = "./analise_UOL/plots/arrange_nowcasting_30_06.png", 
+ggsave(p.arrange_w, filename = "./analise_UOL/plots/arrange_nowcasting_07_07.png", 
        dpi = 600, width = 9, height = 7)
 
 ###########################
