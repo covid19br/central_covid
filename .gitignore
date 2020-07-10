@@ -49,6 +49,8 @@ central_covid.Rproj
 /dados_processados/nowcasting/*/*/*/output_nowcasting/*_traj_*.csv
 /dados_processados/nowcasting/estado/*/output_nowcasting/*_post_*.csv
 /dados_processados/nowcasting/estado/*/output_nowcasting/*_traj_*.csv
+/dados_processados/nowcasting/R_novo/*/*/*/output_nowcasting/*_post_*.csv
+/dados_processados/nowcasting/R_novo/*/*/*/output_nowcasting/*_traj_*.csv
 /nowcasting
 /site
 /R_eff
