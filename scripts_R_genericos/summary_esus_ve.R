@@ -9,15 +9,18 @@ library(readr)
 
 ###parâmetros###
 
-####em desenvolvimento###
+########summary da e-sus ve########################
+
+########parâmetros#####
 
 nome.dir="C:/Users/Tatiana/Documents/analises_covid/teste"
 setwd(nome.dir)
 estado.name="santa catarina"
 mun.name="florianópolis"
 file.names<-list.files(path=nome.dir, pattern="esus-ve_2020_")
+get.data.base(file.names)
 
-####fazer um loop pra isso se repetir com todas as bases####
+#######calcula número de casos por data de primeiros sintomas e por data da base#####
 
 for (file.name in file.names) {
   esus_ve<-read_delim(file = file.name,
@@ -27,22 +30,20 @@ for (file.name in file.names) {
                       locale = readr::locale(encoding = "UTF-8"))
   index_nada <- problems(esus_ve)$row   #retirar essa linha depois de incorporar o read.esus ve
   esus_ve <- esus_ve[-index_nada,]      # retirar essa linha depois de incorporar o read.esus ve
-  data.base<-substr(file.name,7,17)
   cidade<- esus_ve %>% filter (tolower(estado)==estado.name) %>%
                        filter (tolower(municipio)==mun.name)
-  cidade$dataSintomas<-substr(cidade$dataInicioSintomas,1,10) ####tirar essa linha depois de incorporar o read esus ve
-  cidade$dataSintomas<-ymd(cidade$dataInicioSintomas)  ###tirar essa linha depois de incorporar o read esus-ve
+  cidade$dataInicioSintomas<-substr(cidade$dataInicioSintomas,1,10) ####tirar essa linha depois de incorporar o read esus ve
+  cidade$dataInicioSintomas<-ymd(cidade$dataInicioSintomas)  ###tirar essa linha depois de incorporar o read esus-ve
   dados<- cidade %>%  filter (resultadoTeste=="Positivo" | str_detect(classificacaoFinal, "Confirma")) %>%
                      select (dataInicioSintomas) 
   dados2<- dados %>% group_by(dataInicioSintomas) %>%
-  summarise(data.base=n())  %>%                              
+  summarise(Casos=n())  %>%                              
   as.data.frame()
-  print(dados2)
- }
-
-
-#write.table(dados2,file.name, row.names=FALSE )
-
+  data.base<-get.data.base(file.name)
+  dados2$data.base<-data.base
+  newFileName <-  paste0("summary_esus_", mun.name, data.base ,".csv")
+  write.csv(dados2, newFileName, row.names = FALSE)
+}
 
 
 
