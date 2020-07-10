@@ -69,5 +69,7 @@ dados.drs <- left_join(drs.df, re.drs) %>%
 
 names(dados.drs) <- toTitleCase(gsub(".", " ", names(dados.drs), fixed = TRUE))
 
+dados.drs
+
 write.csv(dados.drs, "../dados_processados/tabelas_consolidadas_divulgacao/dados_DRS_SP_para_mapa.csv",
           row.names = FALSE)

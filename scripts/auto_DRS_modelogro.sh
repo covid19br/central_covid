@@ -49,26 +49,9 @@ if [[ $newcommit && -f $csv2 && ! -f $out && ! -f $RUNFILE ]]; then
     touch $RUNFILE
 
     ## nowcasting
-    pushd $Rfolder
     for DRS in $nDRS; do
-        Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $outfolder &&
-        #Rscript update_projecao_leitos.R --dir $absdatafolder/dados --escala drs --sigla $estado --geocode $DRS --dataBase $today_ --dataInicial 2020-03-16 --out_dir $outfolder --nowcasting FALSE --fit_models FALSE &&
-        pushd $outfolder/projecao_leitos/DRS/$estado/${nomes_DRS[$DRS]} &&
-        git checkout master &&
-        git pull &&
-        git add curve_fits/curve_fits_${todaydash}.Rds &&
-        git add hospitalizados/hopitalized_${todaydash}.csv &&
-        git add hospitalizados/hopitalized_UTI_${todaydash}.csv &&
-        git add hospitalizados/${todaydash}_internacoes_por_dia_{covid,srag}.csv &&
-        git add relatorios/${todaydash}_relatorio_projecoes_demanda_hospitalar_{srag,covid}.pdf &&
-        git commit -m ":robot: projecao leitos DRS ${estado}-${nomes_DRS[$DRS]}" &&
-        # DANGER: rebase é perigo: mantenha sua cópia local em ordem!
-        # por outro lado, é a única solução com robôs concorrentes em outra máquina.
-        git pull --rebase &&
-        git push &&
-        popd
+        ./auto_site_modelogro.sh drs $DRS
     done
-    popd
 
     pushd ../dados/estado_${estado}/SRAG_hospitalizados
     # gera relatório unificado

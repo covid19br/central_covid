@@ -18,7 +18,7 @@ estados_sigla=("AC" "AL" "AM" "AP" "BA" "CE" "DF" "ES" "GO" "MA" "MG" "MS" "MT" 
 pushd $Rfolder
 for i in "${!estados_id[@]}"; do
     echo "Rodando estado ${estados_id[$i]} ${estados_sigla[$i]}"
-    #Rscript update_nowcasting.R --dir ../dados/SIVEP-Gripe/ --escala estado --sigla ${estados_sigla[$i]} --geocode ${estados_id[$i]} --outputDir ../dados_processados/nowcasting/ --trim $trim --updateGit TRUE --Rmethod Cori
+    Rscript update_nowcasting.R --dir ../dados/SIVEP-Gripe/ --escala estado --sigla ${estados_sigla[$i]} --geocode ${estados_id[$i]} --outputDir ../dados_processados/nowcasting/ --trim $trim --updateGit TRUE --Rmethod Cori
     Rscript update_nowcasting.R --dir ../dados/SIVEP-Gripe/ --escala estado --sigla ${estados_sigla[$i]} --geocode ${estados_id[$i]} --outputDir ../dados_processados/nowcasting/ --trim $trim --updateGit TRUE --Rmethod Cori --plot TRUE
 done
 popd
