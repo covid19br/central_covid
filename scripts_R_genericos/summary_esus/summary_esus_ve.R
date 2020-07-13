@@ -65,9 +65,9 @@ for (i in 1:length(file.names)) {
   mutate(data.base = data.base) %>%
   as.data.frame()
   #escreve um arquivo por data
-  newFileName <-  paste0("summary_esus_", mun.name, "_last_date_",data.base ,".csv")
+  #newFileName <-  paste0("./scripts_R_genericos/summary_esus/Florianopolis/summary_esus_", mun.name, "_last_date_",data.base ,".csv")
   #write_csv(dados2, newFileName, col_names = )#comentei aqui mas vai criar um csv por data
   #escreve um arquivo por municipio já juntando todas as datas (é redundante com bind_rows)
-  munFileName <-  paste0("summary_esus_", mun.name,".csv")
+  munFileName <-  paste0("./scripts_R_genericos/summary_esus/Florianopolis/summary_esus_", mun.name,".csv")
   write_csv(dados2, path = munFileName, append = TRUE)
 }
