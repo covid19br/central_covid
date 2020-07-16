@@ -147,7 +147,7 @@ betas_cumsum_w<-beta.cumsum(nowcasting_w, samples = 5000)
 nowcasting_cumsum_w<-nowcasting.cumsum(nowcasting_w, samples = 5000)
 
 ## From Sivep directly ##
-sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_07_julho.csv")
+sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_14_julho.csv")
 sivep_direct<-sivep_direct%>%
   mutate(dt_encerra = as.Date(dt_encerra, "%Y-%m-%d"),
          dt_evoluca = as.Date(dt_evoluca, "%Y-%m-%d"))%>%

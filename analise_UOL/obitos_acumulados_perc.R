@@ -6,11 +6,11 @@ library("RColorBrewer")
 
 uol_betas3<-betas_cumsum_direct
 
-uol_betas3$upper[uol_betas3$upper > 1] <- 1
+# uol_betas3$upper[uol_betas3$upper > 1] <- 1
 
 pontos <- data.frame(
-    y = uol_betas3[c(1, 11, 19, 31, 61), "mean"],
-    x = uol_betas3$atraso[c(1, 11, 19, 31, 61)]
+    y = uol_betas3[c(1, 11, 18, 31, 61), "mean"],
+    x = uol_betas3$atraso[c(1, 11, 18, 31, 61)]
     )
 
 cols <- rev(brewer.pal(5, "Set1"))
@@ -34,7 +34,7 @@ cols <- rev(brewer.pal(5, "Set1"))
     geom_point(data = pontos, aes(x = x, y = y * 100), size = 4, colour = cols) +
     labs(x = "Dias após dia do óbito", y = "Probabilidade Acumulada\nde notificação",
          title = "Atraso de notificação de óbitos COVID por SRAG", 
-         subtitle = "Dados SIVEP-Gripe 0/07/2020",
+         subtitle = "Dados SIVEP-Gripe 14/07/2020",
          caption = "Elaboração: @rafalpx, Observatório COVID19 BR; covid19br.github.io") +
     theme(legend.position = "none") +
     theme_bw() +

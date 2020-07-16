@@ -19,42 +19,22 @@ PRJROOT  = rprojroot::find_root(".here")
 
 devtools::load_all("./now_fcts/R/") ##loading de funções necessárias##
 
-  uol<-read_csv("./analise_UOL/dados/SRAGs-tabela-last-updated.csv")
+uol<-read_csv("./analise_UOL/dados/SRAGs-tabela-last-updated.csv")
 ###SEGUIR IGUAL###
-
-uol<-as.data.frame(uol)
-uol_melted<-reshape::melt(uol, id.vars = "Data")
-diff_BE2<-c()
-uol_diff<-uol[,-1]
-for (i in ncol(uol_diff):2) {
-  diff_BE<-c()
-  diff_BE<-as.numeric(uol_diff[,i-1]-uol_diff[,i])
-  diff_BE<-data.frame(N = diff_BE, Data = uol$Data)
-  # diff_BE<-diff_BE%>%
-  #   filter(!is.na(N))%>% ## Porque se não ele não faz o cumsum ##
-  #   mutate(cumsum = cumsum(N))%>%
-  #   as.data.frame()   
-  diff_BE$id<-colnames(uol_diff)[i]
-  diff_BE2<-rbind(diff_BE2,diff_BE)
+diff_se_maior <- function(x, y) {
+  z <- if_else(y >= x,  y - x, 0)
+  return(z)
 }
 
-diff_BE2<-ldply(diff_BE2$N,.id = !is.na(diff_BE2$N),cumsum)
+data_wide<-uol[,-1]
+for (i in (ncol(data_wide)):2) {
+  data_diff[,i] <- diff_se_maior(data_wide[,i-1], data_wide[,i])
+}
 
-p.uol <-
-  ggplot(diff_BE2, aes(x = Data, y = N, col = id)) +
-  # geom_point(shape = 1)+
-  # geom_line()+
-  geom_line(aes(x=Data, y=cumsum, col=id))+
-  geom_vline(xintercept = as.Date("2020-03-17", format = "%Y-%m-%d"), colour = "indianred3", size = 0.45, linetype = "dashed")+
-  scale_color_viridis(name = "Nº Boletim", 
-                        option = "viridis", 
-                        direction = 1, 
-                        alpha = 1, 
-                        # begin = 0, 
-                        end = 1)+
-  labs(x = "Data", y = "Número de Óbitos") +
-  theme_bw() +
-  theme(legend.position = "right")+
-  theme(axis.text= element_text(size=14),
-        axis.title = element_text(size=14))
-p.uol
+dados_mun <- data_diff %>%
+  rownames_to_column(var = "data_inicio") %>%
+  pivot_longer(cols = -1, names_to = "data_base") %>%
+  filter(value != 0) %>%
+  mutate(data_inicio = lubridate::as_date(data_inicio),
+         data_base = lubridate::as_date(data_base)) %>%
+  data.frame()
