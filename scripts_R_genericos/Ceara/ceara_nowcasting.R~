@@ -1,0 +1,11 @@
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(NobBS)
+
+## Leitura dos dados, baixados de https://indicadores.integrasus.saude.ce.gov.br/indicadores/indicadores-coronavirus/coronavirus-ceara
+
+dados <- read.csv("ceara_boletim_2020_07_15.csv", row.names=1, na.strings = c("NA", " ", ""))
+dt.index <- grepl("data", names(dados))
+dados[,dt.index] <- sapply(dados[,dt.index], as.Date, "%Y-%m-%d %h:%m:%s")
