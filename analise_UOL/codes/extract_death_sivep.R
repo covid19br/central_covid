@@ -1,4 +1,21 @@
-devtools::load_all("./now_fcts/R")
+if(!require(plyr)){install.packages("plyr"); library(plyr)}
+if(!require(tidyverse)){install.packages("tidyverse"); library(tidyverse)}
+if(!require(NobBS)){install.packages("NobBS"); library(NobBS)}
+if(!require(aweek)){install.packages("aweek"); library(aweek)}
+if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
+if(!require(lubridate)){install.packages("lubridate"); library(lubridate)}
+# if(!require(brms)){install.packages("brms"); library(brms)}
+if(!require(rprojroot)){install.packages("rprojroot"); library(rprojroot)}
+if(!require(zoo)){install.packages("zoo"); library(zoo)}
+if(!require(EpiEstim)){install.packages("EpiEstim"); library(EpiEstim)}
+if(!require(foreign)){install.packages("foreign"); library(foreign)}
+if(!require(viridis)){install.packages("viridis"); library(viridis)}
+if(!require(aweek)){install.packages("aweek"); library(aweek)}
+if(!require(lubridate)){install.packages("lubridate"); library(lubridate)}
+
+PRJROOT  = rprojroot::find_root(".here")
+
+devtools::load_all("./now_fcts/R/") ##loading de funções necessárias##
 
 sivep_14<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado_2020_07_14.zip')
 sivep_07<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado_2020_07_07.zip')
@@ -14,11 +31,16 @@ sivep_14_obitos<-sivep_14 %>%
   filter(!is.na(dt_evoluca)) %>%
   mutate(dt_encerra = pmax(dt_encerra, dt_digita, dt_evoluca,
                            na.rm = TRUE)) %>%
-  select(dt_evoluca, dt_notific, dt_encerra)%>%
+  select(dt_sin_pri, dt_evoluca, dt_notific, dt_encerra)%>%
   as.data.frame()
 write.csv(sivep_14_obitos, "~/Área de Trabalho/central_covid/analise_UOL/dados/extract_dates_sivep_14_julho.csv", row.names = FALSE)
 sivep_14_obitos_sum<-sivep_14_obitos%>%
   group_by(dt_evoluca)%>%
+  dplyr::summarise(N=n())%>%
+  mutate(Cum=cumsum(N))%>%
+  as.data.frame()
+sivep_14_sin_sum<-sivep_14_obitos%>%
+  group_by(dt_sin_pri)%>%
   dplyr::summarise(N=n())%>%
   mutate(Cum=cumsum(N))%>%
   as.data.frame()
