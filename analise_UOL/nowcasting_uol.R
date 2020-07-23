@@ -115,7 +115,7 @@ uol_df2 = uol_df %>%
   mutate(Cum=cumsum(N))%>%
   as.data.frame()
 
-trim<-0 ## cortando o fim da sequência de datas para evitar ruídos demais ##
+trim<-3 ## cortando o fim da sequência de datas para evitar ruídos demais ##
 
 ## Daily ##
 nowcasting<-NobBS.posterior2(data = uol_df,
@@ -130,11 +130,13 @@ nowcasting_estimate<-nowcasting$estimates
 nowcasting_cumsum<-nowcasting.cumsum(nowcasting, samples = 5000)
 
 last_data<-max(uol_df$Death_date)
+ifelse(trim>0,
+       trimmed<-paste0("_trimmed_",trim),trimmed<-NULL)
 
-write.csv(nowcasting_estimate, file = paste0("./analise_UOL/output/BE_nowcasting_estimates_", last_data,".csv"), row.names = FALSE)
-write.csv(betas, file = paste0("./analise_UOL/output/BE_betas_", last_data,".csv"), row.names = FALSE)
-write.csv(betas_cumsum, file = paste0("./analise_UOL/output/BE_betas_cumsum_",last_data,".csv"), row.names = FALSE)
-write.csv(nowcasting_cumsum, file = paste0("./analise_UOL/output/BE_nowcasting_cumsum_", last_data,".csv"), row.names = FALSE)
+write.csv(nowcasting_estimate, file = paste0("./analise_UOL/output/BE_nowcasting_estimates_", last_data,trimmed,".csv"), row.names = FALSE)
+write.csv(betas, file = paste0("./analise_UOL/output/BE_betas_", last_data,trimmed,".csv"), row.names = FALSE)
+write.csv(betas_cumsum, file = paste0("./analise_UOL/output/BE_betas_cumsum_",last_data,trimmed,".csv"), row.names = FALSE)
+write.csv(nowcasting_cumsum, file = paste0("./analise_UOL/output/BE_nowcasting_cumsum_", last_data,trimmed,".csv"), row.names = FALSE)
 
 #############################
 ######### Gráficos ##########
@@ -193,7 +195,7 @@ p.prev.ic.cumsum
 
 p.arrange<-ggpubr::ggarrange(p.betas, p.betas_cumsum, p.prev.ic, p.prev.ic.cumsum)
 p.arrange
-ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_07_07.png", 
+ggsave(p.arrange, filename = paste0("./analise_UOL/plots/arrange_nowcasting_",last_data,".png"), 
        dpi = 600, width = 9, height = 7)
 
 ###########################
