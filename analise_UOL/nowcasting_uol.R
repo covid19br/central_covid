@@ -115,13 +115,6 @@ uol_df2 = uol_df %>%
   mutate(Cum=cumsum(N))%>%
   as.data.frame()
 
-### somando os óbitos ###
-uol_df3 = uol_df %>%
-  group_by(Death_wd)%>%
-  dplyr::summarise(N=n())%>%
-  mutate(Cum=cumsum(N))%>%
-  as.data.frame()
-
 trim<-0 ## cortando o fim da sequência de datas para evitar ruídos demais ##
 
 ## Daily ##
@@ -133,38 +126,24 @@ nowcasting<-NobBS.posterior2(data = uol_df,
                                  specs = list(nAdapt = 15000, nBurnin = 3000, nThin = 1, nSamp = 10000))
 betas<-beta.summary(nowcasting) #### função em funcoes.R`
 betas_cumsum<-beta.cumsum(nowcasting, samples = 5000)
+nowcasting_estimate<-nowcasting$estimates
 nowcasting_cumsum<-nowcasting.cumsum(nowcasting, samples = 5000)
 
-## Weekly ##
-nowcasting_w<-NobBS.posterior2(data = uol_df,
-                             now = max(uol_df$Death_wd),
-                             onset_date = "Death_wd",
-                             report_date = "Report_wd",
-                             units = "1 week",
-                             specs = list(nAdapt = 7000, nBurnin = 3000, nThin = 1, nSamp = 10000))
-betas_w<-beta.summary(nowcasting_w) #### função em funcoes.R`
-betas_cumsum_w<-beta.cumsum(nowcasting_w, samples = 5000)
-nowcasting_cumsum_w<-nowcasting.cumsum(nowcasting_w, samples = 5000)
+last_data<-max(uol_df$Death_date)
 
-## From Sivep directly ##
-sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_14_julho.csv")
-sivep_direct<-sivep_direct%>%
-  mutate(dt_encerra = as.Date(dt_encerra, "%Y-%m-%d"),
-         dt_evoluca = as.Date(dt_evoluca, "%Y-%m-%d"))%>%
-  as.data.frame()
-nowcasting_direct<-NobBS.posterior2(data = sivep_direct,
-                                    now = max(sivep_direct$dt_evoluca)-trim,
-                                    onset_date = "dt_evoluca",
-                                    report_date = "dt_encerra",
-                                    units = "1 day",
-                                    specs = list(nAdapt = 15000, nBurnin = 3000, nThin = 1, nSamp = 10000))
-betas_direct<-beta.summary(nowcasting_direct) #### função em funcoes.R`
-betas_cumsum_direct<-beta.cumsum(nowcasting_direct, samples = 5000)
-nowcasting_cumsum_direct<-nowcasting.cumsum(nowcasting_direct, samples = 5000)
+write.csv(nowcasting_estimate, file = paste0("./analise_UOL/output/BE_nowcasting_estimates_", last_data,".csv"), row.names = FALSE)
+write.csv(betas, file = paste0("./analise_UOL/output/BE_betas_", last_data,".csv"), row.names = FALSE)
+write.csv(betas_cumsum, file = paste0("./analise_UOL/output/BE_betas_cumsum_",last_data,".csv"), row.names = FALSE)
+write.csv(nowcasting_cumsum, file = paste0("./analise_UOL/output/BE_nowcasting_cumsum_", last_data,".csv"), row.names = FALSE)
 
 #############################
 ######### Gráficos ##########
 #############################
+
+nowcasting_estimate<-read_csv(paste0("./analise_UOL/output/BE_nowcasting_estimates_", last_data,".csv"))
+betas<-read_csv(paste0("./analise_UOL/output/BE_betas_", last_data,".csv"))
+betas_cumsum<-read_csv(paste0("./analise_UOL/output/BE_betas_cumsum_",last_data,".csv"))
+nowcasting_cumsum<-read_csv(paste0("./analise_UOL/output/BE_nowcasting_cumsum_", last_data,".csv"))
 
 ################################################################################
 ## Plots: objetos ggplot2
@@ -182,25 +161,10 @@ p.betas <-
   ggtitle("Atraso de notificação de óbitos COVID por SRAG")
 p.betas
 
-p.betas_w<-p.betas %+% betas_w +
-  xlab("Semanas após dia do óbito")
-p.betas_w
-
-p.betas.direct<-p.betas %+% betas_direct
-p.betas.direct
-
 ## Tempos de atraso cumulativo ##
 p.betas_cumsum <- p.betas %+% betas_cumsum +
   ylab("Probabilidade Acumulada\n de notificação")
 p.betas_cumsum
-
-p.betas_cumsum_direct <- p.betas %+% betas_cumsum_direct +
-  ylab("Probabilidade Acumulada\n de notificação")
-p.betas_cumsum_direct
-
-p.betas_cumsum_w <- p.betas_cumsum %+% betas_cumsum_w +
-  xlab("Semanas após dia do óbito")
-p.betas_cumsum_w
 
 ## N de casos previstos e seus ICS ##
 p.prev.ic <- nowcasting$estimates %>% ggplot(aes(x = onset_date, y = estimate)) +
@@ -215,21 +179,6 @@ p.prev.ic <- nowcasting$estimates %>% ggplot(aes(x = onset_date, y = estimate)) 
   ggtitle("Diários")
 p.prev.ic
 
-p.prev.ic_direct<-p.prev.ic %+% nowcasting_direct$estimates
-p.prev.ic_direct
-
-p.prev.ic_w<-nowcasting_w$estimates %>% ggplot(aes(x = onset_date, y = estimate)) +
-  geom_line(data = uol_df3, aes(x = Death_wd, y = N, color="Notificados"), lwd = 1.5) +
-  geom_line(aes(col = "Estimado")) +
-  geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
-  xlab("Semana do Óbito") +
-  ylab("Nº de Óbitos por semana") +
-  theme_bw() +
-  theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-  scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
-  ggtitle("Semanal")
-p.prev.ic_w
-
 p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
   geom_line(data = uol_df2, aes(x = Death_date, y = Cum, color="Notificados"), lwd = 1.5) +
   geom_line(aes(col = "Estimado")) +
@@ -242,32 +191,9 @@ p.prev.ic.cumsum<-ggplot(nowcasting_cumsum, aes(x= Dates, y = mean))+
   ggtitle("Acumulados Diários")
 p.prev.ic.cumsum
 
-p.prev.ic.cumsum_direct<-p.prev.ic.cumsum %+% nowcasting_cumsum_direct
-p.prev.ic.cumsum_direct
-
-p.prev.ic.cumsum_w<-ggplot(nowcasting_cumsum_w, aes(x= Dates, y = mean))+
-  geom_line(data = uol_df3, aes(x = Death_wd, y = Cum, color="Notificados"), lwd = 1.5) +
-  geom_line(aes(col = "Estimado")) +
-  geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
-  xlab("Semana do Óbito") +
-  ylab("Nº de Óbitos Acumulados") +
-  theme_bw() +
-  theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-  scale_colour_manual(values = c("red", "blue"), aesthetics = c("colour", "fill"))+
-  ggtitle("Acumulados Semanal")
-p.prev.ic.cumsum_w
-
 p.arrange<-ggpubr::ggarrange(p.betas, p.betas_cumsum, p.prev.ic, p.prev.ic.cumsum)
 p.arrange
 ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_07_07.png", 
-       dpi = 600, width = 9, height = 7)
-p.arrange_direct<-ggpubr::ggarrange(p.betas.direct, p.betas_cumsum_direct, p.prev.ic_direct, p.prev.ic.cumsum_direct)
-p.arrange_direct
-ggsave(p.arrange_direct, filename = "./analise_UOL/plots/direct_arrange_nowcasting_07_07.png", 
-       dpi = 600, width = 9, height = 7)
-p.arrange_w<-ggpubr::ggarrange(p.betas_w, p.betas_cumsum_w, p.prev.ic_w, p.prev.ic.cumsum_w)
-p.arrange_w
-ggsave(p.arrange_w, filename = "./analise_UOL/plots/arrange_nowcasting_07_07.png", 
        dpi = 600, width = 9, height = 7)
 
 ###########################
