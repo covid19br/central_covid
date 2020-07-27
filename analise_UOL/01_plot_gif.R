@@ -44,3 +44,24 @@ p.uol.ridges <-
         panel.spacing = unit(0.1, "lines"),
         strip.text.x = element_text(size = 8))
 p.uol.ridges
+
+p.joy<-
+  ggplot(uol_melted, aes(x = Data, height = value, y = variable, fill = ..x..)) +
+  ggridges::geom_density_ridges_gradient(scale = 4, 
+                                         stat = "identity", 
+                                         col = "white", 
+                                         fill = "black", 
+                                         rel_min_height = 0.01) +
+  ggridges::theme_ridges(grid = F) +
+  guides(fill = F)+
+  coord_cartesian(clip = "off") +
+  xlab("") +
+  ylab("") +
+  theme(legend.position = "none",
+        panel.spacing = unit(0.1, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank(),
+        plot.background = element_rect(fill = "black"))
+p.joy
