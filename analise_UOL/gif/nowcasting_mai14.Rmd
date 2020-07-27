@@ -57,8 +57,8 @@ nowc <-
     shadow_mark(colour = "lightgrey", alpha = 0.5, size = 1, exclude_layer = c(2, 3))
 
 animate(nowc,
-        duration = 25,
-        end_pause = 5,
+        duration = 30,
+        end_pause = 7,
         width = 800,
         height = 800)
 

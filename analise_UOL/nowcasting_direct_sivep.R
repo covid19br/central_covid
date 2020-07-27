@@ -47,7 +47,7 @@ p.uol
 ##      NOWCASTING      ##
 ##########################
 ## From Sivep directly ##
-sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_14_julho.csv")
+sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_21_julho.csv")
 sivep_direct<-sivep_direct%>%
   mutate(dt_sin_pri = as.Date(dt_sin_pri, "%Y-%m-%d"),
          dt_encerra = as.Date(dt_encerra, "%Y-%m-%d"),
@@ -76,29 +76,39 @@ betas_cumsum_direct<-beta.cumsum(nowcasting_direct, samples = 5000)
 nowcasting_cumsum_direct<-nowcasting.cumsum(nowcasting_direct, samples = 5000)
 
 last_data<-max(sivep_direct$dt_evoluca)
+ifelse(trim>0,
+       trimmed<-paste0("_trimmed_",trim),trimmed<-NULL)
 
-write.csv(nowcasting_direct$estimates, file = paste0("./analise_UOL/output/nowcasting_estimates_", last_data,".csv"), row.names = FALSE)
-write.csv(betas_direct, file = paste0("./analise_UOL/output/betas_direct_", last_data,".csv"), row.names = FALSE)
-write.csv(betas_cumsum_direct, file = paste0("./analise_UOL/output/betas_cumsum_direct_",last_data,".csv"), row.names = FALSE)
-write.csv(nowcasting_cumsum_direct, file = paste0("./analise_UOL/output/nowcasting_cumsum_direct", last_data,".csv"), row.names = FALSE)
+write.csv(nowcasting_direct$estimates, 
+          file = paste0("./analise_UOL/output/nowcasting_estimates_direct", last_data,trimmed,".csv"), row.names = FALSE)
+write.csv(betas_direct, 
+          file = paste0("./analise_UOL/output/betas_direct_", last_data,trimmed,".csv"), row.names = FALSE)
+write.csv(betas_cumsum_direct, 
+          file = paste0("./analise_UOL/output/betas_cumsum_direct_",last_data,trimmed,".csv"), row.names = FALSE)
+write.csv(nowcasting_cumsum_direct, 
+          file = paste0("./analise_UOL/output/nowcasting_cumsum_direct", last_data,trimmed,".csv"), row.names = FALSE)
 
-### Data Primeiros Sintomas ###
-nowcasting_direct_sin<-NobBS.posterior2(data = sivep_direct,
-                                    now = max(sivep_direct$dt_sin_pri)-trim,
-                                    onset_date = "dt_sin_pri",
-                                    report_date = "dt_encerra",
-                                    units = "1 day",
-                                    specs = list(nAdapt = 15000, nBurnin = 3000, nThin = 1, nSamp = 10000))
-betas_direct_sin<-beta.summary(nowcasting_direct_sin) #### função em funcoes.R`
-betas_cumsum_direct_sin<-beta.cumsum(nowcasting_direct_sin, samples = 5000)
-nowcasting_cumsum_direct_sin<-nowcasting.cumsum(nowcasting_direct_sin, samples = 5000)
-
-last_data_sin_pri<-max(sivep_direct$dt_sin_pri)
-
-write.csv(nowcasting_direct_sin$estimates, file = paste0("./analise_UOL/output/nowcasting_estimates_sin_pri_", last_data_sin_pri,".csv"), row.names = FALSE)
-write.csv(betas_direct_sin, file = paste0("./analise_UOL/output/betas_direct_sin_pri_", last_data_sin_pri,".csv"), row.names = FALSE)
-write.csv(betas_cumsum_direct_sin, file = paste0("./analise_UOL/output/betas_cumsum_direct_sin_pri_",last_data_sin_pri,".csv"), row.names = FALSE)
-write.csv(nowcasting_cumsum_direct_sin, file = paste0("./analise_UOL/output/nowcasting_cumsum_direct_sin_pri_", last_data_sin_pri,".csv"), row.names = FALSE)
+# ### Data Primeiros Sintomas ###
+# nowcasting_direct_sin<-NobBS.posterior2(data = sivep_direct,
+#                                     now = max(sivep_direct$dt_sin_pri)-trim,
+#                                     onset_date = "dt_sin_pri",
+#                                     report_date = "dt_encerra",
+#                                     units = "1 day",
+#                                     specs = list(nAdapt = 15000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+# betas_direct_sin<-beta.summary(nowcasting_direct_sin) #### função em funcoes.R`
+# betas_cumsum_direct_sin<-beta.cumsum(nowcasting_direct_sin, samples = 5000)
+# nowcasting_cumsum_direct_sin<-nowcasting.cumsum(nowcasting_direct_sin, samples = 5000)
+# 
+# last_data_sin_pri<-max(sivep_direct$dt_sin_pri)
+# 
+# write.csv(nowcasting_direct_sin$estimates, 
+#           file = paste0("./analise_UOL/output/nowcasting_estimates_sin_pri_", last_data_sin_pri,".csv"), row.names = FALSE)
+# write.csv(betas_direct_sin, 
+#           file = paste0("./analise_UOL/output/betas_direct_sin_pri_", last_data_sin_pri,".csv"), row.names = FALSE)
+# write.csv(betas_cumsum_direct_sin, 
+#           file = paste0("./analise_UOL/output/betas_cumsum_direct_sin_pri_",last_data_sin_pri,".csv"), row.names = FALSE)
+# write.csv(nowcasting_cumsum_direct_sin, 
+#           file = paste0("./analise_UOL/output/nowcasting_cumsum_direct_sin_pri_", last_data_sin_pri,".csv"), row.names = FALSE)
 
 #############################
 ######### Gráficos ##########
@@ -110,21 +120,19 @@ betas_direct<-read_csv(paste0("./analise_UOL/output/betas_direct_", last_data,".
 betas_cumsum_direct<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_",last_data,".csv"))
 nowcasting_cumsum_direct<-read_csv(paste0("./analise_UOL/output/nowcasting_cumsum_direct", last_data,".csv"))
 
-## Data Primeiros Sintomas ##
-nowcasting_direct_sin_estimates<-read_csv(paste0("./analise_UOL/output/nowcasting_estimates_sin_pri_", last_data_sin_pri,".csv"))
-betas_direct_sin<-read_csv(paste0("./analise_UOL/output/betas_direct_sin_pri_", last_data_sin_pri,".csv"))
-betas_cumsum_direct_sin<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_sin_pri_",last_data_sin_pri,".csv"))
-nowcasting_cumsum_direct_sin<-read_csv(paste0("./analise_UOL/output/nowcasting_cumsum_direct_sin_pri", last_data_sin_pri,".csv"))
+# ## Data Primeiros Sintomas ##
+# nowcasting_direct_sin_estimates<-read_csv(paste0("./analise_UOL/output/nowcasting_estimates_sin_pri_", last_data_sin_pri,".csv"))
+# betas_direct_sin<-read_csv(paste0("./analise_UOL/output/betas_direct_sin_pri_", last_data_sin_pri,".csv"))
+# betas_cumsum_direct_sin<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_sin_pri_",last_data_sin_pri,".csv"))
+# nowcasting_cumsum_direct_sin<-read_csv(paste0("./analise_UOL/output/nowcasting_cumsum_direct_sin_pri", last_data_sin_pri,".csv"))
 
 ################################################################################
 ## Plots: objetos ggplot2
 ################################################################################
 p.betas.direct<-
-  ggplot(betas_direct_sin, aes(atraso, mean)) +
+  ggplot(betas_direct, aes(atraso, mean)) +
   geom_line() +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.25) +
-  geom_line(data = betas_direct, aes(atraso, mean))+
-  geom_ribbon(data = betas_direct, aes(ymin = lower, ymax = upper), alpha = 0.25) +
   xlab("Dias após dia do óbito") +
   ylab("Probabilidade de notificação") +
   theme_bw() +
@@ -136,8 +144,6 @@ p.betas_cumsum_direct <-
   ggplot(betas_cumsum_direct, aes(atraso, mean)) +
   geom_line() +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.25) +
-  geom_line(data = betas_cumsum_direct_sin, aes(atraso, mean))+
-  geom_ribbon(data = betas_cumsum_direct_sin, aes(ymin = lower, ymax = upper), alpha = 0.25) +
   xlab("Dias após dia do óbito") +
   theme_bw() +
   theme(legend.position="none") +
@@ -145,37 +151,33 @@ p.betas_cumsum_direct <-
   ylab("Probabilidade Acumulada\n de notificação")
 p.betas_cumsum_direct
 
-p.prev.ic_direct<-nowcasting_direct_sin_estimates %>% 
+p.prev.ic_direct<-nowcasting_direct$estimates %>% 
   ggplot(aes(x = onset_date, y = estimate)) +
   geom_line(data = sivep_series, aes(x = dt_evoluca, y = N, color="Notificados"), lwd = 1.5) +
-  geom_line(aes(col = "Estimado data 1º Sintomas")) +
+  geom_line(aes(col = "Estimado")) +
   geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
-  geom_line(data = nowcasting_direct_estimates, aes(x=onset_date, y=estimate, col = "Estimado data Óbito "))+
-  geom_ribbon(data = nowcasting_direct_estimates, aes(ymin =lower, ymax = upper), fill="orange", alpha =0.15) +
   xlab("Dia do Óbito") +
   ylab("Nº de Óbitos por dia") +
   theme_bw() +
   theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-  scale_colour_manual(values = c("red", "dark orange", "blue"), aesthetics = c("colour", "fill"))+
+  scale_colour_manual(values = c("red", "dark orange"), aesthetics = c("colour", "fill"))+
   ggtitle("Diários")
 p.prev.ic_direct
 
 p.prev.ic.cumsum_direct<-
-  ggplot(nowcasting_cumsum_direct_sin, aes(x= Dates, y = mean))+
+  ggplot(nowcasting_cumsum_direct, aes(x= Dates, y = mean))+
   geom_line(data = sivep_series, aes(x = dt_evoluca, y = Cum, color="Notificados"), lwd = 1.5) +
   geom_line(aes(col = "Estimado")) +
   geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
-  geom_line(data = nowcasting_cumsum_direct, aes(x=Dates, y=mean, col = "Estimado data Óbito "))+
-  geom_ribbon(data = nowcasting_cumsum_direct, aes(ymin =lower, ymax = upper), fill="orange", alpha =0.15) +
   xlab("Dia do Óbito") +
   ylab("Nº de Óbitos Acumulados") +
   theme_bw() +
   theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-  scale_colour_manual(values = c("red", "dark orange", "blue"), aesthetics = c("colour", "fill"))+
+  scale_colour_manual(values = c("red", "dark orange"), aesthetics = c("colour", "fill"))+
   ggtitle("Acumulados Diários")
 p.prev.ic.cumsum_direct
 
 p.arrange<-ggpubr::ggarrange(p.betas.direct, p.betas_cumsum_direct, p.prev.ic_direct, p.prev.ic.cumsum_direct)
 p.arrange
-ggsave(p.arrange, filename = "./analise_UOL/plots/arrange_nowcasting_07_14.png", 
+ggsave(p.arrange, filename = paste0("./analise_UOL/plots/arrange_nowcasting_",last_data,".png"), 
        dpi = 600, width = 9, height = 7)
