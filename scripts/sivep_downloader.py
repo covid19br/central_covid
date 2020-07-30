@@ -72,7 +72,7 @@ if __name__ == '__main__':
             os.system('''cd {nowcast_folder} &&
                     Rscript checa_base.R --updateGit TRUE'''.format(nowcast_folder = nowcast_folder))
             emails = [ "renato.coutinho@gmail.com", "lopes1313@gmail.com",
-                    "piklprado@gmail.com"]
+                    "piklprado@gmail.com", "carolina.moreno@g.globo"]
             os.system('''echo -e "Nova base SIVEP-Gripe atualizada.\n
             O relatório de integridade se encontra em {link}\n
             Atenciosamente,\nRobot mailer" | 
