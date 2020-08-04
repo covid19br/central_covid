@@ -24,6 +24,9 @@ data.sp <- get.last.date(dir.sp)
 data.br <- get.last.date(dir.sp)
 ## Seleciona o diretorio com a maior data
 data.dir <- ifelse(as.Date(data.sp, "%Y_%m_%d") >= as.Date(data.br, "%Y_%m_%d"), dir.sp, dir.br)
+## Uma forma bem rápida de rodar as capitais é descomentar com ctrl+shift+c a capital que se quer rodar e usar 
+## Ctrl+Alt+e pra rodar o código daí pra baixo
+
 ## Geocode do municipio
 # São Paulo - Capital
 # geocode <- 355030
