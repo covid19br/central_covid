@@ -5,8 +5,9 @@ library(tidyr)
 library(lubridate)
 library(readr)
 library(ggplot2)
-source("../../nowcasting/fct/get.last.date.R")
-source("../../nowcasting/fct/read.sivep.R")
+library(reshape)
+source("./nowcasting/fct/get.last.date.R")
+source("./nowcasting/fct/read.sivep.R")
 
 ##PI: generalizei a leitura da SIVEP para rodar desde que seja de um diretorio que esteja no central covid
 ## setwd("C:/Users/Tatiana/Documents/analises_covid/bases")
@@ -14,11 +15,11 @@ source("../../nowcasting/fct/read.sivep.R")
 ## dados <- read.csv("SRAGH_2020_07_21.txt", sep=";", as.is=TRUE)
 ## names(dados) <- tolower(names(dados))
 
-## Leitura dos dados: sivep residentes São Paulo
-## Verifica qual SIVEP é mais recente entre a nacional e a do estado de SP
+## Leitura dos dados: sivep residentes S?o Paulo
+## Verifica qual SIVEP ? mais recente entre a nacional e a do estado de SP
 ## Diretorios onde estao as duas siveps
-dir.sp <- "../dados/estado_SP/SRAG_hospitalizados/dados/"
-dir.br <- "../dados/SIVEP-Gripe/"
+dir.sp <- "./dados/estado_SP/SRAG_hospitalizados/dados/"
+dir.br <- "./dados/SIVEP-Gripe/"
 ## Maior data de arquivos em cada diretorio
 data.sp <- get.last.date(dir.sp)
 data.br <- get.last.date(dir.sp)
@@ -31,12 +32,12 @@ geocode <- 355030
 ##data.dir <- dir.br ## PI: escolha manual do diretorio de dados do Brasil
 ## geocode <- 1302603
 ################################################################################
-## Leitura da ultima base do diretorio escolhido: já filtra município e residentes
+## Leitura da ultima base do diretorio escolhido: j? filtra munic?pio e residentes
 dados <- read.sivep(dir = data.dir, escala = "municipio",
                     geocode = geocode, data = get.last.date(data.dir))
 
 
-#####CLASSIFICAÇAO ETARIA####
+#####CLASSIFICA?AO ETARIA####
 
 dados$age_clas<-dados$nu_idade_n
 
@@ -57,7 +58,7 @@ covid<- dados %>%
   filter (!is.na(age_clas)) %>%
   select (dt_sin_pri, evolucao, age_clas) 
 
-covid$week<-epiweek(covid$dt_sin_pri) ####semana epidemiológica começando no domingo
+covid$week<-epiweek(covid$dt_sin_pri) ####semana epidemiol?gica come?ando no domingo
 
 
 ###################SRAG#################################
@@ -69,9 +70,9 @@ srag<- dados %>%
   filter (!is.na(age_clas)) %>%
   select (dt_sin_pri, evolucao, age_clas) 
 
-srag$week<-epiweek(srag$dt_sin_pri) ####semana epidemiológica começando no domingo
+srag$week<-epiweek(srag$dt_sin_pri) ####semana epidemiol?gica come?ando no domingo
 
-#########AGREGANDO POR SEMANA EPIDEMIO E CLASSE ETÁRIA#####
+#########AGREGANDO POR SEMANA EPIDEMIO E CLASSE ET?RIA#####
 
 ## PI: outra maneira de fazer a tabela
 
@@ -90,15 +91,15 @@ tabela2  <-
   group_by(week, age_clas) %>%
   summarise(srag=n())
 
-###tirando as primeiras e as últimas 4 semanasda análise - ANALISAR CASO A CASO###
+###tirando as primeiras e as ?ltimas 4 semanasda an?lise - ANALISAR CASO A CASO###
 
 ##COVID##
-tabela<- tabela %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que têm poucos casos
+tabela<- tabela %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que t?m poucos casos
 
 ##SRAG###
-tabela2<- tabela2 %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que têm poucos casos
+tabela2<- tabela2 %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que t?m poucos casos
 
-###fazendo proporção####
+###fazendo propor??o####
 
 ###COVID###
 
@@ -147,13 +148,13 @@ tabela4  <-
   group_by(week) %>%
   summarise(sobre = sum(evolucao == 1), obitos = sum(evolucao ==2))
 
-###tirando as primeiras e as últimas 4 semanasda análise - ANALISAR CASO A CASO###
+###tirando as primeiras e as ?ltimas 4 semanasda an?lise - ANALISAR CASO A CASO###
 
 ##COVID##
-tabela3<- tabela3 %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que têm poucos casos
+tabela3<- tabela3 %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que t?m poucos casos
 
 ##SRAG###
-tabela4<- tabela4 %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que têm poucos casos
+tabela4<- tabela4 %>% filter (week<28 & week > 11) ## tirei tb semanas 1  9, que t?m poucos casos
 
 ###tranformando semana em factor
 
@@ -170,7 +171,7 @@ tabela4$week<-as.factor(tabela4$week)
 
 ###COVID#####
 
-model<-glm(cbind(obitos,sobre)~ week , family=binomial (link="logit"), data= tabela3) ## -1 na formula elimina o intecpto e aí cada cofieciente é o logito da CFR
+model<-glm(cbind(obitos,sobre)~ week , family=binomial (link="logit"), data= tabela3) ## -1 na formula elimina o intecpto e a? cada cofieciente ? o logito da CFR
 anova(model, test="Chisq")
 
 ####calculando o predito###
@@ -225,24 +226,28 @@ tabela_full2$week<-as.factor(tabela_full2$week)
 
 ###COVID##
 
-#plot_covid<-
-
-
-ggplot()+
-  geom_bar(data=tabela_full, aes(fill=name, y=value, x=week), position="fill", stat="identity")+
-  geom_line(data=predito, aes(x= week, y=fit, linetype= ""), size=1)+
-  geom_ribbon(data=predito, aes(ymin=lower, ymax=upper))+
+plot_covid<-ggplot(data=predito, aes(x= week, y=fit, group = 1))+
+  geom_bar(data = tabela_full, aes(fill=name, y=value, x=week), position="fill", stat="identity", alpha = 0.7)+
+  geom_line()+
+  geom_ribbon(aes(ymin=lower, ymax=upper, group = 1), alpha = 0.25)+
+  scale_colour_brewer(palette = "Set3")+
   theme_bw()+
+  # theme(legend.position = "none")+
   ggtitle(UF, "COVID")
+plot_covid
 
-plot_srag<-ggplot()+
-  geom_bar(data=tabela_full2, aes(fill=name, y=value, x=week), position="fill", stat="identity")+
-  geom_line(data=predito2, aes(x= week, y=fit, group=1, linetype= ""), size=1)+
+plot_srag<-ggplot(data = predito2, aes(x=week, y=fit, group=1))+
+  geom_bar(data = tabela_full2,aes(fill=name, y=value, x=week), position="fill", stat="identity", alpha = 0.7)+
+  geom_line()+
+  geom_ribbon(aes(ymin=lower, ymax=upper, group=1), alpha = 0.25)+
+  scale_colour_brewer(palette = "Set3")+
   theme_bw()+
+  # theme(legend.position = "none")+
   ggtitle(UF, "SRAG")
+plot_srag
 
-
-ggarrange(plot_covid, plot_srag)
+ggpubr::ggarrange(plot_covid, plot_srag, 
+                  common.legend = TRUE, legend="bottom")
 
 
 

@@ -5,8 +5,8 @@ library(tidyr)
 library(lubridate)
 library(readr)
 library(ggplot2)
-source("../../nowcasting/fct/get.last.date.R")
-source("../../nowcasting/fct/read.sivep.R")
+source("./nowcasting/fct/get.last.date.R")
+source("./nowcasting/fct/read.sivep.R")
 
 ##PI: generalizei a leitura da SIVEP para rodar desde que seja de um diretorio que esteja no central covid
 ## setwd("C:/Users/Tatiana/Documents/analises_covid/bases")
@@ -17,8 +17,8 @@ source("../../nowcasting/fct/read.sivep.R")
 ## Leitura dos dados: sivep residentes São Paulo
 ## Verifica qual SIVEP é mais recente entre a nacional e a do estado de SP
 ## Diretorios onde estao as duas siveps
-dir.sp <- "../dados/estado_SP/SRAG_hospitalizados/dados/"
-dir.br <- "../dados/SIVEP-Gripe/"
+dir.sp <- "./dados/estado_SP/SRAG_hospitalizados/dados/"
+dir.br <- "./dados/SIVEP-Gripe/"
 ## Maior data de arquivos em cada diretorio
 data.sp <- get.last.date(dir.sp)
 data.br <- get.last.date(dir.sp)
@@ -32,7 +32,7 @@ geocode <- 355030
 ## geocode <- 1302603
 ################################################################################
 ## Leitura da ultima base do diretorio escolhido: já filtra município e residentes
-dados <- read.sivep(dir = data.dir, escala = "municipio",
+dados <- read.sivep(dir = data.dir, escala = "estado", sigla = "SP",
                     geocode = geocode, data = get.last.date(data.dir))
 
 
@@ -158,7 +158,7 @@ predito2 <- mutate(predito2,
                    lower = ilink2(fit_link - (2 * se_link)))
 
 ###PLOTS#####
-
+UF<-"SP"
 ###covid##
 
 plot_covid<-ggplot(predito, aes(x=week, y=fit, group=age_clas))+
@@ -179,4 +179,5 @@ plot_srag<-ggplot(predito2, aes(x=week, y=fit, group=age_clas))+
   theme_bw()+
   ggtitle(UF, "SRAG")
 
-ggarrange (plot_covid,plot_srag)
+ggpubr::ggarrange (plot_covid,plot_srag, 
+                   common.legend = TRUE, legend="bottom")
