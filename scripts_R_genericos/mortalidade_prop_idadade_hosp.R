@@ -39,8 +39,7 @@ dados <- read.sivep(dir = data.dir, escala = "municipio",
 
 #####CLASSIFICA?AO ETARIA####
 
-dados$age_clas<-dados$nu_idade_n
-
+dados$nu_idade_n<-as.numeric(dados$nu_idade_n)
 
 dados <- dados  %>% mutate(age_clas = case_when(nu_idade_n=1 & nu_idade_n<=19 ~  "age_0_19",
                                                 nu_idade_n=20 & nu_idade_n<=39 ~ "age_20_39",
@@ -171,7 +170,7 @@ tabela4$week<-as.factor(tabela4$week)
 
 ###COVID#####
 
-model<-glm(cbind(obitos,sobre)~ week , family=binomial (link="logit"), data= tabela3) ## -1 na formula elimina o intecpto e a? cada cofieciente ? o logito da CFR
+model<-glm(cbind(obitos,sobre)~ week-1 , family=binomial (link="logit"), data= tabela3) ## -1 na formula elimina o intecpto e a? cada cofieciente ? o logito da CFR
 anova(model, test="Chisq")
 
 ####calculando o predito###
@@ -193,7 +192,7 @@ predito <- mutate(predito,
 
 ######glm bionmial###
 
-model2<-glm(cbind(obitos,sobre)~ week , family=binomial (link="logit"), data= tabela4) 
+model2<-glm(cbind(obitos,sobre)~ week-1 , family=binomial (link="logit"), data= tabela4) 
 anova(model2, test="Chisq")
 
 ####calculando o predito###
@@ -233,7 +232,15 @@ plot_covid<-ggplot(data=predito, aes(x= week, y=fit, group = 1))+
   scale_colour_brewer(palette = "Set3")+
   theme_bw()+
   # theme(legend.position = "none")+
-  ggtitle(UF, "COVID")
+  xlab("Semana epidemiológica")+
+  ylab ("Mortalidade Hospitalar
+      /Prop. Internados")+
+  labs(title= DF, subtitle = "COVID", x="Semana Epidemiológica",
+       y="Mortalidade Hospitalar
+       /Prop. internados")+
+  theme(axis.title.y = element_text(size=10), 
+        axis.title.x= element_text(size=10))+
+  labs (fill="Faixa etária")
 plot_covid
 
 plot_srag<-ggplot(data = predito2, aes(x=week, y=fit, group=1))+
@@ -243,7 +250,12 @@ plot_srag<-ggplot(data = predito2, aes(x=week, y=fit, group=1))+
   scale_colour_brewer(palette = "Set3")+
   theme_bw()+
   # theme(legend.position = "none")+
-  ggtitle(UF, "SRAG")
+  labs(title= DF, subtitle = "SRAG", x="Semana Epidemiológica",
+       y="Mortalidade Hospitalar
+       /Prop. internados")+
+  theme(axis.title.y = element_text(size=10), 
+        axis.title.x= element_text(size=10))+
+  labs (fill="Faixa etária")
 plot_srag
 
 ggpubr::ggarrange(plot_covid, plot_srag, 
