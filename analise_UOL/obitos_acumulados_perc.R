@@ -2,19 +2,22 @@ library("tidyverse")
 library("cowplot")
 library("RColorBrewer")
 
+betas_03<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_2020-08-03.csv"))
 betas_29<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_2020-07-29.csv"))
 betas_21<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_2020-07-21.csv"))
 betas_14<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_2020-07-14.csv"))
 
+betas<-betas_03
+
 pontos <- data.frame(
-    y = betas_29$mean[c(1, 11, 16, 31, 61)],
-    x = betas_29$atraso[c(1, 11, 16, 31, 61)]
+    y = betas$mean[c(1, 11, 16, 31, 61)],
+    x = betas$atraso[c(1, 11, 16, 31, 61)]
     )
 
 cols <- rev(brewer.pal(5, "Set1"))
 
 # p.betascumsum <-
-    ggplot(betas_29) +
+    ggplot(betas_03) +
     geom_line(aes(x = atraso, y = 100 * mean), size = 1.2, col = "red") +
     geom_ribbon(aes(x = atraso, ymin = 100 * lower, ymax = 100 * upper), alpha = 0.1, fill = "red") +
     geom_segment(aes(x = pontos$x[1], xend = pontos$x[1], y = 0, yend = 100 * pontos$y[1]), linetype = "dotted", colour = cols[1], size = 0.5,) +

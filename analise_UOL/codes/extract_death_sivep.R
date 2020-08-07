@@ -17,6 +17,7 @@ PRJROOT  = rprojroot::find_root(".here")
 
 devtools::load_all("./now_fcts/R/") ##loading de funções necessárias##
 
+sivep_03_08<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado_2020_08_03.zip')
 sivep_29<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado_2020_07_29.zip')
 sivep_21<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado_2020_07_21.zip')
 sivep_14<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado_2020_07_14.zip')
@@ -27,6 +28,28 @@ sivep_17<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado
 sivep_09<-read.sivep.generica(file.name = './dados/SIVEP-Gripe/SRAGHospitalizado_2020_06_09.zip')
 
 ## compilando e salvando em csv ##
+sivep_03_08_obitos<-sivep_03_08 %>%
+  filter(pcr_sars2 == 1 | classi_fin == 5) %>% # covid com nova classificacao
+  filter(evolucao == 2) %>%
+  filter(!is.na(dt_evoluca)) %>%
+  mutate(dt_encerra = pmax(dt_encerra, dt_digita, dt_evoluca,
+                           na.rm = TRUE)) %>%
+  select(dt_sin_pri, dt_evoluca, dt_notific, dt_encerra)%>%
+  as.data.frame()
+write.csv(sivep_03_08_obitos, "~/Área de Trabalho/central_covid/analise_UOL/dados/extract_dates_sivep_03_08.csv", row.names = FALSE)
+sivep_03_08_obitos_sum<-sivep_03_08_obitos%>%
+  group_by(dt_evoluca)%>%
+  dplyr::summarise(N=n())%>%
+  mutate(Cum=cumsum(N))%>%
+  as.data.frame()
+sivep_03_08_sin_sum<-sivep_03_08_obitos%>%
+  group_by(dt_sin_pri)%>%
+  dplyr::summarise(N=n())%>%
+  mutate(Cum=cumsum(N))%>%
+  as.data.frame()
+
+write.csv(sivep_03_08_obitos_sum,"~/Área de Trabalho/central_covid/analise_UOL/dados/spreasheet_e_CSV/extract_03_08.csv")
+
 sivep_29_obitos<-sivep_29 %>%
   filter(pcr_sars2 == 1 | classi_fin == 5) %>% # covid com nova classificacao
   filter(evolucao == 2) %>%
