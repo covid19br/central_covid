@@ -1,17 +1,19 @@
-ibrary(ISOweek)
+library(ISOweek)
 library(effects)
 library(dplyr)
 library(tidyr)
 library(lubridate)
 library(readr)
 library(ggplot2)
-source("../../nowcasting/fct/get.last.date.R")
-source("../../nowcasting/fct/read.sivep.R")
+library(viridis)
+library(bbmle)
+source("../nowcasting/fct/get.last.date.R")
+source("../nowcasting/fct/read.sivep.R")
 
 
 ## Leitura dos dados###
 data.dir <- "../dados/SIVEP-Gripe/"
-dados <- read.sivep(dir = data.dir, escala = "País", data = get.last.date(data.dir))#### eu analisei com a base do dia 29
+dados <- read.sivep(dir = data.dir, escala = "pais", data = get.last.date(data.dir))#### eu analisei com a base do dia 29
 
 ######colocando em classes etárias########
 
@@ -69,6 +71,54 @@ tabela2  <-
   srag %>%
   group_by(week, age_clas, local_int, sg_uf) %>%
   summarise(sobre = sum(evolucao == 1), obitos = sum(evolucao ==2))
+
+################################################################################
+##PI:  Graficos exploratorios
+################################################################################
+## Trajetoria do N de obitos em funcao do N total de casos
+png("IHFR_plots/Estados/trajetorias_obitosXcasos.png", width = 900)
+tabela %>%
+    filter(week<28&!is.na(sg_uf)) %>%
+    group_by(week, sg_uf) %>%
+    summarise(ob = sum(obitos), sob=sum(sobre)) %>%
+    mutate(N = ob+sob) %>% 
+    ggplot(aes(N, ob)) +
+    geom_abline(slope=0.5, intercept=0, col="red", lty=2) +
+    geom_path(aes(color=week), size=1.1) +
+    scale_color_viridis() +
+    facet_wrap(~sg_uf, scales = "free") +
+    theme_bw() +
+    xlab("Total de casos") +
+    ylab("N de óbitos")
+dev.off()
+
+## Letalidade em funcao do n de semanas após a semana de maior n de casos (semana zero)
+## Tabela com a semana de maior n de casos em cada estado
+tmp <- tabela %>%
+    filter(week<28&!is.na(sg_uf)) %>%
+    group_by(sg_uf, week) %>%
+    summarise(ob = sum(obitos), sob=sum(sobre)) %>%
+    mutate(N = ob+sob, Nmax = N ==max(N)) %>%
+    ungroup() %>%
+    filter(Nmax==TRUE) %>%
+    select(sg_uf, week)
+
+## O plot    
+tabela %>%
+    filter(week<28&!is.na(sg_uf)) %>%
+    group_by(week, sg_uf) %>%
+    summarise(ob = sum(obitos), sob=sum(sobre)) %>%
+    mutate(N = ob+sob) %>%
+    merge(tmp, by = "sg_uf") %>%
+    mutate(week2 = week.x - week.y, p.ob = ob/N) %>%
+    filter(N>9) %>%
+    ggplot(aes(week2, p.ob)) +
+    geom_point() +
+    facet_wrap(~sg_uf) +
+    theme_bw() +
+    geom_vline(xintercept = 0, lty=2, color="red") +
+    xlab("Semanas após a semana de máximo de casos") +
+    ylab("Proporcao de óbitos")
 
 #####################10 ESTADOS COM MAIS CASOS###############################
 
@@ -175,6 +225,40 @@ anova(model2, model1, test="Chisq") ####deu significativo, mantem o mais complex
 
 summary(model1)
 plot(model1)
+
+
+################################################################################
+## PI: Exemplo de seleção de modelos
+################################################################################
+## Note que nestes modelos a variavel week está como contínua. Neste casos é posíivel que um termo quadrático I(week^2)
+## seja necessario, para permitir aumentos seguidos de quedas em função
+## 1. Ajuste todos os modelos
+## Cheio
+m.full <- glm(cbind(obitos,sobre)~ week + age_clas + local_int + sg_uf +
+                 sg_uf:age_clas + week:age_clas +
+                 week:sg_uf + sg_uf:local_int + week:local_int,
+            family=binomial (link="logit"), data= tabela) 
+## Apenas efeitos aditivos e interacao entre semana e UF (ou seja, o aumento em funcao da semana varia entre UFs)
+m.1 <- glm(cbind(obitos,sobre)~ week + age_clas + local_int + sg_uf  + week:sg_uf,
+            family=binomial (link="logit"), data= tabela) 
+## Com todas as interecaos menos interacoes de semana com local de internacao
+m.2 <- glm(cbind(obitos,sobre)~ week + age_clas + local_int + sg_uf +
+                 sg_uf:age_clas + week:age_clas +
+                 week:sg_uf + sg_uf:local_int,
+            family=binomial (link="logit"), data= tabela) 
+## Com todas as interecaos menos interacoes de semana com idade e com local de internacao
+m.3 <- glm(cbind(obitos,sobre)~ week + age_clas + local_int + sg_uf +
+               sg_uf:age_clas +
+                 week:sg_uf + sg_uf:local_int ,
+           family=binomial (link="logit"), data= tabela) 
+## Igual o acima, mas sem interacao entre UF e local de internacao
+m.4 <- glm(cbind(obitos,sobre)~ week + age_clas + local_int + sg_uf +
+               sg_uf:age_clas +
+                 week:sg_uf,
+           family=binomial (link="logit"), data= tabela) 
+## Comparando estes modelos com AIC
+AICctab(m.full, m.1, m.2, m.3, m.4)
+
 
 ####################SRAG#########################
 

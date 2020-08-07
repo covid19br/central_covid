@@ -46,7 +46,6 @@ dados <- dados  %>% mutate(age_clas = case_when(nu_idade_n=1 & nu_idade_n<=19 ~ 
                                                 nu_idade_n=40 & nu_idade_n<=59 ~ "age_40_59",
                                                 nu_idade_n>=60 ~ "age_60"))
 
-####
 
 ###############COVID##########################
 
@@ -235,12 +234,12 @@ plot_covid<-ggplot(data=predito, aes(x= week, y=fit, group = 1))+
   xlab("Semana epidemiológica")+
   ylab ("Mortalidade Hospitalar
       /Prop. Internados")+
-  labs(title= DF, subtitle = "COVID", x="Semana Epidemiológica",
+  labs(title= UF, subtitle = "COVID", x="Semana Epidemiol�gica",
        y="Mortalidade Hospitalar
        /Prop. internados")+
   theme(axis.title.y = element_text(size=10), 
         axis.title.x= element_text(size=10))+
-  labs (fill="Faixa etária")
+  labs (fill="Faixa et�ria")
 plot_covid
 
 plot_srag<-ggplot(data = predito2, aes(x=week, y=fit, group=1))+
@@ -250,20 +249,21 @@ plot_srag<-ggplot(data = predito2, aes(x=week, y=fit, group=1))+
   scale_colour_brewer(palette = "Set3")+
   theme_bw()+
   # theme(legend.position = "none")+
-  labs(title= DF, subtitle = "SRAG", x="Semana Epidemiológica",
+  labs(title= UF, subtitle = "SRAG", x="Semana Epidemiol�gica",
        y="Mortalidade Hospitalar
        /Prop. internados")+
   theme(axis.title.y = element_text(size=10), 
         axis.title.x= element_text(size=10))+
-  labs (fill="Faixa etária")
+  labs (fill="Faixa et�ria")
 plot_srag
 
-ggpubr::ggarrange(plot_covid, plot_srag, 
+ggarranged<-ggpubr::ggarrange(plot_covid, plot_srag, 
                   common.legend = TRUE, legend="bottom")
 
 
 
-
+#ggsave(ggsave(ggarranged,filename = paste0(UF,"_","prop",".png"),
+#       dpi = 600, width = 7, height = 4))
 
 
 
