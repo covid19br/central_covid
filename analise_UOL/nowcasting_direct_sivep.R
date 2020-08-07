@@ -14,6 +14,8 @@ if(!require(viridis)){install.packages("viridis"); library(viridis)}
 if(!require(aweek)){install.packages("aweek"); library(aweek)}
 if(!require(lubridate)){install.packages("lubridate"); library(lubridate)}
 
+setwd("~/Área de Trabalho/central_covid/")
+
 PRJROOT  = rprojroot::find_root(".here")
 
 devtools::load_all("./now_fcts/R/") ##loading de funções necessárias##
@@ -47,7 +49,7 @@ p.uol
 ##      NOWCASTING      ##
 ##########################
 ## From Sivep directly ##
-sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_29_julho.csv")
+sivep_direct<-read_csv("./analise_UOL/dados/extract_dates_sivep_03_08.csv")
 sivep_direct<-sivep_direct%>%
   mutate(dt_sin_pri = as.Date(dt_sin_pri, "%Y-%m-%d"),
          dt_encerra = as.Date(dt_encerra, "%Y-%m-%d"),
@@ -70,7 +72,7 @@ nowcasting_direct<-NobBS.posterior2(data = sivep_direct,
                                     onset_date = "dt_evoluca",
                                     report_date = "dt_encerra",
                                     units = "1 day",
-                                    specs = list(nAdapt = 15000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+                                    specs = list(nAdapt = 20000, nBurnin = 3000, nThin = 1, nSamp = 10000))
 betas_direct<-beta.summary(nowcasting_direct) #### função em funcoes.R`
 betas_cumsum_direct<-beta.cumsum(nowcasting_direct, samples = 5000)
 nowcasting_cumsum_direct<-nowcasting.cumsum(nowcasting_direct, samples = 5000)
