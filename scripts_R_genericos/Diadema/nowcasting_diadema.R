@@ -127,3 +127,47 @@ arrange
 
 ggsave(arrange, filename = paste0("./scripts_R_genericos/Diadema/arrange_diadema_zoom.png"),
        dpi = 600, width = 9, height = 7)
+
+diadema_datas_strat<-diadema %>% 
+  filter(!is.na(data_pri_sin) & !is.na(data_notificacao) & atraso >= 0 & agrega_aa != "IGN") %>% 
+  mutate(data_pri_sin = as.Date(data_pri_sin, format = "%Y-%m-%d"),
+         data_notificacao = as.Date(data_notificacao, format = "%Y-%m-%d")) %>% 
+  select(data_pri_sin, data_notificacao, agrega_aa) %>% 
+  as.data.frame()
+
+diadema_pri_sin_stat<-diadema_datas_strat %>% 
+  group_by(data_pri_sin, agrega_aa) %>% 
+  dplyr::summarise(N=n())%>%
+  mutate(Cum=cumsum(N),
+         stratum  = agrega_aa)%>%
+  as.data.frame()
+
+nowcasting_diadema_stratum<-NobBS.strat(data = diadema_datas_strat,
+                          now = max(diadema_datas$data_pri_sin),
+                          onset_date = "data_pri_sin",
+                          report_date = "data_notificacao",
+                          units = "1 day",
+                          moving_window = 60,
+                          strata = "agrega_aa",
+                          specs = list(nAdapt = 5000, nBurnin = 3000, nThin = 1, nSamp = 10000))
+
+diadema_pri_sin_stat<-diadema_pri_sin_stat %>% 
+  filter(data_pri_sin >= min(nowcasting_diadema$estimates$onset_date)) %>% 
+  as.data.frame()
+
+p.prev.ic_diadema3<-nowcasting_diadema_stratum$estimates %>%
+  ggplot(aes(x = onset_date, y = estimate)) +
+  geom_line(data = diadema_pri_sin_stat, aes(x = data_pri_sin, y = N, color="Notificados"), lwd = 0.5) +
+  geom_line(aes(col = "Estimado")) +
+  geom_ribbon(aes(ymin =lower, ymax = upper), fill="red", alpha =0.15) +
+  xlab("Data 1º sintomas") +
+  ylab("Nº de Casos por dia") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_colour_manual(values = c("red", "dark orange"), aesthetics = c("colour", "fill"))+
+  ggtitle("Casos Diários")+
+  facet_wrap(~stratum)
+p.prev.ic_diadema3
+
+ggsave(p.prev.ic_diadema3, filename = paste0("./scripts_R_genericos/Diadema/nowcasting_diadema_stratum.png"),
+       dpi = 600, width = 9, height = 7)
