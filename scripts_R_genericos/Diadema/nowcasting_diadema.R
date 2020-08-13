@@ -87,5 +87,5 @@ p.prev.ic_diadema<-nowcasting_diadema$estimates %>%
   ggtitle("Óbitos Diários")
 p.prev.ic_diadema
 
-ggsave(p.betas.diadema, filename = paste0("./scripts_R_genericos/Diadema/nowcasting_diadema.png"),
+ggsave(p.prev.ic_diadema, filename = paste0("./scripts_R_genericos/Diadema/nowcasting_diadema.png"),
        dpi = 600, width = 9, height = 7)
