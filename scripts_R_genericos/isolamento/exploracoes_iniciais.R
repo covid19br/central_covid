@@ -50,11 +50,14 @@ onibus.2020$data[onibus.2020$data==as.Date("2019-05-13")]  <-  as.Date("2020-05-
 ## Leitura da tabela ridicula e zoada de indice de isolamento do Estado
 ## https://www.saopaulo.sp.gov.br/coronavirus/isolamento/
 ################################################################################
-isolam <- read.csv2("simi_sampa_2020_07_24.csv", na.strings="")
-isolam$data <- as.Date(paste0(str_sub(isolam$Data, -5, -1), "/2020"), "%d/%m/%Y")
-isolam$indice <- as.integer(str_sub(isolam[,4], 1,2))
-isolam.zoo  <- zoo(isolam$indice, isolam$data)
-
+## isolam <- read.csv2("simi_sampa_2020_07_24.csv", na.strings="")
+## isolam$data <- as.Date(paste0(str_sub(isolam$Data, -5, -1), "/2020"), "%d/%m/%Y")
+## isolam$indice <- as.integer(str_sub(isolam[,4], 1,2))
+## isolam.zoo  <- zoo(isolam$indice, isolam$data)
+## Leitura do indice de isolamento do Pedro Peixoto (dados restrito, nao esta no repo)
+isolam <- read.csv("../../balaio/dados/Social Distancing Index by Cities2020_08_13.csv")%>%
+    filter(state_name=="São Paulo" & city_name=="São Paulo")
+isolam.zoo <- zoo(isolam$isolated, as.Date(isolam$dt))
 ################################################################################
 ## leitura da última planilha de R efetivo  e nowcasting de casos do Observatório
 ################################################################################
@@ -81,7 +84,6 @@ tudo <- merge.zoo(tudo, R.eff=reff.zoo)
 tudo <- merge.zoo(tudo, isolamento =isolam.zoo)
 tudo$passageiros.smooth <- rollapply(tudo$passageiros, width = 7, mean, partial = TRUE)
 
-
 ################################################################################
 ## Calculos  de Media por semana epidemiologica
 ################################################################################
@@ -101,17 +103,20 @@ tudo.sem <-
     mutate(casos.cum = ifelse(casos.cum==-Inf, NA, casos.cum)) %>%
     filter(nobs ==7) %>%
     as.data.frame()
-tudo.sem <- zoo(tudo.sem[,-1], tudo.sem[,1]) 
 tudo.sem$d.casos <- c(diff(tudo.sem$sum.casos),NA)
+tudo.sem <- zoo(tudo.sem[,-1], tudo.sem[,1])
 
 ################################################################################
 ## Graficos exploratorios
 ################################################################################
 ## Series temporais diárias
-plot(tudo)
+plot(tudo[, c(5,7, 1, 6)])
 ## Correlacoes
 plot(isolamento ~ passageiros, data = fortify(tudo))
-plot(R.eff ~ lag(passageiros.smooth,5), data = window(tudo, start=as.Date("2020-04-01")))
+plot(R.eff ~ lag(passageiros.smooth,5), data = window(tudo, start=as.Date("2020-04-01")),
+     xlab = "N de passageiros 5 dias antes", ylab = "R efetivo")
+plot(R.eff ~ casos.cum, data = window(tudo, start=as.Date("2020-04-01")),
+     xlab = "casos srag confirmados acumualdos", ylab = "R efetivo")
 plot(casos ~ lag(passageiros,5), data = window(tudo, start=as.Date("2020-04-01")))
 plot(d.casos ~ lag(passageiros,5), data = window(tudo, start=as.Date("2020-04-01")))
 plot(d.casos ~ casos.cum, data = window(casos.zoo))
@@ -146,11 +151,13 @@ predict(m4, newdata = newdata, interval ="prediction")
 plot(tudo.sem)
 ## Correlacoes
 plot(mean.R ~ lag(mean.pass,1), data = tudo.sem)
+plot(mean.R ~ casos.cum, data = tudo.sem)
 plot(mean.casos ~ lag(mean.pass,1), data = tudo.sem)
 plot(mean.casos ~ lag(mean.pass,1), data = tudo.sem, subset = semana>12)
 plot(d.casos ~ casos.cum, data = tudo.sem)
 avPlots(lm(d.casos ~ lag(mean.pass,1) + casos.cum, data = tudo.sem))
 avPlots(lm(mean.R ~ lag(mean.pass,1) + casos.cum, data = tudo.sem))
+
 
 ## modelos de regressao
 tudo.sem.df <- as.data.frame(tudo.sem)
