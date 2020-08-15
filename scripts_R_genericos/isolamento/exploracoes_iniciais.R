@@ -45,6 +45,19 @@ onibus.2020[onibus.2020$data>as.Date("2020-04-01")&onibus.2020$tot.pass>6e6,] <-
 ## Duas datas com ano errado (12/5 e 13/5)
 onibus.2020$data[onibus.2020$data==as.Date("2019-05-12")]  <-  as.Date("2020-05-12")
 onibus.2020$data[onibus.2020$data==as.Date("2019-05-13")]  <-  as.Date("2020-05-13")
+## Por semana
+set_week_start("Sunday")
+onibus.2020$semana <- date2week(onibus.2020$data, numeric=TRUE)
+onibus.sem  <- 
+    onibus.2020 %>%
+    group_by(semana) %>%
+    summarise(mean.pass=mean(tot.pass, na.rm=TRUE))
+png("passageiros_onibus_semana_sampa.png")
+plot(mean.pass ~ semana, data= onibus.sem,
+     type = "b",
+     xlab = "semana epidemiológica", ylab = "Média passageiros/dia",
+     subset=semana<33)
+dev.off()
 
 ################################################################################
 ## Leitura da tabela ridicula e zoada de indice de isolamento do Estado
@@ -54,10 +67,23 @@ onibus.2020$data[onibus.2020$data==as.Date("2019-05-13")]  <-  as.Date("2020-05-
 ## isolam$data <- as.Date(paste0(str_sub(isolam$Data, -5, -1), "/2020"), "%d/%m/%Y")
 ## isolam$indice <- as.integer(str_sub(isolam[,4], 1,2))
 ## isolam.zoo  <- zoo(isolam$indice, isolam$data)
-## Leitura do indice de isolamento do Pedro Peixoto (dados restrito, nao esta no repo)
+
+## Leitura do indice do mesmo indice de isolamento, fornecido pelo Pedro Peixoto (dados restrito, nao esta no repo)
 isolam <- read.csv("../../balaio/dados/Social Distancing Index by Cities2020_08_13.csv")%>%
     filter(state_name=="São Paulo" & city_name=="São Paulo")
 isolam.zoo <- zoo(isolam$isolated, as.Date(isolam$dt))
+isolam$semana <- date2week(isolam$dt, numeric=TRUE)
+isolam.sem  <- 
+    isolam %>%
+    group_by(semana) %>%
+    summarise(mean.isol=mean(isolated, na.rm=TRUE))
+png("isolamento_semana_sampa.png")
+plot(mean.isol ~ semana, data= isolam.sem,
+     type = "b",
+     xlab = "semana epidemiológica", ylab = "Isolamento médio",
+     subset=semana<33)
+dev.off()
+
 ################################################################################
 ## leitura da última planilha de R efetivo  e nowcasting de casos do Observatório
 ################################################################################
@@ -78,7 +104,7 @@ casos.zoo <-  zoo(
 ################################################################################
 ## Junta todas as series temporais em um unico objeto zoo
 ################################################################################
-onibus.2020.zoo <- zoo(onibus.2020[,-1], onibus.2020[,1]) %>% window(end = max(as.Date(casos$data)))
+onibus.2020.zoo <- zoo(onibus.2020[,-1], onibus.2020[,1]) #%>% window(end = max(as.Date(casos$data)))
 tudo <- merge(casos.zoo, passageiros=onibus.2020.zoo)
 tudo <- merge.zoo(tudo, R.eff=reff.zoo)
 tudo <- merge.zoo(tudo, isolamento =isolam.zoo)
