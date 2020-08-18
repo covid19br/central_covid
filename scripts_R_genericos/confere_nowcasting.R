@@ -1,5 +1,5 @@
-library(dplyr)
 library(plyr)
+library(dplyr)
 library(zoo)
 library(ggplot2)
 library(readr)
@@ -18,7 +18,7 @@ source("../nowcasting/fct/median_delay.R")
 ## escreva aqui a data desejada
 ## ultima versao
 data.base <- get.last.date(data.dir)
-## 18 de maio
+## 20 de maio
 data.base <- "2020_05_20"
 ## Leitura
 data.dir <- "../dados/estado_SP/SRAG_hospitalizados/dados/"
@@ -26,13 +26,13 @@ dados <- read.sivep(dir = data.dir, escala = "municipio",
                     geocode = 3550308, data = data.base) 
 ## Usando a gera_nowcasting
 covid.ob.now <-  gera.nowcasting(dados, caso = FALSE, tipo = "covid",
-                               hospitalizados = FALSE, trim.now = 5, window = 40) 
+                               hospitalizados = FALSE, trim.now = 0, window = 40) 
 ## Resumo dos betas
 beta.summary(NobBS.output = covid.ob.now$now)
 beta.cumsum(NobBS.output = covid.ob.now$now, samples = 100)
 quantile_delay(NobBS.output = covid.ob.now$now, samples = 1000)
 
-
+    
 ## Fazendo na unha
 dados2 <-
     dados %>%
@@ -59,3 +59,16 @@ quantile_delay(NobBS.output = covid.ob.now.2, samples = 1000)
 ## Resumo dos betas
 beta.summary(NobBS.output = covid.ob.now.2)
 beta.cumsum(NobBS.output = covid.ob.now.2, samples = 100)
+
+
+## Graficos
+## Grafico de n de obitos e nowcasting
+dados4  <- dados3 %>%
+    group_by(dt_evoluca) %>%
+    summarise(N = n())
+
+## Grafico rapido e sujo
+ggplot(dados4, aes(dt_evoluca)) +
+    geom_line(aes(y=N)) +
+    geom_line(data=covid.ob.now$now$estimates, aes(onset_date, estimate), col="red") +
+    geom_ribbon(data=covid.ob.now$now$estimates, aes(onset_date, ymin = lower, ymax = upper), fill="red", alpha =0.2)
