@@ -25,10 +25,10 @@ seade.estado <- seade %>%
     filter(nome_drs == "Estado de São Paulo") %>%
     mutate(n
 ################################################################################
-## Censo hospitalar
+## Censo hospitalar do Estado (dado sigiloso)
 ################################################################################
 censo <- read.csv2("../dados/estado_SP/SRAG_hospitalizados/dados/senso_covid/CensoCOVID_Full_Data_data_2020_08_19.csv")
-
+## Resumo para todo o Estado
 censo.zoo <- censo %>%
     filter(Municipio == "SÃO PAULO") %>%
     mutate(data = as.Date(Data.da.Notificacao, "%d/%m/%Y")) %>%
@@ -46,8 +46,10 @@ censo.zoo <- censo %>%
            n.casos = n.susp+n.conf,
            n.altas = N.alta.conf + N.alta.susp) %>%
     zoo()
+##Ultimos dias
+tail(censo.zoo)
 
 ################################################################################
-## Grafico
+## Resumo da opera: o censo mostra o n de internações ativas
 ################################################################################
 summary(censo$Data.da.Notificacao)
