@@ -10,6 +10,7 @@ source("../nowcasting/fct/get.last.date.R")
 source("../nowcasting/fct/read.sivep.R")
 
 data.dir <- "../dados/SIVEP-Gripe/"
+##data.dir <- "../dados/estado_SP/SRAG_hospitalizados/dados/"
 agora <- get.last.date(data.dir)
 antes <- "2020_07_21"
 dados <- read.sivep(dir = data.dir, escala = "pais", data = agora)
