@@ -23,7 +23,7 @@ srag <- read.csv(paste0(data.dir,"nowcasting_diario_srag_", data,".csv"))
 seade <- read.csv2("https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/plano_sp_leitos_internacoes.csv")
 seade.estado <- seade %>%
     filter(nome_drs == "Estado de São Paulo") %>%
-    mutate(n
+    mutate(n = n())
 ################################################################################
 ## Censo hospitalar do Estado (dado sigiloso)
 ################################################################################
@@ -43,6 +43,8 @@ censo.zoo <- censo %>%
     ungroup() %>%
     mutate(n.susp = N.susp.Enf + N.susp.UTI,
            n.conf = N.conf.Enf + N.conf.UTI,
+           N.UTI = N.susp.UTI + N.conf.UTI,
+           N.Enf = N.susp.Enf + N.conf.Enf,
            n.casos = n.susp+n.conf,
            n.altas = N.alta.conf + N.alta.susp) %>%
     zoo()
