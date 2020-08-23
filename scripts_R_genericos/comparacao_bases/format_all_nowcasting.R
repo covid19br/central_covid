@@ -1,6 +1,4 @@
-library(dplyr)
-devtools::load_all("./now_fcts/")
-format_all_nowcasting_output <- function(dir = "dados_processados/nowcasting/",
+format_nowcasting_output <- function(dir = "dados_processados/nowcasting/",
                                          escala = "municipio",
                                          geocode = "3550308",
                                          analise = c("nowcasting_diario")) {
@@ -41,7 +39,6 @@ format_all_nowcasting_output <- function(dir = "dados_processados/nowcasting/",
         str_detect(string = file, pattern = "covid")  ~ "covid"
       )
     )
-return(all2)
+  return(data.frame(all2))
 
 }
-#all2 <- format_all_nowcasting_output()
