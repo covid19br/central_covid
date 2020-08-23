@@ -44,4 +44,4 @@ format_all_nowcasting_output <- function(dir = "dados_processados/nowcasting/",
 return(all2)
 
 }
-all2 <- format_all_nowcasting_output()
+#all2 <- format_all_nowcasting_output()
