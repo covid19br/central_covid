@@ -1,0 +1,65 @@
+---
+  title: "Teste gif óbitos por estado"
+output:
+  html_document:
+  toc: true
+toc_float: true
+code_folding: hide
+---
+  
+  ```{r}
+
+library("tidyverse")
+library("cowplot")
+library("plotly")
+library("gganimate")
+library("RColorBrewer")
+library("transformr")
+library("readr")
+
+dados <- read_csv("../dados/SRAGs-tabela-last-updated.csv")
+dt.plot <- reshape2::melt(dados, id.vars = "Data")
+dt.plot$Data <- as.Date(dt.plot$Data, format = "%Y-%m-%d")
+dt.plot$variable <- as.Date(dt.plot$variable, format = "%d/%m/%y")
+
+# Setting locale to Brasil
+Sys.setlocale(category = "LC_TIME", locale = "pt_BR.UTF-8")
+
+```
+
+
+```{r}
+
+nowc <-
+  ggplot(data = dt.plot) +
+  geom_line(aes(x = Data, y = value, colour = factor(variable)), size = 2) +
+  geom_vline(aes(xintercept = variable, colour = factor(variable)), linetype = "dashed", size = 0.5, alpha = 0.5) +
+  geom_text(aes(x = variable - 7, y = 600, label = paste0("Data do Boletim:\n", variable), colour = factor(variable)), size = 6) +
+  #geom_point(data = dados.nowc, aes(x = onset_date, y = estimate), size = 2, colour = "red") +
+  scale_x_date(date_labels = "%d/%B") +
+  scale_colour_viridis_d(direction = -1) +
+  labs(x = "Data do Óbito", y = "Número de Óbitos", 
+       colour = "Data do Boletim", 
+       title = "Evolução de Óbitos por Data de Óbito", 
+       subtitle = "Observatório COVID19 BR; covid19br.github.io",
+       caption = "Fonte: Boletins Epidemiológicos do Ministério da Saúde e SIVEP-Gripe") +
+  #xlim(min(dt.plot$Data), max(dt.plot$Data) + 15) +
+  #ylim(0, 330) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 22),
+        plot.subtitle = element_text(hjust = 0.5, size = 18),
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 18, face = "bold"),
+        axis.title.y = element_text(size = 18, face = "bold"),) +
+  transition_states(factor(variable)) +
+  shadow_mark(colour = "lightgrey", alpha = 0.5, size = 1, exclude_layer = c(2, 3))
+
+animate(nowc,
+        duration = 30,
+        end_pause = 7,
+        width = 800,
+        height = 800)
+
+```

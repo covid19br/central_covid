@@ -17,7 +17,7 @@ library(devtools)
 load_all("../../now_fcts/")
 
 ################################################################################
-## leitura das últimas  planilhas de nowcasting de casos do Observatório
+## leitura das últimas planilhas de nowcasting de casos do Observatório
 ################################################################################
 data.dir <- "../site/dados/municipios/SP/Sao_Paulo/tabelas_nowcasting_para_grafico/"
 datas <- get.data.base(data.dir, last=FALSE)

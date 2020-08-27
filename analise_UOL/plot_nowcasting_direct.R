@@ -13,7 +13,7 @@ nowcasting_direct_estimates<-read_csv(paste0("./analise_UOL/output/nowcasting_es
 betas_direct<-read_csv(paste0("./analise_UOL/output/betas_direct_", last_data,trimmed,".csv"))
 betas_cumsum_direct<-read_csv(paste0("./analise_UOL/output/betas_cumsum_direct_",last_data,trimmed,".csv"))
 nowcasting_cumsum_direct<-read_csv(paste0("./analise_UOL/output/nowcasting_cumsum_direct_", last_data,trimmed,".csv"))
-median_delays<-quantile_delay(as.data.frame(betas_cumsum_direct), prob = seq(0.1,9, 0.05))
+median_delays<-quantile_delay(as.data.frame(betas_cumsum_direct), prob = seq(0.1,0.99, 0.05))
 
 # ################################################################################
 # ## Plots: objetos ggplot2
