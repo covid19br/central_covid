@@ -1,5 +1,6 @@
 library(dplyr)
 library(plyr)
+library(tidyr)
 library(zoo)
 library(ggplot2)
 library(readr)
@@ -91,7 +92,7 @@ covid.casos.ihr$IR  <- covid.casos.ihr$estimate.merged.c / IHR
 covid.casos.ihr$I <- c(covid.casos.ihr$IR[1], diff(covid.casos.ihr$IR))
 ## Junta Casos notificados
 covid.casos.ihr <- merge.zoo(covid.casos.ihr, notificados=zoo(seade$casos_novos, as.Date(seade$datahora)))
-covid.casos.ihr$semana <- date2week(time(covid.casos.ihr))
+##covid.casos.ihr$semana <- aweek::date2week(time(covid.casos.ihr))
 ## Total de casos e de notificacoes semana epidemiologica
 covid.casos.ihr.sem  <-
     covid.casos.ihr %>%
@@ -99,17 +100,18 @@ covid.casos.ihr.sem  <-
     mutate(semana = date2week(as.Date(row.names(.)), factor=TRUE, numeric=TRUE)) %>%
     dplyr::group_by(semana) %>%
     dplyr::summarise(n.casos = sum(I, na.rm=TRUE), not = sum(notificados, na.rm=TRUE), p.not =  not/n.casos) %>%
-    gather(key = tipo, value = N, n.casos:not) %>%
-    filter(semana < 28)
+    gather(key = tipo, value = N, n.casos:not) 
     
 
 ################################################################################
 ## Graficos
 ################################################################################
 ## Grafico de N de novas infecções por dia, estimados pelo IFF e pelo IHR
-ggplot(covid.ob.irf, aes(Index, I)) +
+covid.ob.irf %>%
+    fortify() %>%
+    ggplot(aes(Index, I)) +
     geom_line(aes(color="IFR")) +
-    geom_line(data = covid.casos.ihr, aes(Index, I, color="IHR")) +
+    geom_line(data = fortify(covid.casos.ihr), aes(Index, I, color="IHR")) +
     geom_line(data = covid.casos.ihr, aes(Index, notificados, color="Notificados")) +
     ylab("Novas infecções")
 ## Casos e notificacoes por semana epidemiologica
