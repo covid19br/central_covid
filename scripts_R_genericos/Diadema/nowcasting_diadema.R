@@ -12,7 +12,7 @@ if(!require(ggpubr)){install.packages("ggpubr"); library(ggpubr)}
 
 source("beta.summary.R") ## função necessária, deve estar no mesmo diretório ##
 
-diadema<-read_csv("diadema.csv") ## ATENÇÃO! ESSA CSV FOI MODIFICADA PARA NÃO CONTER CARACTERES NÃO ASCII, IMPORTANTE MANTER ASSIM ##
+diadema<-read_csv("diadema_nova.csv") ## ATENÇÃO! ESSA CSV FOI MODIFICADA PARA NÃO CONTER CARACTERES NÃO ASCII, IMPORTANTE MANTER ASSIM ##
 names(diadema)<-tolower(names(diadema)) ## Colocando os nomes das colunas em caixa-baixa ##
 
 diadema_casos<-diadema %>% 
@@ -56,9 +56,10 @@ diadema_not<-diadema_casos %>%
 ## plotando os casos por ambas as datas, 1º sintomas e notificação
 p.plot<-ggplot(data = diadema_sin_pri, aes(x=data_pri_sin, y = N))+
   geom_line(col = "red")+
-  geom_line(data = diadema_not, aes(x=data_notificacao, y=N), col = "blue")+
+  # geom_line(data = diadema_not, aes(x=data_notificacao, y=N), col = "blue")+
   xlab("Datas") +
   ylab("Nº Casos") +
+  theme_bw()+
   theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
   ggtitle("Diadema - SP")
 p.plot
@@ -84,7 +85,7 @@ nowcasting_diadema<-NobBS(data = diadema_datas, ## Data.frame com colunas de dat
                           onset_date = "data_pri_sin", ## Coluna com as datas dos eventos, onset, nosso caso aqui são os 1º sintomas
                           report_date = "data_notificacao", ## Coluna com as datas da notificaçaõ do evento, report, nosso caso aqui são notificação mesmo
                           units = "1 day", ## unidade de dias em que o nowcasting deve operar 
-                          moving_window = 60, ## IMPORTANTE! Janela em o nowcasting deve operar, como na nossa série há casos com atraso entre 1º sintomas e notificaçõa muito distante, temos que fixar a área de atuação
+                          # moving_window = 60, ## IMPORTANTE! Janela em o nowcasting deve operar, como na nossa série há casos com atraso entre 1º sintomas e notificaçõa muito distante, temos que fixar a área de atuação
                           specs = list(nAdapt = 5000, nBurnin = 3000, nThin = 1, nSamp = 10000)) ## parâmetros pro nowcasting
 betas_diadema<-beta.summary(nowcasting_diadema) #### função em funcoes.R, funçaõ que organiza os atrasos, função que desenvolvemos, deve vir no load lá de cima
 
@@ -194,9 +195,31 @@ nowcasting_diadema_stratum<-NobBS.strat(data = diadema_datas_strat, ##Veja que �
                           onset_date = "data_pri_sin", ## indicando coluna de onset
                           report_date = "data_notificacao", ## indicando coluna de report
                           units = "1 day", ## unidade de tempo
-                          moving_window = 60, ## janela de atuação 
+                          # moving_window = 40, ## janela de atuação 
                           strata = "agrega_aa", ## novo parâmetro, stratum, ou estratificação, indicando a coluna para área de abrangência
                           specs = list(nAdapt = 5000, nBurnin = 3000, nThin = 1, nSamp = 10000)) ## parâmetros pro nowcasting 
+betas_diadema_stratum<-beta.summary(nowcasting_diadema_stratum)
+
+## Salvando as estimativas do nowcasting ##
+write.csv(nowcasting_diadema_stratum$estimates, 
+          file = "nowcasting_diadema_strat.csv", 
+          row.names = FALSE)
+## Salvando os betas, atrasos entre 1º sintomas e notificação ##
+write.csv(betas_diadema_stratum, 
+          file = "betas_diadema_strat.csv",
+          row.names = FALSE)
+
+## Atrasos ##
+p.betas.diadema_stratum<-
+  ggplot(betas_diadema_stratum, aes(atraso, mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.25) +
+  xlab("Dias após 1º sintomas") +
+  ylab("Probabilidade de notificação") +
+  theme_bw() +
+  theme(legend.position="none") +
+  ggtitle("Atraso de notificação Diários")
+p.betas.diadema_stratum
 
 ## filtrando as datas em que o nowcasting atuou somente 
 diadema_pri_sin_stat<-diadema_pri_sin_stat %>% 
