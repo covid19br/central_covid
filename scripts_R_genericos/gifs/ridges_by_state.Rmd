@@ -1,0 +1,286 @@
+---
+title: "Ridges by State"
+author: "Rafael Lopes"
+date: "Sys.Date()"
+output:
+  html_document:
+  toc: true
+toc_float: true
+code_folding: hide
+---
+  
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+
+library("tidyverse")
+library("cowplot")
+library("plotly")
+library("gganimate")
+library("RColorBrewer")
+library("transformr")
+library("readr")
+
+dados_cases <- read_csv("../../dados_processados/integridade_SIVEP/dados_covid_est.csv")
+###SEGUIR IGUAL###
+dados_melted<-dados_cases
+names(dados_melted)<-c("variable", "Data", 
+                     "sg_uf",
+                     "value")
+dados_melted$variable<-as.factor(dados_melted$variable)
+dados_melted<-dados_melted %>% 
+  filter(!is.na(sg_uf) & Data >= "2020-01-01" & variable != "2020-06-16") %>% 
+  as.data.frame()
+last_data<-max(dados_melted$Data)
+# Setting locale to Brasil
+Sys.setlocale(category = "LC_TIME", locale = "pt_BR.UTF-8")
+
+```
+
+
+```{r Brasil_por_estado}
+
+  nowc <-
+  ggplot(dados_melted, aes(x = Data, height = value, y = variable, fill = ..x..)) +
+  ggridges::geom_density_ridges_gradient(scale = 3, stat = "identity", rel_min_height = 0.01) +
+  ggridges::theme_ridges() +
+  viridis::scale_fill_viridis(name = "Óbitos por dia", option = "viridis") +
+  xlab("Data de óbito") +
+  ylab("") +
+  ggtitle("Casos confirmados por Covid19 - Ministério da Saúde") +
+  labs(caption = "Fonte: Sivep-Gripe - Elaboração @rafalpx")+
+  theme(legend.position = "none",
+        panel.spacing = unit(0.1, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_blank())+
+  facet_wrap(~sg_uf,
+             scales = "free")+ ## Testar isso tbm pra ver se melhor visualização entre estado ##
+  transition_states(factor(variable))+
+  shadow_mark(colour = "lightgrey",
+              fill = "lightgrey",  ##testa isso para ver se o fill tbm some
+              alpha = 0.5,
+              size = .7,
+              exclude_layer = c(2, 3))
+
+animate(nowc,
+        duration = 20,
+        end_pause = 5,
+        width = 1920,
+        height = 1080)
+
+```
+
+```{r Por_regioes}
+dados<-dados_melted
+
+regiao_sul<-dados %>% 
+  filter(sg_uf == "RS" | sg_uf == "SC" | sg_uf == "PR") %>% 
+  as.data.frame()
+
+regiao_sudeste<-dados %>% 
+  filter(sg_uf == "SP" | sg_uf == "MG" | sg_uf == "RJ" | sg_uf == "ES") %>% 
+  as.data.frame()
+
+regiao_centro_oeste <- dados %>% 
+  filter(sg_uf == "MS" | sg_uf == "MT" | sg_uf == "GO" | sg_uf == "DF") %>% 
+  as.data.frame()
+
+regiao_norte <- dados %>% 
+  filter(sg_uf == "AC" | sg_uf == "AM" | sg_uf == "RO" | sg_uf == "RR" | sg_uf == "PA" | sg_uf == "TO") %>% 
+  as.data.frame()
+
+regiao_nordeste <- dados %>% 
+  filter(sg_uf == "BA" | sg_uf == "PE" | sg_uf == "SE" | sg_uf == "CE" | sg_uf == "PI" | sg_uf == "MA" | sg_uf == "AL" | sg_uf == "RN" | sg_uf == "PB") %>% 
+  as.data.frame()
+```
+
+#######################################################################
+REGIÃO sUL
+#######################################################################
+
+```{r região sul}
+  re_sul <-
+  ggplot(data = regiao_sul, aes(x = Data, height = value, y = variable, fill = ..x..)) +
+  ggridges::geom_density_ridges_gradient(scale = 3, stat = "identity", rel_min_height = 0.01) +
+  ggridges::theme_ridges() +
+  viridis::scale_fill_viridis(name = "Óbitos por dia", option = "viridis") +
+  xlab("Data de óbito") +
+  ylab("Boletins") +
+  ggtitle("Casos confirmados por Covid19- Ministério da Saúde") +
+  labs(caption = "Fonte: Sivep-Gripe - Elaboração @rafalpx")+
+  theme(legend.position = "none",
+        panel.spacing = unit(0.1, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_blank())+
+  facet_wrap(~sg_uf,
+             scales = "free")#+ ## Testar isso tbm pra ver se melhor visualização entre estado ##
+  # transition_states(factor(data))+
+  # shadow_mark(colour = "lightgrey",
+  #             fill = "lightgrey",
+  #             alpha = 0.5,
+  #             size = .7,
+  #             exclude_layer = c(2, 3))
+
+animate(re_sul,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 800)
+
+```
+
+#######################################################################
+REGIÃO SUDESTE
+#######################################################################
+
+```{r região sudeste}
+  re_sudeste <-
+  ggplot(data = regiao_sudeste) +
+  geom_line(aes(x = dt_evoluca, y = n, colour = factor(data)), size = .7) +
+  scale_x_date(date_labels = "%d/%B") +
+  scale_colour_viridis_d(direction = -1) +
+  labs(x = "Data do Óbito", y = "Número de Óbitos", 
+       # colour = "Data do Boletim", 
+       title = "Evolução de Óbitos por Data de Óbito - Região Sudeste", 
+       subtitle = "Observatório COVID19 BR; covid19br.github.io",
+       caption = paste0("Fonte: SIVEP-Gripe até a base do dia ", last_data)) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 22),
+        plot.subtitle = element_text(hjust = 0.5, size = 18),
+        axis.text.x = element_text(size = 16, angle = 90),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 18, face = "bold"),
+        axis.title.y = element_text(size = 18, face = "bold"),) +
+  facet_wrap(~sg_uf, 
+             scales = "free")+
+  transition_states(factor(data))+
+  shadow_mark(colour = "lightgrey",
+              alpha = 0.5,
+              size = .7,
+              exclude_layer = c(2, 3))
+
+animate(re_sudeste,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 800)
+
+```
+
+#######################################################################
+REGIÃO CENTRO-OESTE
+#######################################################################
+
+```{r região centro_oeste}
+  re_centro_oeste <-
+  ggplot(data = regiao_centro_oeste) +
+  geom_line(aes(x = dt_evoluca, y = n, colour = factor(data)), size = .7) +
+  scale_x_date(date_labels = "%d/%B") +
+  scale_colour_viridis_d(direction = -1) +
+  labs(x = "Data do Óbito", y = "Número de Óbitos", 
+       # colour = "Data do Boletim", 
+       title = "Evolução de Óbitos por Data de Óbito - Região Centro-Oeste", 
+       subtitle = "Observatório COVID19 BR; covid19br.github.io",
+       caption = paste0("Fonte: SIVEP-Gripe até a base do dia ", last_data)) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 22),
+        plot.subtitle = element_text(hjust = 0.5, size = 18),
+        axis.text.x = element_text(size = 16, angle = 90),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 18, face = "bold"),
+        axis.title.y = element_text(size = 18, face = "bold"),) +
+  facet_wrap(~sg_uf, 
+             scales = "free")+
+  transition_states(factor(data))+
+  shadow_mark(colour = "lightgrey",
+              alpha = 0.5,
+              size = .7,
+              exclude_layer = c(2, 3))
+
+animate(re_centro_oeste,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 800)
+
+```
+
+#######################################################################
+REGIÃO NORTE
+#######################################################################
+
+```{r região norte}
+  re_norte <-
+  ggplot(data = regiao_norte) +
+  geom_line(aes(x = dt_evoluca, y = n, colour = factor(data)), size = .7) +
+  scale_x_date(date_labels = "%d/%B") +
+  scale_colour_viridis_d(direction = -1) +
+  labs(x = "Data do Óbito", y = "Número de Óbitos", 
+       # colour = "Data do Boletim", 
+       title = "Evolução de Óbitos por Data de Óbito - Região Norte", 
+       subtitle = "Observatório COVID19 BR; covid19br.github.io",
+       caption = paste0("Fonte: SIVEP-Gripe até a base do dia ", last_data)) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 22),
+        plot.subtitle = element_text(hjust = 0.5, size = 18),
+        axis.text.x = element_text(size = 16, angle = 90),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 18, face = "bold"),
+        axis.title.y = element_text(size = 18, face = "bold"),) +
+  facet_wrap(~sg_uf, 
+             scales = "free",
+             nrow = 3)+
+  transition_states(factor(data))+
+  shadow_mark(colour = "lightgrey",
+              alpha = 0.5,
+              size = .7,
+              exclude_layer = c(2, 3))
+
+animate(re_norte,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 800)
+
+```
+
+#######################################################################
+REGIÃO NORDESTE
+#######################################################################
+
+```{r região nordeste}
+  re_nordeste <-
+  ggplot(data = regiao_nordeste) +
+  geom_line(aes(x = dt_evoluca, y = n, colour = factor(data)), size = .7) +
+  scale_x_date(date_labels = "%d/%B") +
+  scale_colour_viridis_d(direction = -1) +
+  labs(x = "Data do Óbito", y = "Número de Óbitos", 
+       # colour = "Data do Boletim", 
+       title = "Evolução de Óbitos por Data de Óbito - Região Nordeste", 
+       subtitle = "Observatório COVID19 BR; covid19br.github.io",
+       caption = paste0("Fonte: SIVEP-Gripe até a base do dia ", last_data)) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 22),
+        plot.subtitle = element_text(hjust = 0.5, size = 18),
+        axis.text.x = element_text(size = 16, angle = 90),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 18, face = "bold"),
+        axis.title.y = element_text(size = 18, face = "bold"),) +
+  facet_wrap(~sg_uf, 
+             scales = "free",
+             nrow = 3)+
+  transition_states(factor(data))+
+  shadow_mark(colour = "lightgrey",
+              alpha = 0.5,
+              size = .7,
+              exclude_layer = c(2, 3))
+
+animate(re_nordeste,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 800)
+
+```
