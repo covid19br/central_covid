@@ -33,22 +33,34 @@ def get_file(download_address, output_file):
     r = requests.get(download_address, verify=False, allow_redirects=True, timeout=10)
     open(output_file, 'wb').write(r.content)
 
+def get_resource_names(index_page_address):
+    page = requests.get(index_page_address, verify=False, timeout=10)
+    tree = html.fromstring(page.content)
+    res = tree.xpath('//a[@class="heading"]')
+    resources = []
+    for r in res:
+        g = re.match(r'.*dados-(.*)\.csv.*', r.text.strip('\n'))
+        if g:
+            resources.append(g.groups()[0])
+    return resources
+
 if __name__ == '__main__':
     index_page_address = 'https://opendatasus.saude.gov.br/dataset/casos-nacionais'
     download_address = "https://s3-sa-east-1.amazonaws.com/ckan.saude.gov.br/dados-{estado}.csv"
     output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/eSUS-VE')
     gitUpdate = True
 
-    estados = ["ac", "al", "am", "ap", "ba", "ce", "df", "es", "go",
-            "ma", "mg", "ms", "mt", "pa", "pb", "pe", "pi", "pr", "rj", "rn",
-            "ro", "rr", "rs", "sc", "se", "sp", "to"]
+    #estados = ["ac", "al", "am", "ap", "ba", "ce", "df", "es", "go",
+    #        "ma", "mg", "ms", "mt", "pa", "pb", "pe", "pi", "pr", "rj", "rn",
+    #        "ro", "rr", "rs", "sc", "se", "sp", "to"]
+    res = get_resource_names(index_page_address)
 
     last_date = find_last_date(output_folder)
     data = check_new_update_date(index_page_address, last_date)
     if data:
         print("Downloading new esus-ve database...")
         new_files = []
-        for estado in estados:
+        for estado in res:
             output_file = output_folder + '/esus-ve_{estado}-{data}.csv'.format(estado=estado,
                     data=data.strftime("%Y_%m_%d"))
             get_file(download_address.format(estado=estado), output_file)
