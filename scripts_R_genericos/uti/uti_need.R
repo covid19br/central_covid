@@ -1,11 +1,14 @@
+library(tidyverse)
+library(ggpubr)
+
 PRJROOT <- rprojroot::find_root(".here")
 
 # sources functions
 devtools::load_all("./now_fcts/") ##loading de funções necessárias##
 
-sivep<-read.sivep.generica("./dados/SIVEP-Gripe/SRAGHospitalizado_2020_08_31.zip")
+sivep<-read.sivep.generica("./dados/SIVEP-Gripe/SRAGHospitalizado_2020_09_07.zip")
 sivep<-sivep %>% 
-  filter(dt_sin_pri >= "2020-01-01" & !is.na(sg_uf) & 
+  filter(dt_sin_pri >= "2020-01-01" & !is.na(sg_uf) & hospital == 1 & 
            !is.na(nu_idade_n) & nu_idade_n >= 0) %>% 
   as.data.frame()
 
@@ -90,10 +93,10 @@ p.ridges.age.covid <-
   ggplot(covid_series_uti, 
          aes(x = dt_sin_pri, height = N, y = age_class, 
              fill = age_class, col = age_class)) +
-  ggridges::geom_density_ridges_gradient(scale = 1, 
+  ggridges::geom_density_ridges_gradient(scale = 3, 
                                          stat = "identity", 
-                                         # rel_min_height = 0.15,
-                                         # alpha = 0.1,
+                                         rel_min_height = 0.01,
+                                         alpha = 0.1,
                                          size = 1.2) +
   ggridges::theme_ridges() +
   scale_color_viridis_d(name = "Faixa etária", 
@@ -118,114 +121,163 @@ p.ridges.age.covid
 
 p.ridges.age.need.srag<-
   ggplot(necessidade_uti_srag, 
-         aes(x = dt_sin_pri, height = uti_need, y = age_class, 
-             fill = age_class, col = age_class)) +
-  ggridges::geom_density_ridges_gradient(scale = 1, 
-                                         stat = "identity", 
-                                         # rel_min_height = 0.01,
-                                         # alpha = 0.1,
-                                         size = 1.2) +
-  ggridges::theme_ridges() +
-  scale_color_viridis_d(name = "Faixa etária", 
-                        option = "viridis", 
-                        aesthetics = c("colour","fill"),
-                        direction = -1
-                        # breaks=c("age_1", "age_2", "age_3", "age_4", "age_5", "age_6", "age_7", "age_8", "age_9"),
-                        # labels=c("0 a 9", "10 a 19", "20 a 29", "30 a 39",
-                        #          "40 a 49", "50 a 59", "60 a 69", "70 a 79", "80+")
-                        ) +
-  labs(caption = "Fonte: Sivep-Gripe - Elaboração @rafalpx",
-       x = element_blank(),
-       y = element_blank(),
-       title = "Necessidade de UTI - SRAG",
-       subtitle = "Por dia de 1º sintomas por faixa etária")+
-  theme(legend.position = "none",
-        panel.spacing = unit(0.1, "lines"),
+         aes(x = dt_sin_pri, y = SRAG_cases,
+             fill = uti_need, group = age_class)) +
+  geom_col(width = 1, na.rm = TRUE, position = position_stack(reverse = TRUE))+
+  theme_classic()+
+  scale_fill_viridis_c(name = "ICU Need",
+                        option = "viridis",
+                        aesthetics = c("fill"),
+                        direction = -1) +
+  labs(title = "ICU Need - SRAG",
+    x = element_blank(),
+    y = element_blank())+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
         strip.text.x = element_text(size = 8),
-        axis.text.y = element_blank())+
-  facet_wrap(~sg_uf, ncol = 3)
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_wrap(sg_uf ~., scales = "free_y", ncol = 3)
 p.ridges.age.need.srag
 
 p.ridges.age.need.covid<-
   ggplot(necessidade_uti_covid, 
-         aes(x = dt_sin_pri, y = uti_need, height = Covid_cases,
-             fill = uti_need, col = uti_need)) +
-  geom_ridgeline(position = "fill")+
+         aes(x = dt_sin_pri, y = Covid_cases,
+             fill = uti_need, group = age_class)) +
+  geom_col(width = 1, na.rm = TRUE, position = position_stack(reverse = TRUE))+
   theme_classic()+
-  scale_color_viridis_c(name = "ICU Need",
+  scale_fill_viridis_c(name = "ICU Need",
                         option = "viridis",
-                        aesthetics = c("colour","fill"),
+                        aesthetics = c("fill"),
                         direction = -1) +
-  labs(caption = "Fonte: Sivep-Gripe - Elaboração @rafalpx",
-       x = element_blank(),
-       y = element_blank(),
-       title = "Necessidade de UTI - Covid",
-       subtitle = "Por dia de 1º sintomas por faixa etária")+
+  labs(title = "ICU Need - Covid",
+    x = element_blank(),
+    y = element_blank())+
   theme(legend.position = "bottom",
-        panel.spacing = unit(0.1, "lines"),
+        panel.spacing = unit(0.01, "lines"),
         strip.text.x = element_text(size = 8),
-        axis.text.y = element_blank())+
-  facet_grid(sg_uf ~ age_class)
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_wrap(sg_uf~., scales = "free_y", ncol = 3)
 p.ridges.age.need.covid
 
 p.arrange<-ggarrange(p.ridges.age.need.srag,
-                     p.ridges.age.need.covid, 
-                     common.legend = TRUE,
-                     legend = "bottom")
+                     p.ridges.age.need.covid, common.legend = TRUE, legend = "bottom")
 p.arrange
 
-necessidade_uti_srag_SP<-necessidade_uti_srag %>% 
-  filter(sg_uf == "SP") %>% 
-  as.data.frame()
-necessidade_uti_covid_SP<-necessidade_uti_covid %>% 
-  filter(sg_uf == "SP") %>% 
-  as.data.frame()
-diff_need_uti_sp<-merge(x=necessidade_uti_covid_SP[,c("dt_sin_pri", "sg_uf", "age_class", "uti_need")],
-                        y=necessidade_uti_srag_SP[,c("dt_sin_pri", "sg_uf", "age_class", "uti_need")],
-                        by = c("dt_sin_pri", "sg_uf", "age_class"))
-diff_need_uti_sp <- diff_need_uti_sp %>% 
-  mutate(uti_need_covid = uti_need.x,
-         uti_need_srag = uti_need.y,
-         diff_srag_covid = uti_need_srag - uti_need_covid) %>% 
+###################
+####  DEATHS ######
+###################
+
+sivep_obs<-sivep %>% 
+  filter(evolucao == 2) %>% 
   as.data.frame()
 
-p.test<-ggplot(diff_need_uti_sp, aes(x = dt_sin_pri, 
-                                            y = age_class, 
-                                            fill = age_class, 
-                                            height = diff_srag_covid)) +
-  geom_density_ridges(scale = 5, stat = "identity") +
-  # geom_density_ridges2(data = necessidade_uti_covid_SP, 
-  #                      aes(x=dt_sin_pri, y=age_class, fill = age_class, height = uti_need), 
-  #                      scale = 5, stat = "identity")+
-  theme_get()+
-  # scale_y_discrete(expand = c(0.01, 0)) +
-  # scale_x_continuous(expand = c(0.01, 0)) +
-  scale_fill_brewer(palette = 4) +
-  theme_ridges() + theme(legend.position = "none")
-p.test
-# p.uol <-
-#   ggplot(srag_series_uti, aes(x = dt_sin_pri , y = N)) +
-#   geom_line( aes(col = "SRAG")) +
-#   geom_line(data = covid_series_uti, aes(x = dt_sin_pri, y = N, color = "Covid"))+
-#   labs(x = "Data 1º sintomas" , y = "Número de Casos UTI ") +
-#   theme_bw() +
-#   theme(legend.position = "right") +
-#   theme(axis.text = element_text(size = 14),
-#         axis.title = element_text(size = 14))+
-#   scale_color_manual(values = c("blue", "red"),  aesthetics = "colour")+
-#   facet_wrap(~sg_uf, scales = "free")
-# p.uol
-# 
-# p.uol_need_uti<-
-#   ggplot(necessidade_uti_covid, aes(x = dt_sin_pri , y = uti_need)) +
-#   geom_line(aes(col = "Covid")) +
-#   geom_line(data = necessidade_uti_srag, aes(x = dt_sin_pri, y = uti_need, color = "SRAG"))+
-#   labs(x = "Data 1º sintomas" , y = "", 
-#        title = "Necessidade de UTI(Casos UTI/Casos)") +
-#   theme_bw() +
-#   theme(legend.position = "right", legend.title = element_text("Casos")) +
-#   theme(axis.text = element_text(size = 14),
-#         axis.title = element_text(size = 14))+
-#   scale_color_manual(values = c("blue", "red"),  aesthetics = "colour")+
-#   facet_wrap(~sg_uf)
-# p.uol_need_uti
+srag_series_obs<-sivep_obs %>% 
+  group_by(dt_sin_pri, sg_uf, age_class) %>% 
+  dplyr::summarize(N=n()) %>% 
+  as.data.frame()
+covid_series_obs<-sivep %>% 
+  filter(classi_fin == 5 | pcr_sars2 == 1) %>% 
+  group_by(dt_sin_pri, sg_uf, age_class) %>% 
+  dplyr::summarize(N=n()) %>% 
+  as.data.frame()
+
+covid_case_uti_obs<-sivep_obs %>% 
+  filter(uti == 1) %>% 
+  filter(classi_fin == 5 | pcr_sars2 == 1) %>% 
+  select(dt_sin_pri, sg_uf, age_class) %>% 
+  as.data.frame()
+srag_cases_uti_obs<-sivep_obs %>% 
+  filter(uti == 1) %>% 
+  select(dt_sin_pri, sg_uf, age_class) %>% 
+  as.data.frame()
+covid_series_uti_obs<-covid_case_uti_obs %>% 
+  group_by(dt_sin_pri, sg_uf, age_class) %>% 
+  dplyr::summarize(N=n()) %>% 
+  as.data.frame()
+srag_series_uti_obs<-srag_cases_uti_obs %>% 
+  group_by(dt_sin_pri, sg_uf, age_class) %>% 
+  dplyr::summarize(N=n()) %>% 
+  as.data.frame()
+
+necessidade_uti_covid_obs<-merge(x=covid_series_obs,
+                             y=covid_series_uti_obs,
+                             by = c("dt_sin_pri", "sg_uf", "age_class"))
+names(necessidade_uti_covid_obs)[4:5]<-c("Covid_deaths", "Covid_deaths_uti")
+necessidade_uti_covid_obs<-necessidade_uti_covid_obs %>% 
+  mutate(uti_need = Covid_deaths_uti/Covid_deaths) %>% 
+  as.data.frame()
+
+necessidade_uti_srag_obs<-merge(x=srag_series_obs,
+                            y=srag_series_uti_obs,
+                            by = c("dt_sin_pri", "sg_uf", "age_class"))
+names(necessidade_uti_srag_obs)[4:5]<-c("SRAG_deaths", "SRAG_deaths_uti")
+necessidade_uti_srag_obs<-necessidade_uti_srag_obs %>% 
+  mutate(uti_need = SRAG_deaths_uti/SRAG_deaths) %>% 
+  as.data.frame()
+
+p.ridges.age.need.srag.deaths<-
+  ggplot(necessidade_uti_srag_obs, 
+         aes(x = dt_sin_pri, y = SRAG_deaths,
+             fill = uti_need, group = age_class)) +
+  geom_col(width = 1, na.rm = TRUE, position = position_stack(reverse = TRUE))+
+  theme_classic()+
+  scale_fill_viridis_c(name = "ICU Need",
+                       option = "viridis",
+                       aesthetics = c("fill"),
+                       direction = -1) +
+  labs(title = "ICU Need - SRAG (Deaths)",
+       x = element_blank(),
+       y = element_blank())+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_wrap(sg_uf ~., scales = "free_y", ncol = 3)
+p.ridges.age.need.srag.deaths
+
+p.ridges.age.need.covid.deaths<-
+  ggplot(necessidade_uti_covid_obs, 
+         aes(x = dt_sin_pri, y = Covid_deaths,
+             fill = uti_need, group = age_class)) +
+  geom_col(width = 1, na.rm = TRUE, position = position_stack(reverse = TRUE))+
+  theme_classic()+
+  scale_fill_viridis_c(name = "ICU Need",
+                       option = "viridis",
+                       aesthetics = c("fill"),
+                       direction = -1) +
+  labs(title = "ICU Need - Covid (Deaths)",
+       x = element_blank(),
+       y = element_blank())+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_wrap(sg_uf~., scales = "free_y", ncol = 3)
+p.ridges.age.need.covid.deaths
+
+p.arrange.deaths<-ggarrange(p.ridges.age.need.srag.deaths,
+                     p.ridges.age.need.covid.deaths, common.legend = TRUE, legend = "bottom")
+p.arrange.deaths
+
+############
+### SRAG ###
+############
+p.arrange.srag<-ggarrange(p.ridges.age.need.srag, p.ridges.age.need.srag.deaths, common.legend = TRUE, legend = "bottom")
+p.arrange.srag
+
+p.arrange.covid<-ggarrange(p.ridges.age.need.covid, p.ridges.age.need.covid.deaths, common.legend = TRUE, legend = "bottom")
+p.arrange.covid
+
+uti_need_srag<-merge(x=necessidade_uti_srag,
+                      y=necessidade_uti_srag_obs,
+                      by = c("dt_sin_pri", "sg_uf", "age_class"))
+names(uti_need_srag)[c(6,9)]<-c("uti_need_cases", "uti_need_deaths")
+
+uti_need_covid<-merge(x=necessidade_uti_covid,
+                      y=necessidade_uti_covid_obs,
+                      by = c("dt_sin_pri", "sg_uf", "age_class"))
+names(uti_need_covid)[c(6,9)]<-c("uti_need_cases", "uti_need_deaths")
