@@ -55,48 +55,49 @@ diadema_not<-diadema_casos %>%
 
 ## plotando os casos por ambas as datas, 1º sintomas e notificação
 p.plot<-ggplot(data = diadema_sin_pri, aes(x=data_pri_sin, y = N))+
-  geom_line(col = "red")+
-  # geom_line(data = diadema_not, aes(x=data_notificacao, y=N), col = "blue")+
-  xlab("Datas") +
-  ylab("Nº Casos") +
-  theme_bw()+
-  theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
-  ggtitle("Diadema - SP")
+    geom_line(col = "red")+
+    # geom_line(data = diadema_not, aes(x=data_notificacao, y=N), col = "blue")+
+    xlab("Datas") +
+    ylab("Nº Casos") +
+    theme_bw()+
+    theme(legend.position = c(0.2,0.8), legend.title= element_blank()) +
+    ggtitle("Diadema - SP")
 p.plot
-
-## Criando do data.frame com as datas que serão entregues ao nowcasting, importante, 
-## não conter atrasos negativos, e estarem em formato data
-diadema_datas<-diadema_casos %>% 
-  filter(!is.na(data_pri_sin) & ## reitrando datas de 1º sintomas com NA, caso ainda haja alguma
-           !is.na(data_notificacao) & ## reitrando datas de notificação com NA, caso ainda haja alguma
-           atraso >= 0) %>% ## reitrando atrasos negativos, caso ainda haja algum
-  mutate(data_pri_sin = as.Date(data_pri_sin, format = "%Y-%m-%d"),
-         data_notificacao = as.Date(data_notificacao, format = "%Y-%m-%d")) %>% 
-  select(data_pri_sin, data_notificacao) %>% ## Selecionando somente as colunas de datas para serem entregues ao NobBS
-  as.data.frame()
-
-## Salvando o CSV, para rodadas futuras
-# write.csv(diadema_datas, file = "./scripts_R_genericos/Diadema/diadema_datas.csv", row.names = FALSE)
-# diadema_datas<-read_csv("./scripts_R_genericos/Diadema/diadema_datas.csv")
-
-## Nowcasting 
-nowcasting_diadema<-NobBS(data = diadema_datas, ## Data.frame com colunas de datas de 1º sintomas e notificação somente
-                          now = max(diadema_datas$data_pri_sin), ## até aonde fazer o nowcasting, só podemos fazer até ultima data de 1º sintomas
-                          onset_date = "data_pri_sin", ## Coluna com as datas dos eventos, onset, nosso caso aqui são os 1º sintomas
-                          report_date = "data_notificacao", ## Coluna com as datas da notificaçaõ do evento, report, nosso caso aqui são notificação mesmo
-                          units = "1 day", ## unidade de dias em que o nowcasting deve operar 
-                          # moving_window = 60, ## IMPORTANTE! Janela em o nowcasting deve operar, como na nossa série há casos com atraso entre 1º sintomas e notificaçõa muito distante, temos que fixar a área de atuação
-                          specs = list(nAdapt = 5000, nBurnin = 3000, nThin = 1, nSamp = 10000)) ## parâmetros pro nowcasting
+  
+  ## Criando do data.frame com as datas que serão entregues ao nowcasting, importante, 
+  ## não conter atrasos negativos, e estarem em formato data
+  diadema_datas<-diadema_casos %>% 
+    filter(!is.na(data_pri_sin) & ## reitrando datas de 1º sintomas com NA, caso ainda haja alguma
+             !is.na(data_notificacao) & ## reitrando datas de notificação com NA, caso ainda haja alguma
+             atraso >= 0) %>% ## reitrando atrasos negativos, caso ainda haja algum
+    mutate(data_pri_sin = as.Date(data_pri_sin, format = "%Y-%m-%d"),
+           data_notificacao = as.Date(data_notificacao, format = "%Y-%m-%d")) %>% 
+    select(data_pri_sin, data_notificacao) %>% ## Selecionando somente as colunas de datas para serem entregues ao NobBS
+    as.data.frame()
+  
+  ## Salvando o CSV, para rodadas futuras
+  # write.csv(diadema_datas, file = "./scripts_R_genericos/Diadema/diadema_datas.csv", row.names = FALSE)
+  # diadema_datas<-read_csv("./scripts_R_genericos/Diadema/diadema_datas.csv")
+  
+  ## Nowcasting 
+  nowcasting_diadema<-NobBS(data = diadema_datas, ## Data.frame com colunas de datas de 1º sintomas e notificação somente
+                            now = max(diadema_datas$data_pri_sin), ## até aonde fazer o nowcasting, só podemos fazer até ultima data de 1º sintomas
+                            onset_date = "data_pri_sin", ## Coluna com as datas dos eventos, onset, nosso caso aqui são os 1º sintomas
+                            report_date = "data_notificacao", ## Coluna com as datas da notificaçaõ do evento, report, nosso caso aqui são notificação mesmo
+                            units = "1 day",
+                            # max_D = 30, ## unidade de dias em que o nowcasting deve operar 
+                            moving_window = 40, ## IMPORTANTE! Janela em o nowcasting deve operar, como na nossa série há casos com atraso entre 1º sintomas e notificaçõa muito distante, temos que fixar a área de atuação
+                            specs = list(nAdapt = 5000, nBurnin = 3000, nThin = 1, nSamp = 10000)) ## parâmetros pro nowcasting
 betas_diadema<-beta.summary(nowcasting_diadema) #### função em funcoes.R, funçaõ que organiza os atrasos, função que desenvolvemos, deve vir no load lá de cima
-
+  
 ## Salvando as estimativas do nowcasting ##
-write.csv(nowcasting_diadema$estimates, 
-          file = "nowcasting_diadema.csv", 
-          row.names = FALSE)
-## Salvando os betas, atrasos entre 1º sintomas e notificação ##
-write.csv(betas_diadema, 
-          file = "betas_diadema.csv",
-          row.names = FALSE)
+# write.csv(nowcasting_diadema$estimates, 
+#           file = "nowcasting_diadema.csv", 
+#           row.names = FALSE)
+# ## Salvando os betas, atrasos entre 1º sintomas e notificação ##
+# write.csv(betas_diadema, 
+#           file = "betas_diadema.csv",
+#           row.names = FALSE)
 
 ## Gráficos ##
 
