@@ -28,12 +28,12 @@ dic.drs <-
 not.drs <-
     not.mun %>%
     group_by(nome_drs, semana_epidem) %>%
-    summarise(casos_novos = sum(casos_novos),
-              obitos_novos = sum(obitos_novos)) %>%
+    summarise(casos_not = sum(casos_novos),
+              obitos_not = sum(obitos_novos)) %>%
     as.data.frame() %>%
     merge(drs) %>%
-    mutate(casos_pc = 1e5*casos_novos/pop, obitos_pc = 1e5*obitos_novos/pop) %>%
-    select(nome_drs:cod_drs,casos_pc, obitos_pc)
+    mutate(casos_not_pc = 1e5*casos_not/pop, obitos_not_pc = 1e5*obitos_not/pop) %>%
+    select(nome_drs:cod_drs,casos_not_pc, obitos_not_pc)
 
 ################################################################################
 ## SEADE: Casos por data de sintoma
@@ -84,16 +84,16 @@ maximos.sin <- casos.semana.drs %>%
 ## Por data de notificação
 maximos.not <- not.drs %>%
     group_by(nome_drs) %>%
-    summarise(tot.casos = sum(casos_novos),
-              tot.casos.pc = sum(casos_pc),
-              tot.obitos = sum(obitos_novos),
-              tot.obitos.pc = sum(obitos_pc),
-              casos.max = max(casos_novos),
-              casos.pc.max = max(casos_pc),
-              semana.casos.max = semana_epidem[which.max(casos_novos)],
-              obitos.max = max(obitos_novos),
-              obitos.pc.max = max(obitos_pc),
-              semana.obitos.max = semana_epidem[which.max(obitos_novos)]) %>%
+    summarise(tot.casos = sum(casos_not),
+              tot.casos.pc = sum(casos_not_pc),
+              tot.obitos = sum(obitos_not),
+              tot.obitos.pc = sum(obitos_not_pc),
+              casos.max = max(casos_not),
+              casos.pc.max = max(casos_not_pc),
+              semana.casos.max = semana_epidem[which.max(casos_not)],
+              obitos.max = max(obitos_not),
+              obitos.pc.max = max(obitos_not_pc),
+              semana.obitos.max = semana_epidem[which.max(obitos_not)]) %>%
     as.data.frame()
 
 ## Exporta planilhas
@@ -109,7 +109,7 @@ write.csv(maximos.sin , file = "outputs/totais_maximos_e_semana_pico_semana_sint
 png("outputs/casos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
     filter(semana_epidem < 41) %>%
-    ggplot(aes(semana_epidem, casos_pc)) +
+    ggplot(aes(semana_epidem, casos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=casos_sin_pc, col = "Sintoma")) +
     facet_wrap(~nome_drs, nrow =) +
@@ -124,7 +124,7 @@ dev.off()
 png("outputs/obitos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
     filter(semana_epidem < 41) %>%
-    ggplot(aes(semana_epidem, obitos_pc)) +
+    ggplot(aes(semana_epidem, obitos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=obitos_sin_pc, col = "Sintoma")) +
     facet_wrap(~nome_drs) +

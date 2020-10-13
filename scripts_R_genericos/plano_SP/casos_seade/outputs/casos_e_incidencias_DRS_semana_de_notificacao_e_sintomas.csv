@@ -1,4 +1,4 @@
-nome_drs,semana_epidem,casos_sin,obitos_sin,cod_drs.x,pop,pop_60,area,casos_sin_pc,obitos_sin_pc,casos_novos,obitos_novos,cod_drs.y,casos_pc,obitos_pc
+nome_drs,semana_epidem,casos_sin,obitos_sin,cod_drs.x,pop,pop_60,area,casos_sin_pc,obitos_sin_pc,casos_not,obitos_not,cod_drs.y,casos_not_pc,obitos_not_pc
 Araçatuba,9,3,0,7,764041,134989,1639171,0.392649085585721,0,0,0,7,0,0
 Araçatuba,10,1,0,7,764041,134989,1639171,0.130883028528574,0,0,0,7,0,0
 Araçatuba,11,20,0,7,764041,134989,1639171,2.61766057057147,0,0,0,7,0,0
