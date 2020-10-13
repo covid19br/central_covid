@@ -97,9 +97,10 @@ maximos.not <- not.drs %>%
     as.data.frame()
 
 ## Exporta planilhas
-write.csv2(casos.semana.drs, file = "outputs/casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv", row.names = FALSE)
-write.csv2(maximos.not , file = "outputs/totais_maximos_e_semana_pico_semana_notificacao.csv", row.names = FALSE)
-write.csv2(maximos.sin , file = "outputs/totais_maximos_e_semana_pico_semana_sintoma.csv", row.names = FALSE)
+write.csv(casos.semana.drs, file = "outputs/casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv",
+           row.names = FALSE, quote=FALSE)
+write.csv(maximos.not , file = "outputs/totais_maximos_e_semana_pico_semana_notificacao.csv", row.names = FALSE, quote=FALSE)
+write.csv(maximos.sin , file = "outputs/totais_maximos_e_semana_pico_semana_sintoma.csv", row.names = FALSE, quote=FALSE)
 
 ################################################################################
 ## Graficos ##
