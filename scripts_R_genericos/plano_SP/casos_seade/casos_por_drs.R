@@ -62,7 +62,9 @@ casos.semana.drs <-
     ungroup() %>%
     inner_join(drs, by = "nome_drs") %>% 
     mutate(casos_sin_pc = 1e5*casos_sin/pop, obitos_sin_pc = 1e5*obitos_sin/pop) %>%
-    inner_join(not.drs, by = c("nome_drs", "semana_epidem"))    
+    inner_join(not.drs, by = c("nome_drs", "semana_epidem")) %>%
+    select(nome_drs, semana_epidem, cod_drs.x, pop, pop_60, area, casos_not, casos_sin, casos_not_pc, casos_sin_pc,
+           obitos_not, obitos_sin, obitos_not_pc, obitos_sin_pc)
 
 ## Total de casos
 total.casos.drs <- aggregate( casos.semana.drs[,c(3,4,11,12)], by = list(drs = casos.semana.drs$nome_drs), sum)[, c(1,2,4,3,5)]
