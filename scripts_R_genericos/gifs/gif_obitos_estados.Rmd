@@ -17,12 +17,12 @@ library("RColorBrewer")
 library("transformr")
 library("readr")
 
-dados <- read_csv("../dados_processados/integridade_SIVEP/dados_obcovid_est.csv")
+dados <- read_csv("../../dados_processados/integridade_SIVEP/dados_obcovid_br.csv")
 # dt.plot <- reshape2::melt(dados, id.vars = "Data")
 # dt.plot$Data <- as.Date(dt.plot$Data, format = "%Y-%m-%d")
 # dt.plot$variable <- as.Date(dt.plot$variable, format = "%d/%m/%y")
-dados<-dados %>% 
-  filter(!is.na(sg_uf))
+# dados<-dados %>% 
+#   filter(!is.na(sg_uf))
 last_data<-max(dados$data)
 # Setting locale to Brasil
 Sys.setlocale(category = "LC_TIME", locale = "pt_BR.UTF-8")
@@ -34,7 +34,7 @@ Sys.setlocale(category = "LC_TIME", locale = "pt_BR.UTF-8")
 
   nowc <-
   ggplot(data = dados) +
-  geom_line(aes(x = dt_evoluca, y = n, colour = factor(data)), size = .7) +
+  geom_line(aes(x = dt_evoluca, y = n, colour = factor(data)), size = 1.2) +
   scale_x_date(date_labels = "%d/%B") +
   scale_colour_viridis_d(direction = -1) +
   labs(x = "Data do Óbito", y = "Número de Óbitos", 
@@ -49,10 +49,10 @@ Sys.setlocale(category = "LC_TIME", locale = "pt_BR.UTF-8")
         axis.text.x = element_text(size = 16, angle = 90),
         axis.text.y = element_text(size = 16),
         axis.title.x = element_text(size = 18, face = "bold"),
-        axis.title.y = element_text(size = 18, face = "bold"),) +
-  facet_wrap(~sg_uf, 
-             scales = "free",
-             nrow = 3)+
+        axis.title.y = element_text(size = 18, face = "bold"),)+
+  # facet_wrap(~sg_uf, 
+  #            scales = "free",
+    #            nrow = 3)+
   transition_states(factor(data))+
   shadow_mark(colour = "lightgrey",
               alpha = 0.5,
