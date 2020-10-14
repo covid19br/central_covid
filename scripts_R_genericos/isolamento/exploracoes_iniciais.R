@@ -56,7 +56,7 @@ png("passageiros_onibus_semana_sampa.png")
 plot(mean.pass ~ semana, data= onibus.sem,
      type = "b",
      xlab = "semana epidemiológica", ylab = "Média passageiros/dia",
-     subset=semana<33)
+     subset=semana<41)
 dev.off()
 
 ################################################################################
