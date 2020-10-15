@@ -1,0 +1,173 @@
+# Região Norte 
+ 
+## Acre 
+ 
+```{r } 
+ plota2("AC") 
+``` 
+ 
+## Amazonas 
+ 
+```{r } 
+ plota2("AM") 
+``` 
+ 
+## Amapá 
+ 
+```{r } 
+ plota2("AP") 
+``` 
+ 
+## Pará 
+ 
+```{r } 
+ plota2("PA") 
+``` 
+ 
+## Rondônia 
+ 
+```{r } 
+ plota2("RO") 
+``` 
+ 
+## Roraima 
+ 
+```{r } 
+ plota2("RR") 
+``` 
+ 
+## Tocantins 
+ 
+```{r } 
+ plota2("TO") 
+``` 
+ 
+# Região Nordeste 
+ 
+## Alagoas 
+ 
+```{r } 
+ plota2("AL") 
+``` 
+ 
+## Bahia 
+ 
+```{r } 
+ plota2("BA") 
+``` 
+ 
+## Ceará 
+ 
+```{r } 
+ plota2("CE") 
+``` 
+ 
+## Maranhão 
+ 
+```{r } 
+ plota2("MA") 
+``` 
+ 
+## Paraíba 
+ 
+```{r } 
+ plota2("PB") 
+``` 
+ 
+## Pernambuco 
+ 
+```{r } 
+ plota2("PE") 
+``` 
+ 
+## Piauí 
+ 
+```{r } 
+ plota2("PI") 
+``` 
+ 
+## Rio Grande do Norte 
+ 
+```{r } 
+ plota2("RN") 
+``` 
+ 
+## Sergipe 
+ 
+```{r } 
+ plota2("SE") 
+``` 
+ 
+# Região Sudeste 
+ 
+## Espírito Santo 
+ 
+```{r } 
+ plota2("ES") 
+``` 
+ 
+## Minas Gerais 
+ 
+```{r } 
+ plota2("MG") 
+``` 
+ 
+## Rio de Janeiro 
+ 
+```{r } 
+ plota2("RJ") 
+``` 
+ 
+## São Paulo 
+ 
+```{r } 
+ plota2("SP") 
+``` 
+ 
+# Região Sul 
+ 
+## Paraná 
+ 
+```{r } 
+ plota2("PR") 
+``` 
+ 
+## Rio Grande do Sul 
+ 
+```{r } 
+ plota2("RS") 
+``` 
+ 
+## Santa Catarina 
+ 
+```{r } 
+ plota2("SC") 
+``` 
+ 
+# Região Centro-Oeste 
+ 
+## Distrito Federal 
+ 
+```{r } 
+ plota2("DF") 
+``` 
+ 
+## Goiás 
+ 
+```{r } 
+ plota2("GO") 
+``` 
+ 
+## Mato Grosso do Sul 
+ 
+```{r } 
+ plota2("MS") 
+``` 
+ 
+## Mato Grosso 
+ 
+```{r } 
+ plota2("MT") 
+``` 
+ 
+[1] "/home/paulo/work/pesquisa/colaboracoes/ift/corona/covid19br_repos/central_covid/scripts_R_genericos/InfoGripe"
