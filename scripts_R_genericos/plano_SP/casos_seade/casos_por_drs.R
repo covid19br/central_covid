@@ -75,7 +75,11 @@ with(total.casos.drs, sum(casos_novos, na.rm=TRUE) - sum(casos_sin, na.rm=TRUE))
 ## Por data sintoma
 maximos.sin <- casos.semana.drs %>%
     group_by(nome_drs) %>%
-    summarise(casos.max = max(casos_sin),
+    summarise(tot.casos = sum(casos_not),
+              tot.casos.pc = sum(casos_not_pc),
+              tot.obitos = sum(obitos_not),
+              tot.obitos.pc = sum(obitos_not_pc),
+              casos.max = max(casos_sin),
               casos.pc.max = max(casos_sin_pc),
               semana.casos.max = semana_epidem[which.max(casos_sin)],
               obitos.max = max(obitos_sin),
