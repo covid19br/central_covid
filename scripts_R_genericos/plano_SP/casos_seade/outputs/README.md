@@ -1,6 +1,6 @@
 # Outputs de análises de dados do SEADE - Plano SP
 
-## Dados das semanas de máximos de casos ou óbitos
+## Totais e máximos de casos e óbitos por semana de notificação ou sintoma
 ### Planilhas
 * `totais_maximos_e_semana_pico_semana_notificacao.csv `: valores para casos agregados por semana da notificação
 * `totais_maximos_e_semana_pico_semana_sintoma.csv` : valores para casos agregados por semana do primeiro sintoma
@@ -19,7 +19,7 @@
 * obitos.pc.max	: mortalidade (óbitos/100.00 habitantes) na  na semana epiemdiológica em que houve o maior número de óbitos registrados
 * semana.obitos.max: semana epidemiológica em que houve maior número de óbitos registrados
 
-## Planilha com números de casos e óbitos por semana epidemiológica e DRS
+## Números de casos e óbitos por semana epidemiológica e DRS
 ### Planilha
 *  `casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
 
