@@ -7,6 +7,10 @@
 
 ### Variáveis
 
+* tot.casos: total de casos até a semana final que consta na planilha 	`casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
+* tot.casos.pc	: taxa de ataque (casos/100mil hab) dos casos até a semana final que consta na planilha `casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
+* tot.obitos	: total de óbitos  até a semana final que consta na planilha 	`casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
+* tot.obitos.pc: mortalidade (óbitos/100mil hab) dos óbitos até a semana final que consta na planilha 	`casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
 * nome_drs : Nome da Delegacia Regional de Saúde (DRS)
 *  casos.max: numero de casos na semana epiemdiológica em que houve o maior número de casos registrados
 * casos.pc.max: taxa de ataque (casos/100.00 habitantes) na  na semana epiemdiológica em que houve o maior número de casos registrados
