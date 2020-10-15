@@ -68,8 +68,7 @@ casos.semana.drs <-
 
 ## Total de casos
 total.casos.drs <- aggregate( casos.semana.drs[,c(3,4,11,12)], by = list(drs = casos.semana.drs$nome_drs), sum)[, c(1,2,4,3,5)]
-## diferenca total
-with(total.casos.drs, sum(casos_novos, na.rm=TRUE) - sum(casos_sin, na.rm=TRUE))
+
 
 ## Maximo de casos e obitos e semanas de pico
 ## Por data sintoma
