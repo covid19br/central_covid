@@ -51,12 +51,20 @@ onibus.2020$semana <- date2week(onibus.2020$data, numeric=TRUE)
 onibus.sem  <- 
     onibus.2020 %>%
     group_by(semana) %>%
-    summarise(mean.pass=mean(tot.pass, na.rm=TRUE))
-png("passageiros_onibus_semana_sampa.png")
+    summarise(mean.pass=mean(tot.pass, na.rm=TRUE)) %>%
+    ungroup() %>%
+    mutate(mean.pass.rel = mean.pass/max(mean.pass, na.rm=TRUE))
+png("passageiros_onibus_semana_sampa%1d.png")
 plot(mean.pass ~ semana, data= onibus.sem,
      type = "b",
      xlab = "semana epidemiológica", ylab = "Média passageiros/dia",
-     subset=semana<41)
+     subset=semana<43)
+## Relativo
+plot(mean.pass.rel ~ semana, data= onibus.sem,
+     type = "b",
+     xlab = "semana epidemiológica", ylab = "Média passageiros/dia, relativo maximo",
+     subset=semana<43)
+abline(h=0.5, lty=2, col="red")
 dev.off()
 
 ################################################################################
