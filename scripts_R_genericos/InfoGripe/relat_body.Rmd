@@ -170,4 +170,3 @@
  plota2("MT") 
 ``` 
  
-[1] "/home/paulo/work/pesquisa/colaboracoes/ift/corona/covid19br_repos/central_covid/scripts_R_genericos/InfoGripe"
