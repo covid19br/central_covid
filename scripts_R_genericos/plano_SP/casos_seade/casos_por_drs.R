@@ -113,7 +113,7 @@ write.csv(maximos.sin , file = "outputs/totais_maximos_e_semana_pico_semana_sint
 ## Casos por 100k habitantes
 png("outputs/casos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
-    filter(semana_epidem < 41) %>%
+    filter(semana_epidem < max(semana_epidem)-1) %>%
     ggplot(aes(semana_epidem, casos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=casos_sin_pc, col = "Sintoma")) +
@@ -128,7 +128,7 @@ dev.off()
 ## Obitos
 png("outputs/obitos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
-    filter(semana_epidem < 41) %>%
+    filter(semana_epidem < max(semana_epidem)-1) %>%
     ggplot(aes(semana_epidem, obitos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=obitos_sin_pc, col = "Sintoma")) +
