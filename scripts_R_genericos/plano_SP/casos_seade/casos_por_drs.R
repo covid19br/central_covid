@@ -111,9 +111,11 @@ write.csv(maximos.sin , file = "outputs/totais_maximos_e_semana_pico_semana_sint
 ## Graficos ##
 ################################################################################
 ## Casos por 100k habitantes
+## Todos os graficos juntos
 png("outputs/casos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
-    filter(semana_epidem < max(semana_epidem)-1) %>%
+    ##filter(semana_epidem < max(semana_epidem)-1) %>%
+    filter(semana_epidem < 41) %>%
     ggplot(aes(semana_epidem, casos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=casos_sin_pc, col = "Sintoma")) +
@@ -124,6 +126,28 @@ casos.semana.drs %>%
     theme(legend.position = c(0.5, 0.1)) +
     labs(color = "Data de referência")
 dev.off()
+## Cada DRS em um grafico separado
+for(nome in unique(casos.semana.drs$nome_drs)){
+    png(paste0("outputs/casos_por_semana_",nome,".png"))
+    p1 <-
+        casos.semana.drs %>%
+        filter(semana_epidem < max(semana_epidem) & nome_drs == nome) %>%
+        ggplot(aes(semana_epidem, casos_not_pc)) +
+        geom_line(aes(col = "Notificação"), size = 1.25) +
+        geom_line(aes(y=casos_sin_pc, col = "Sintoma"), size = 1.25) +
+        xlab("Semana epidemiológica") +
+        ylab("Casos por 100 mil habitantes") +
+        theme_bw() +
+        theme(legend.position = c(0.2, 0.85),
+              axis.text=element_text(size=14),
+              axis.title=element_text(size=15),
+              plot.title = element_text(size=16, face="bold")) +
+        labs(color = "Data de referência") +
+        scale_color_manual(values = c("darkblue", "darkred")) +
+        ggtitle(nome)
+    print(p1)
+    dev.off()
+}
 
 ## Obitos
 png("outputs/obitos_por_semana.png", width =900, height = 600)
@@ -139,3 +163,25 @@ casos.semana.drs %>%
     theme(legend.position = c(0.5, 0.1)) +
     labs(color = "Data de referência")
 dev.off()
+## Um grafico por DRS
+for(nome in unique(casos.semana.drs$nome_drs)){
+    png(paste0("outputs/obitos_por_semana_",nome,".png"))
+    p1 <-
+        casos.semana.drs %>%
+        filter(semana_epidem < max(semana_epidem) & nome_drs == nome) %>%
+        ggplot(aes(semana_epidem, obitos_not_pc)) +
+        geom_line(aes(col = "Notificação"), size = 1.25) +
+        geom_line(aes(y=obitos_sin_pc, col = "Sintoma"), size = 1.25) +
+        xlab("Semana epidemiológica") +
+        ylab("Óbitos por 100 mil habitantes") +
+        theme_bw() +
+        theme(legend.position = c(0.2, 0.85),
+              axis.text=element_text(size=14),
+              axis.title=element_text(size=15),
+              plot.title = element_text(size=16, face="bold")) +
+        labs(color = "Data de referência") +
+        scale_color_manual(values = c("darkblue", "darkred")) +
+        ggtitle(nome)
+    print(p1)
+    dev.off()
+}
