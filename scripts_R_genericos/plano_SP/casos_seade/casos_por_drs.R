@@ -115,7 +115,7 @@ write.csv(maximos.sin , file = "outputs/totais_maximos_e_semana_pico_semana_sint
 png("outputs/casos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
     ##filter(semana_epidem < max(semana_epidem)-1) %>%
-    filter(semana_epidem < 41) %>%
+    filter(semana_epidem < 42) %>%
     ggplot(aes(semana_epidem, casos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=casos_sin_pc, col = "Sintoma")) +
@@ -185,3 +185,22 @@ for(nome in unique(casos.semana.drs$nome_drs)){
     print(p1)
     dev.off()
 }
+
+## Notificacoes por dia no estado: contam casos que entraram no dia (argh!), não é data de notificação
+n.not.dia <-
+    not.mun %>%
+    mutate(datahora = as.Date(datahora)) %>%
+    group_by(datahora) %>%
+    summarise(casos.cum = sum(casos), casos_novos = sum(casos_novos)) %>%
+    ungroup
+n.not.dia$diff.cum <- c(n.not.dia$casos.cum[1], diff(n.not.dia$casos.cum))
+
+## Aqui vemos o represamento de notificações em 12/nov, o que mostra que o campo "casos_novos"
+## registra n de casos novo digitados em cada data
+png("casos_novos_dia_seade.png", width = 600)
+n.not.dia %>%
+    ggplot(aes(datahora, casos_novos)) +
+    geom_line() +
+    theme_bw()
+    ## geom_line(aes(y=diff.cum), col = "red")
+dev.off()
