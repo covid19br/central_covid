@@ -15,7 +15,7 @@ library(gridExtra)
 ## Global options
 options(max.print="75")
 opts_chunk$set(echo=FALSE,
-	             cache=TRUE,
+               cache=FALSE,
                prompt=FALSE,
                tidy=TRUE,
                comment=NA,
