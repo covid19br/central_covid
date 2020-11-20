@@ -40,10 +40,66 @@ d.cidades2 <- d %>%
               suspeito = sum(Pacientes.UTI...Suspeitos) + sum(Pacientes.Enfermaria.ou.Retaguarda.PS...Suspeitos),
               hosp = sum(Hospitalizados.no.dia.anterior.adulto, na.rm=T) + sum(Hospitalizados.no.dia.anterior.pediátrico, na.rm=T),
               altas.susp = sum(Altas.hospitalares.de.pacientes.suspeitos.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
-              altas.conf = sum(Altas.hospitalares.de.pacientes.confirmados.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T), 
+              altas.conf = sum(Altas.hospitalares.de.pacientes.confirmados.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
+              total = confirmado + suspeito,
+              altas.total = altas.susp + altas.conf
     ) %>%
     arrange(municipio, Data.da.Notificacao) %>%
     as.data.frame()
+
+d.cidades3 <- d %>% 
+    group_by(Municipio, Data.da.Notificacao) %>%
+    summarise(municipio = first(Municipio),
+              registros = n(),
+              confirmado = sum(Pacientes.UTI...Confirmados) + sum(Pacientes.Enfermaria.ou.Retaguarda.PS...Confirmados),
+              suspeito = sum(Pacientes.UTI...Suspeitos) + sum(Pacientes.Enfermaria.ou.Retaguarda.PS...Suspeitos),
+              hosp = sum(Hospitalizados.no.dia.anterior.adulto, na.rm=T) + sum(Hospitalizados.no.dia.anterior.pediátrico, na.rm=T),
+              altas.susp = sum(Altas.hospitalares.de.pacientes.suspeitos.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
+              altas.conf = sum(Altas.hospitalares.de.pacientes.confirmados.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
+              total = confirmado + suspeito,
+              altas.total = altas.susp + altas.conf
+    ) %>%
+    arrange(municipio, Data.da.Notificacao) %>%
+    as.data.frame()
+
+#dadossp = d.cidades2[ d.cidades2$municipio == "SÃO PAULO", ]
+#ggplot(dadossp) + geom_line(aes(x=Data.da.Notificacao, y = registros, col=c_tipo_hospital))
+#dadossp2 = d.cidades3[ d.cidades3$municipio == "SÃO PAULO", ]
+#plot(dadossp2$Data.da.Notificacao[-c(1:7)], rollmean(diff(dadossp2$total) + dadossp2$altas.total[-nrow(dadossp2)], 7), type='l')
+
+d.drs <- d %>% 
+    group_by(DRS.Numero, Data.da.Notificacao, c_tipo_hospital) %>%
+    summarise(drs = first(DRS.Numero),
+              registros = n(),
+              confirmado = sum(Pacientes.UTI...Confirmados) + sum(Pacientes.Enfermaria.ou.Retaguarda.PS...Confirmados),
+              suspeito = sum(Pacientes.UTI...Suspeitos) + sum(Pacientes.Enfermaria.ou.Retaguarda.PS...Suspeitos),
+              hosp = sum(Hospitalizados.no.dia.anterior.adulto, na.rm=T) + sum(Hospitalizados.no.dia.anterior.pediátrico, na.rm=T),
+              altas.susp = sum(Altas.hospitalares.de.pacientes.suspeitos.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
+              altas.conf = sum(Altas.hospitalares.de.pacientes.confirmados.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
+              total = confirmado + suspeito,
+              altas.total = altas.susp + altas.conf
+    ) %>%
+    arrange(DRS.Numero, Data.da.Notificacao) %>%
+    as.data.frame()
+
+d.drs3 <- d %>% 
+    group_by(DRS.Numero, Data.da.Notificacao) %>%
+    summarise(drs = first(DRS.Numero),
+              registros = n(),
+              confirmado = sum(Pacientes.UTI...Confirmados) + sum(Pacientes.Enfermaria.ou.Retaguarda.PS...Confirmados),
+              suspeito = sum(Pacientes.UTI...Suspeitos) + sum(Pacientes.Enfermaria.ou.Retaguarda.PS...Suspeitos),
+              hosp = sum(Hospitalizados.no.dia.anterior.adulto, na.rm=T) + sum(Hospitalizados.no.dia.anterior.pediátrico, na.rm=T),
+              altas.susp = sum(Altas.hospitalares.de.pacientes.suspeitos.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
+              altas.conf = sum(Altas.hospitalares.de.pacientes.confirmados.COVID.19..no.periodo.de.00.horas.as.23.horas.e.59.minutos.do.dia.anterior, na.rm=T),
+              total = confirmado + suspeito,
+              altas.total = altas.susp + altas.conf
+    ) %>%
+    arrange(DRS.Numero, Data.da.Notificacao) %>%
+    as.data.frame()
+
+
+
+#ggplot(dadossp) + geom_line(aes(x=Data.da.Notificacao, y = registros, col=c_tipo_hospital))
 
 d.DRS <- d %>% 
     group_by(DRS.Numero, Data.da.Notificacao) %>%
