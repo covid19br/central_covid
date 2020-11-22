@@ -5,10 +5,12 @@ library(ggplot2)
 library(zip)
 library(aweek)
 library(rmarkdown)
+library(NobBS)
+library(lubridate)
 source("../../nowcasting/fct/get.last.date.R")
 source("../../nowcasting/fct/read.sivep.R")
 source("../../nowcasting/fct/gera.nowcasting.R")
-source("../../nowcasting/fct/00_load_libraries.R")
+
 ## set_week_start("Sunday") ## inicio das semanas epidemiológicas
 
 
@@ -33,6 +35,10 @@ dados.sampa <- read.sivep(dir = data.dir, escala = "municipio", geocode = "35503
 sampa.srag.now <- gera.nowcasting(dados.sampa, tipo= "srag", trim.now = 0, window = 10, semanal =TRUE)
 ## Covid
 sampa.covid.now <- gera.nowcasting(dados.sampa, tipo= "covid", trim.now = 0, window = 10, semanal =TRUE)
+## Obitos covid
+sampa.covid.ob.now <- gera.nowcasting(dados.sampa, obito_sin_pri=TRUE, caso = FALSE, tipo= "covid", trim.now = 0, window = 10, semanal =TRUE)
+## Obitos srag
+sampa.srag.ob.now <- gera.nowcasting(dados.sampa, obito_sin_pri=TRUE, caso = FALSE, tipo= "srag", trim.now = 0, window = 10, semanal =TRUE)
 
 ## Funcao semvê para plotar
 p1 <-function(objeto){
