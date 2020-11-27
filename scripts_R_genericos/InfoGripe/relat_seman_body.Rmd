@@ -1,0 +1,172 @@
+# Região Norte 
+ 
+## Acre 
+ 
+```{r } 
+ plot.seman("AC") 
+``` 
+ 
+## Amazonas 
+ 
+```{r } 
+ plot.seman("AM") 
+``` 
+ 
+## Amapá 
+ 
+```{r } 
+ plot.seman("AP") 
+``` 
+ 
+## Pará 
+ 
+```{r } 
+ plot.seman("PA") 
+``` 
+ 
+## Rondônia 
+ 
+```{r } 
+ plot.seman("RO") 
+``` 
+ 
+## Roraima 
+ 
+```{r } 
+ plot.seman("RR") 
+``` 
+ 
+## Tocantins 
+ 
+```{r } 
+ plot.seman("TO") 
+``` 
+ 
+# Região Nordeste 
+ 
+## Alagoas 
+ 
+```{r } 
+ plot.seman("AL") 
+``` 
+ 
+## Bahia 
+ 
+```{r } 
+ plot.seman("BA") 
+``` 
+ 
+## Ceará 
+ 
+```{r } 
+ plot.seman("CE") 
+``` 
+ 
+## Maranhão 
+ 
+```{r } 
+ plot.seman("MA") 
+``` 
+ 
+## Paraíba 
+ 
+```{r } 
+ plot.seman("PB") 
+``` 
+ 
+## Pernambuco 
+ 
+```{r } 
+ plot.seman("PE") 
+``` 
+ 
+## Piauí 
+ 
+```{r } 
+ plot.seman("PI") 
+``` 
+ 
+## Rio Grande do Norte 
+ 
+```{r } 
+ plot.seman("RN") 
+``` 
+ 
+## Sergipe 
+ 
+```{r } 
+ plot.seman("SE") 
+``` 
+ 
+# Região Sudeste 
+ 
+## Espírito Santo 
+ 
+```{r } 
+ plot.seman("ES") 
+``` 
+ 
+## Minas Gerais 
+ 
+```{r } 
+ plot.seman("MG") 
+``` 
+ 
+## Rio de Janeiro 
+ 
+```{r } 
+ plot.seman("RJ") 
+``` 
+ 
+## São Paulo 
+ 
+```{r } 
+ plot.seman("SP") 
+``` 
+ 
+# Região Sul 
+ 
+## Paraná 
+ 
+```{r } 
+ plot.seman("PR") 
+``` 
+ 
+## Rio Grande do Sul 
+ 
+```{r } 
+ plot.seman("RS") 
+``` 
+ 
+## Santa Catarina 
+ 
+```{r } 
+ plot.seman("SC") 
+``` 
+ 
+# Região Centro-Oeste 
+ 
+## Distrito Federal 
+ 
+```{r } 
+ plot.seman("DF") 
+``` 
+ 
+## Goiás 
+ 
+```{r } 
+ plot.seman("GO") 
+``` 
+ 
+## Mato Grosso do Sul 
+ 
+```{r } 
+ plot.seman("MS") 
+``` 
+ 
+## Mato Grosso 
+ 
+```{r } 
+ plot.seman("MT") 
+``` 
+ 
