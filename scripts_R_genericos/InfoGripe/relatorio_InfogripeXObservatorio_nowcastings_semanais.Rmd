@@ -26,10 +26,9 @@ opts_knit$set(width=75)
 
 # Introdução
 
-Comparação dos nowcastings de casos de SRAG sem filtro dos sites
-InfoGripe (vermelho) e do Observatório COVID-19 BR (azul). 
+Comparação dos nowcastings de casos de SRAG do Observatório COVID-19 BR sem filtros de sintoma com nowcastings do InfoGripe, também sem filtros de sintoma e com diferentes tipos de filtros. 
 
-Ambos com nowcasting de casos de SRAG sem filtro agregados por semana.
+Todos com nowcasting de casos de SRAG agregados por semana.
 
 
 ```{r child = "relat_seman_body.Rmd"}

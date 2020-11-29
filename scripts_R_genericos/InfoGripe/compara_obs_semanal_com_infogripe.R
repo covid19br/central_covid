@@ -62,7 +62,7 @@ observ.data.max <- observ.seman %>%
     ungroup()
 
 ################################################################################
-## Dados do Infogripe
+## Dados do Infogripe sem filtros
 ################################################################################
 ## Leitura 
 infogripe <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_sintomas.csv")
@@ -100,6 +100,64 @@ infogr.estado <- filter(infogripe, Tipo == "Estado"&
 ##     as.data.frame()
 
 ################################################################################
+## Dados do Infogripe sem filtros
+################################################################################
+## Leitura 
+infogripe2 <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes.csv")
+
+## Filtra apenas os dados de casos de srag do estado
+infogr2.estado <- filter(infogripe2, Tipo == "Estado"&
+                                   Ano.epidemiológico > 2019 &
+                                   ## data.de.publicação == max(data.de.publicação) &
+                                   dado == "srag" &
+                                   escala == "casos") %>%
+    select(UF,
+           Unidade.da.Federação,
+           Semana.epidemiológica,
+           Casos.semanais.reportados.até.a.última.atualização,
+           limite.inferior.da.estimativa,
+           casos.estimados,
+           limite.superior.da.estimativa) %>%
+    merge(dic.estados[, 2:3], by.x = "UF", by.y = "id") %>%
+    dplyr::rename(id.estado = UF,
+           nome.estado = Unidade.da.Federação,
+           semana = Semana.epidemiológica,
+           casos.obs = Casos.semanais.reportados.até.a.última.atualização,
+           lower = limite.inferior.da.estimativa,
+           casos.est = casos.estimados,
+           upper = limite.superior.da.estimativa,
+           sigla.estado = sigla)
+
+################################################################################
+## Dados do Infogripe com filtros de febre
+################################################################################
+## Leitura 
+infogripe3 <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_febre.csv")
+
+## Filtra apenas os dados de casos de srag do estado
+infogr3.estado <- filter(infogripe3, Tipo == "Estado"&
+                                   Ano.epidemiológico > 2019 &
+                                   ## data.de.publicação == max(data.de.publicação) &
+                                   dado == "srag" &
+                                   escala == "casos") %>%
+    select(UF,
+           Unidade.da.Federação,
+           Semana.epidemiológica,
+           Casos.semanais.reportados.até.a.última.atualização,
+           limite.inferior.da.estimativa,
+           casos.estimados,
+           limite.superior.da.estimativa) %>%
+    merge(dic.estados[, 2:3], by.x = "UF", by.y = "id") %>%
+    dplyr::rename(id.estado = UF,
+           nome.estado = Unidade.da.Federação,
+           semana = Semana.epidemiológica,
+           casos.obs = Casos.semanais.reportados.até.a.última.atualização,
+           lower = limite.inferior.da.estimativa,
+           casos.est = casos.estimados,
+           upper = limite.superior.da.estimativa,
+           sigla.estado = sigla)
+
+################################################################################
 ## Funcoes para graficos
 ################################################################################
 
@@ -110,17 +168,29 @@ plot.seman <- function(sigla){
     data1  <-  infogr.estado %>% filter(sigla.estado == sigla) 
     ##data2 <- observ.seman %>% filter(semana <= (max.sem) & sigla.estado == sigla)
     data2 <- observ.seman %>% filter(estado == sigla)
+    data3  <-  infogr2.estado %>% filter(sigla.estado == sigla)
+    data4  <-  infogr3.estado %>% filter(sigla.estado == sigla) 
     p1 <- ggplot(data1, aes(semana)) +
-        geom_line(aes(y=casos.obs), lty =2 , col = "red") +
-        geom_line(aes(y=casos.est), col = "red") +
-        geom_ribbon(aes(ymin = lower, ymax = upper), fill = "red", alpha =0.1) +
-        geom_line(data = data2, aes(y=n.casos), lty =2 , col = "blue") +
-        geom_line(data = data2, aes(y=estimate), col = "blue") +
-        geom_ribbon(data = data2, aes(ymin = lower.merged.pred, ymax = upper.merged.pred), fill = "blue", alpha =0.1) +
+        geom_line(aes(y=casos.obs, color = "InfoGripe sem filtros"), lty =2 ) +
+        geom_line(aes(y=casos.est, color = "InfoGripe sem filtros")) +
+        geom_ribbon(aes(ymin = lower, ymax = upper, fill= "InfoGripe sem filtros"), alpha =0.1) +
+        geom_line(data = data3, aes(y=casos.obs, color = "InfoGripe com filtros"), lty =2) +
+        geom_line(data = data3, aes(y=casos.est, color = "InfoGripe com filtros")) +
+        geom_ribbon(data=data3, aes(ymin = lower, ymax = upper, fill = "InfoGripe com filtros"), alpha =0.1) +
+        geom_line(data = data4, aes(y=casos.obs, color = "InfoGripe filtro febre"), lty =2) +
+        geom_line(data = data4, aes(y=casos.est, color = "InfoGripe filtro febre")) +
+        geom_ribbon(data = data4, aes(ymin = lower, ymax = upper, fill = "InfoGripe filtro febre"), alpha =0.1) +
+        geom_line(data = data2, aes(y=n.casos, color= "Observatório"), lty =2 ) +
+        geom_line(data = data2, aes(y=estimate, color= "Observatório")) +
+        geom_ribbon(data = data2, aes(ymin = lower.merged.pred, ymax = upper.merged.pred, fill= "Observatório"),
+                    alpha =0.1) +
         xlab("Semana epidemiológica dos sintomas") +
-        ylab("N de casos semanais SRAG sem filtro") +
+            ylab("N de casos semanais SRAG") +
+        scale_color_manual(name="", values = 5:2) +
+        scale_fill_manual(name = "", values = 5:2) +
         ggtitle(sigla) +
-        theme_bw()
+        theme_bw() +
+        theme(legend.position = c(0.15, 0.8))
     p1
 }
 
@@ -137,5 +207,7 @@ for(regiao in unique(dic.estados$regiao)){
     }
 }
 sink()
+
+save.image()
 
 render("relatorio_InfogripeXObservatorio_nowcastings_semanais.Rmd", output_dir="output")
