@@ -76,5 +76,6 @@ sampa.ultima.sem %>%
     ylab("N de testes") +
     ggtitle(paste0("Testes RT-PCR de SG no Munic. de SP, E-Sus de ",
                    format(as.Date(ultima.data,"%Y_%m_%d"), "%d/%m/%Y"))) +
-    theme(legend.position = c(0.1, 0.8))   
+    theme(legend.position = c(0.1, 0.8)) +
+    labs(fill = "Resultado do RT-PCR")
 dev.off()
