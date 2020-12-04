@@ -16,7 +16,7 @@ set_week_start("Sunday")
 ## linha: Sem Epi Inicio Sintoma, Coluna: Dia Mês da Notif, Cnoteúdo: N de casos
 ## opção Colunas separadas por ";"
 ## Data de atualizacao dos dados, ver no site
-data.atualiz <-  as.Date("2020-11-10")
+data.atualiz <-  as.Date("2020-11-24")
 
 data.dir <- "../../dados/municipio_SP/tabwin/SG/"
 sgsp.raw <- read.csv2(paste0(data.dir,"sg_", get.last.date(data.dir),".csv"), na.strings="-")
@@ -33,7 +33,7 @@ sgsp %<>%
            sem_not = date2week(dt_not, numeric = TRUE),
            dt_sem_not = week2date(date2week(dt_not, floor_day = TRUE))+6,
            dt_sem_sin = week2date(paste0("2020-W",substr(Sem.Epid.Início.Sintoma, 5, 6),"-7"))) %>%
-    filter(dt_sem_not <= data.atual & dt_sem_sin <= data.atual)
+    filter(dt_sem_not <= data.atualiz & dt_sem_sin <= data.atualiz)
 ## Data.frame para o NobBS: cada linha o par de datas de sintoma e notificacao
 sgsp2 <- sgsp[rep(1:nrow(sgsp), sgsp$N.casos), c("dt_sem_sin", "dt_sem_not")] %>% as.data.frame()
 
@@ -43,9 +43,10 @@ sgsp.now <- NobBS(data = sgsp2,
                   units = "1 week",
                   onset_date = "dt_sem_sin",
                   report_date = "dt_sem_not",
-                  specs=list(dist = "NB")
+                  specs=list(dist = "NB"),
+                  moving_window = 10
                   )
-##png("SG_SP_2020_11_10%1d.png", width = 600)
+##png("SG_SP_2020_11_24%1d.png", width = 600)
 ## Grafico
 sgsp %>%
     group_by(dt_sem_sin) %>%
@@ -77,7 +78,7 @@ pcrsp %<>%
     mutate(sem_sin = as.integer(substr(Sem.Epid.Início.Sintoma, 5, 6)),
            dt_sem_sin = week2date(paste0("2020-W",substr(Sem.Epid.Início.Sintoma, 5, 6),"-7")),
            positividade = 100*Positivo/(Positivo+ Negativo + Inconclusivo)) %>%
-    filter(dt_sem_sin <= data.atual)
+    filter(dt_sem_sin <= data.atualiz)
 
 pcrsp2  <-
     select(pcrsp, -c(positividade,Total) ) %>%
@@ -98,4 +99,4 @@ pcrsp2 %>%
     ylab("N de testes") +
     ggtitle("Testes RT-PCR de SG no Munic. de SP") +
     theme(legend.position = c(0.1, 0.8))
-## dev.off()    
+##dev.off()    

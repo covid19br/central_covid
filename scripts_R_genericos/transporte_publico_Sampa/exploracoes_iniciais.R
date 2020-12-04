@@ -11,6 +11,7 @@ source("../../nowcasting/fct/get.last.date.R")
 
 ################################################################################
 ## Importacao da planilhas de n de passageiros da Prefeitura
+## De https://www.prefeitura.sp.gov.br/cidade/secretarias/transportes/institucional/sptrans/acesso_a_informacao/agenda/index.php?p=292723
 ################################################################################
 ## Datas para tentar: todas até o dia de hoje
 datas <- as.Date("2020-01-01") + 0:(Sys.Date() - as.Date("2020-01-01"))
