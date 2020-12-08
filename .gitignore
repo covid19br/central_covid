@@ -64,5 +64,7 @@ central_covid.sublime-project
 central_covid.sublime-workspace
 /IHFR
 /ICU_stats
+/dados/eSUS-VE
+/dados/seade
 scripts_R_genericos/plano_SP/casos_seade/casos_obitos_doencas_preexistentes.csv
 scripts_R_genericos/plano_SP/casos_seade/casos_obitos_doencas_preexistentes.csv.zip
