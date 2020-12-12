@@ -59,14 +59,15 @@ png("passageiros_onibus_semana_sampa%1d.png")
 plot(mean.pass ~ semana, data= onibus.sem,
      type = "b",
      xlab = "semana epidemiológica", ylab = "Média passageiros/dia",
-     subset=semana<48
+     subset=semana<50
      )
 ## Relativo
 plot(mean.pass.rel ~ semana, data= onibus.sem,
      type = "b",
      xlab = "semana epidemiológica", ylab = "Média passageiros/dia, relativo maximo",
-     subset=semana<48)
+     subset=semana<50)
 abline(h=0.5, lty=2, col="red")
+abline(h=0.6, lty=2, col="blue")
 dev.off()
 
 
