@@ -19,7 +19,7 @@ res = GET(url, authenticate("user-api-leitos", "aQbLL3ZStaTr38tj"))
 #Só consigo puxar com usuario e senha mas não consigo usar o query para nenhuma variavel
 #res = GET(url, authenticate("user-api-leitos", "aQbLL3ZStaTr38tj", query = list(siglaEstado = "PR")))
 
-res$status_code
+res
 
 res$url
 
