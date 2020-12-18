@@ -4,6 +4,7 @@ library(ggplot2)
 library(devtools)
 library(aweek)
 library(knitr)
+library(magrittr)
 devtools::load_all("../../now_fcts/")
 source('../../esus_analises/get.last.esus.R')
 
@@ -51,7 +52,7 @@ my.db <- dbConnect(SQLite(), esus)
 ################################################################################
 ## N total de notificaces por data, estado, tipo do teste e estado do teste (nao só RT-PCR)
 testes.estados.data <-
-    tbl(my.db, "esus") %>%
+    tbl(my.db, "esusbr") %>%
     select(municipioIBGE, estadoIBGE, dataIni, estadoTeste, tipoTeste, resultadoTeste, classificacaoFinal) %>%
     mutate(estado = ifelse(!is.na(municipioIBGE)&is.na(estadoIBGE), substr(municipioIBGE,1,2), estadoIBGE)) %>%
     group_by(dataIni, estado, estadoTeste, tipoTeste, classificacaoFinal, resultadoTeste) %>%
@@ -104,9 +105,9 @@ result.estados.sem  <-
     mutate(sem_sin = date2week(dataIni, numeric = TRUE),
            resultadoTeste = ifelse(is.na(resultadoTeste), "Não informado", resultadoTeste),
            resultadoTeste = factor(resultadoTeste,
-                                   levels = c("Negativo",
+                                   levels = c("Não informado",
                                               "Inconclusivo ou Indeterminado",
-                                              "Não informado",
+                                              "Negativo",
                                               "Positivo"))) %>%
     left_join(siglas.estados, by = "estado") %>%
     group_by(sigla, sem_sin, resultadoTeste) %>%
@@ -126,7 +127,7 @@ with(testes.estados.data, xtabs(N ~ tipoTeste + resultadoTeste, addNA=TRUE)) %>%
 ################################################################################
 ## n de testes pcr por data, resultado e estado
 pcr.estados.data  <-
-    tbl(my.db, "esus") %>%
+    tbl(my.db, "esusbr") %>%
     select(dataIni, estadoIBGE, municipioIBGE,
            estadoTeste, tipoTeste, resultadoTeste) %>%
     filter(
@@ -169,8 +170,8 @@ p1 <-
     pcr.estados.sem %>%
     filter(!is.na(sigla)) %>%
     mutate(resultadoTeste = factor(resultadoTeste,
-                                   levels = c("Inconclusivo ou Indeterminado",
-                                              "Negativo", "Positivo", "Em branco (null + NA)"))) %>%
+                                   levels = c("Em branco (null + NA)", "Inconclusivo ou Indeterminado",
+                                              "Negativo", "Positivo"))) %>%
     ggplot(aes(sem_sin, N.casos))+
     geom_area(aes(fill=resultadoTeste)) +
     theme_bw() +
@@ -208,7 +209,7 @@ p3 <-
 ## Total de notificacoes por semana por tipo de teste e por estado
 p4  <-
     tipo.testes.estados.sem %>%
-    filter(!is.na(sigla)) %>%
+    filter(!is.na(sigla)&!is.na(teste)) %>%
     ggplot(aes(sem_sin, N.casos)) +
     geom_area(aes(fill = teste)) +
     theme_bw() +
