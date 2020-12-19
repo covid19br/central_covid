@@ -101,7 +101,9 @@ situacao.estados.sem  <-
 result.estados.sem  <-
     testes.estados.data %>%
     filter(dataIni > as.Date("2020-01-01") &
-           dataIni <= Sys.Date()) %>%
+           dataIni <= Sys.Date() &
+           estadoTeste!="Exame Não Solicitado"&
+           !is.na(estadoTeste)) %>%
     mutate(sem_sin = date2week(dataIni, numeric = TRUE),
            resultadoTeste = ifelse(is.na(resultadoTeste), "Não informado", resultadoTeste),
            resultadoTeste = factor(resultadoTeste,
@@ -112,6 +114,49 @@ result.estados.sem  <-
     left_join(siglas.estados, by = "estado") %>%
     group_by(sigla, sem_sin, resultadoTeste) %>%
     summarise(N.casos = sum(N))
+
+################################################################################
+## Testes rapidos
+################################################################################
+## Resultados testes rapidos por semana
+result.rap.estados.sem  <-
+    testes.estados.data %>%
+    left_join(tipos.testes, by="tipoTeste") %>%
+    filter(dataIni > as.Date("2020-01-01") &
+           dataIni <= Sys.Date() &
+           teste == "Testes rápidos" &
+           estadoTeste!="Exame Não Solicitado"&
+           !is.na(estadoTeste)) %>%
+    mutate(sem_sin = date2week(dataIni, numeric = TRUE),
+           resultadoTeste = ifelse(is.na(resultadoTeste), "Não informado", resultadoTeste),
+           resultadoTeste = factor(resultadoTeste,
+                                   levels = c("Não informado",
+                                              "Inconclusivo ou Indeterminado",
+                                              "Negativo",
+                                              "Positivo"))) %>%
+    left_join(siglas.estados, by = "estado") %>%
+    group_by(sigla, sem_sin, resultadoTeste) %>%
+    summarise(N.casos = sum(N))
+
+## Positividade de testes rápidos
+positividade.rapidos.sem <-
+    testes.estados.data %>%
+    left_join(tipos.testes, by="tipoTeste") %>%
+    filter(dataIni > as.Date("2020-01-01") &
+           dataIni <= Sys.Date() &
+           teste == "Testes rápidos") %>%
+    mutate(sem_sin = date2week(dataIni, numeric = TRUE),
+           resultadoTeste = ifelse(is.na(resultadoTeste), "Não informado", resultadoTeste)) %>%
+    left_join(siglas.estados, by = "estado") %>%
+    group_by(sigla, sem_sin, resultadoTeste) %>%
+    summarise(N.casos = sum(N)) %>%
+    pivot_wider(names_from = resultadoTeste, values_from = N.casos, values_fill = 0) %>%
+    rename(Branco = "Não informado", Indet = "Inconclusivo ou Indeterminado") %>%
+    group_by(sigla, sem_sin) %>%
+    summarise(N.testes = Positivo + Negativo + Branco + Indet,
+              N.resultados = N.testes - Branco,
+              positiv = Positivo/N.resultados,
+              em.branco = Branco/N.testes)
 
 ### Tabelas
 testes.estados.data %>%
@@ -190,9 +235,8 @@ p2 <-
     geom_line(aes(y=positiv)) +
     theme_bw() +
     xlab("Semana epidemiológica de sintomas") +
-    ylab("Positividade RT-PCR") +
-    facet_wrap(~sigla) +
-    ggtitle("E-SUS VE, RT-PCR concluídos")
+    ylab("Positividade") +
+    facet_wrap(~sigla)
 
 ## % de testes PCR em branco por semana e estado
 p3 <-
@@ -202,9 +246,8 @@ p3 <-
     geom_line(aes(y=em.branco)) +
     theme_bw() +
     xlab("Semana epidemiológica de sintomas") +
-    ylab("Proporção RT-PCR sem resultado") +
-    facet_wrap(~sigla) +
-    ggtitle("E-SUS VE, testes RT-PCR solicitados, coletados ou concluídos")
+    ylab("Proporção de testes sem resultado") +
+    facet_wrap(~sigla)
 
 ## Total de notificacoes por semana por tipo de teste e por estado
 p4  <-
@@ -245,8 +288,7 @@ p6  <-
     ylab("N de testes") +
     theme(legend.position = c(0.85, 0.05)) +
     labs(fill = "Resultado do teste") +
-    facet_wrap(~sigla, scales = "free") +
-    ggtitle("E-SUS VE, todos os testes")
+    facet_wrap(~sigla, scales = "free") 
 
 ## Total de notificacoes por semana por situação do teste e por estado
 p7  <-
@@ -262,16 +304,76 @@ p7  <-
     facet_wrap(~sigla, scales = "free") +
     ggtitle("E-SUS VE, todos os testes")
 
+## Trajetorias entre N de teste rapido e RT-PCR
+p8 <-
+    merge(positividade.rapidos.sem, pb.estados.sem, all=TRUE, by =c("sigla", "sem_sin"), suffixes=c(".rap",".pcr")) %>%
+    filter(!is.na(sigla)&sem_sin<50) %>%
+    ggplot(aes(N.testes.rap, N.testes.pcr)) +
+    geom_path(aes(colour=as.numeric(sem_sin))) +
+    theme_bw() +
+    ylab("N testes RT-PCR") +
+    xlab("N testes rápidos") +
+    facet_wrap(~sigla, scales = "free") +
+    theme(legend.position = c(0.85, 0.05)) +
+    labs(colour = "Semana do sintoma") +
+    scale_color_viridis_c() +
+    ggtitle("E-SUS VE, testes RT-PCR e Testes rápidos")
+## Proporçao de de RT-PCR
+p9 <-
+    merge(positividade.rapidos.sem, pb.estados.sem, all=TRUE, by =c("sigla", "sem_sin"), suffixes=c(".rap",".pcr")) %>%
+    mutate(prop.pcr = N.testes.pcr / (N.testes.pcr + N.testes.rap)) %>%
+    filter(!is.na(sigla)) %>%
+    ggplot(aes(sem_sin, prop.pcr)) +
+    geom_line() +
+    theme_bw() +
+    ylab("Proporção de testes RT-PCR") +
+    xlab("Semana do primeiro sintoma") +
+    facet_wrap(~sigla) +
+    ggtitle("E-SUS VE, testes RT-PCR e Testes rápidos")
+
+## Relação entre positividades
+p10 <-
+    merge(positividade.rapidos.sem, pb.estados.sem, all=TRUE, by =c("sigla", "sem_sin"), suffixes=c(".rap",".pcr")) %>%
+    filter(!is.na(sigla)) %>%
+    ggplot(aes(positiv.rap, positiv.pcr)) +
+    geom_point() +
+    theme_bw() +
+    ylab("Positividade RT-PCR") +
+    xlab("Positividade testes rápidos") +
+    facet_wrap(~sigla) +
+    ggtitle("E-SUS VE, testes RT-PCR e Testes rápidos")
+
+
+## Salva os gráficos
 png("output/esus_testes_%1d.png", width = 900)
 p4
 p5
-p6
+p6 + ggtitle("E-SUS VE, todos os testes")
 p7
 dev.off()
 
-png("output/esus_rtpcr_%1d.png", width = 900)
-p1
-p2
-p3
+png("output/esus_rapidos_%1d.png", width = 900)
+p6 %+%
+    filter(result.rap.estados.sem, !is.na(sigla)) +
+    ggtitle("E-SUS VE, testes rápidos  concluídos")
+p2 %+%
+    filter(positividade.rapidos.sem, !is.na(sigla)) +
+    ggtitle("E-SUS VE, testes rápidos  concluídos")
+p3 %+%
+    filter(positividade.rapidos.sem, !is.na(sigla)) +
+    ggtitle("E-SUS VE, testes rápidos solicitados, coletados ou concluídos")
 dev.off()
 
+
+
+png("output/esus_rtpcr_%1d.png", width = 900)
+p1
+p2 + ggtitle("E-SUS VE, RT-PCR concluídos")
+p3 + ggtitle("E-SUS VE, testes RT-PCR solicitados, coletados ou concluídos")
+dev.off()
+
+png("output/compara_testes_%1d.png", width = 900)
+p8
+p9
+p10
+dev.off()
