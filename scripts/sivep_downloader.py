@@ -8,7 +8,8 @@ from glob import glob
 def find_last_date(output_folder):
     filescsv = glob(output_folder + '/*.csv')
     fileszip = glob(output_folder + '/*.zip')
-    files = filescsv + fileszip
+    filesxz = glob(output_folder + '/*.xz')
+    files = filescsv + fileszip + filesxz
     date_max = date(year=2020, month=1, day=1)
     for f in files:
         g = re.match(r'.*(\d\d\d\d_\d\d_\d\d).*', os.path.basename(f))
@@ -55,17 +56,15 @@ if __name__ == '__main__':
         outfile = os.path.join(output_folder, output_fname)
         print("Downloading new SIVEP database...")
         get_file(newfile[1], outfile)
-        outzip = output_fname[:-3] + 'zip'
-        os.system('cd {folder} && zip {outzip} {outfile}'.format(
-            folder=output_folder, outfile=output_fname, outzip=outzip))
+        os.system('cd {folder} && xz {outfile}'.format(
+            folder=output_folder, outfile=output_fname))
         # add to git and let the other robots work
         if gitUpdate:
             os.system('''cd {folder} &&
-                   git add {outzip} &&
+                   git add {outfile}.xz &&
                    git commit -m "[auto] base SIVEP-Gripe de {data}" &&
                    rm {outfile} &&
                    git push'''.format(folder=output_folder,
-                                    outzip=outzip,
                                     outfile=output_fname,
                                     data=newfile[0].strftime("%Y_%m_%d")))
             nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
