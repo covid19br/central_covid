@@ -5,8 +5,6 @@ library(zoo)
 library(aweek)
 library(stringr)
 library(RCurl)
-library(car)
-library(bbmle)
 source("../../nowcasting/fct/get.last.date.R")
 
 ################################################################################
@@ -96,7 +94,7 @@ onibus.sem  <-
     mutate(dif.53 = 100*(mean.pass- lag(mean.pass, 53))/mean.pass)
 
 ## Graficos
-pdf("passageiros_onibus_19_21_sampa.pdf", width = 8)
+png("passageiros_onibus_19_21_sampa%1d.png", width = 600)
 onibus.19.21 %>%
     fortify() %>%
     ggplot(aes(data, tot.pass)) +
