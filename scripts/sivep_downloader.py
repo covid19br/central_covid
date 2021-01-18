@@ -45,14 +45,16 @@ def get_file(download_address, output_file):
 if __name__ == '__main__':
     data = date.today()
 
-    index_page_address = "https://shiny.hmg.saude.gov.br/tr/dataset/bd-srag-2020"
+    index_page_address20 = "https://opendatasus.saude.gov.br/dataset/bd-srag-2020"
+    index_page_address21 = "https://opendatasus.saude.gov.br/dataset/bd-srag-2021"
     output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/SIVEP-Gripe')
     gitUpdate = True
 
     last_date = find_last_date(output_folder)
-    newfile = check_for_new_file(index_page_address, last_date)
-    if newfile:
-        output_fname = "SRAGHospitalizado_{data}.csv".format(data=newfile[0].strftime("%Y_%m_%d"))
+    newfile20 = check_for_new_file(index_page_address20, last_date)
+    newfile21 = check_for_new_file(index_page_address21, last_date)
+    if newfile20 and newfile21 and (newfile20[0] == newfile21[0]):
+        output_fname = "SRAGHospitalizado_{data}.csv".format(data=newfile20[0].strftime("%Y_%m_%d"))
         outfile = os.path.join(output_folder, output_fname)
 
         print("Sending out e-mails")
@@ -62,13 +64,17 @@ if __name__ == '__main__':
         O relatório de integridade será disponibilizado em alguns minutos no {link}\n
         Atenciosamente,\nRobot mailer" | 
             mail -s "nova base SIVEP-Gripe de {data}" {emails}'''.format(
-                        data=newfile[0].strftime("%Y_%m_%d"),
-                        link="https://github.com/covid19br/central_covid/blob/master/dados_processados/integridade_SIVEP/integridade_SIVEP_{data}.html".format(data=newfile[0].strftime("%Y-%m-%d")),
+                        data=newfile20[0].strftime("%Y_%m_%d"),
+                        link="https://github.com/covid19br/central_covid/blob/master/dados_processados/integridade_SIVEP/integridade_SIVEP_{data}.html".format(data=newfile20[0].strftime("%Y-%m-%d")),
                         emails=' '.join(emails)))
 
         print("Downloading new SIVEP database...")
-        get_file(newfile[1], outfile)
-        os.system('cd {folder} && xz -T4 {outfile}'.format(
+        get_file(newfile20[1], outfile)
+        get_file(newfile21[1], outfile + '.21')
+        os.system('''cd {folder} &&
+                   tail -n +2 {outfile}.21 >> {outfile} &&
+                   xz -T4 {outfile} &&
+                   rm {outfile}.21'''.format(
             folder=output_folder, outfile=output_fname))
         # add to git and let the other robots work
         if gitUpdate:
@@ -78,7 +84,7 @@ if __name__ == '__main__':
                    rm {outfile} &&
                    git push'''.format(folder=output_folder,
                                     outfile=output_fname,
-                                    data=newfile[0].strftime("%Y_%m_%d")))
+                                    data=newfile20[0].strftime("%Y_%m_%d")))
             nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
             os.system('''cd {nowcast_folder} &&
                     Rscript checa_base.R --updateGit TRUE'''.format(nowcast_folder = nowcast_folder))
