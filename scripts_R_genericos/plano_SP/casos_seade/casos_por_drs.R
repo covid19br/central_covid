@@ -7,7 +7,7 @@ set_week_start("sunday")
 
 ## Em 21/01/2021 commits posteriores a 15/01 parece ter tabelas com linhas faltantes
 ## Usando o ultimo commit que parece bem
-system("cd ../../../clone_repo_seade_SP/; git checkout 89c35a9")
+## system("cd ../../../clone_repo_seade_SP/; git checkout 89c35a9")
 
 ################################################################################
 ## SEADE: Tabela com codigos municipios, DRS e populacao
@@ -54,7 +54,7 @@ not.drs <-
 zip::unzip("../../../clone_repo_seade_SP/data/casos_obitos_doencas_preexistentes.csv.zip", junkpaths = TRUE)
 ## zip::unzip("casos_obitos_doencas_preexistentes.csv_2021_01_15.zip", junkpaths = TRUE)
 
-casos.all <- read.csv2("casos_obitos_doencas_preexistentes.csv") %>%
+casos.all <- read.csv2("casos_obitos_doencas_preexistentes.csv") %>% 
     mutate(data_inicio_sintomas = as.Date(data_inicio_sintomas)) %>%  
     filter(data_inicio_sintomas < as.Date("2021-01-03")) %>% ## para filtrar apenas semanas epidemiológicas de 2020
     mutate(semana_epidem = date2week(data_inicio_sintomas, numeric = TRUE)) 
@@ -153,7 +153,7 @@ for(nome in unique(casos.semana.drs$nome_drs)){
         xlab("Semana epidemiológica") +
         ylab("Casos por 100 mil habitantes") +
         theme_bw() +
-        theme(legend.position = c(0.2, 0.85),
+        theme(legend.position = c(0.15, 0.9),
               axis.text=element_text(size=14),
               axis.title=element_text(size=15),
               plot.title = element_text(size=16, face="bold")) +
@@ -191,7 +191,7 @@ for(nome in unique(casos.semana.drs$nome_drs)){
         xlab("Semana epidemiológica") +
         ylab("Óbitos por 100 mil habitantes") +
         theme_bw() +
-        theme(legend.position = c(0.2, 0.85),
+        theme(legend.position = c(0.15, 0.9),
               axis.text=element_text(size=14),
               axis.title=element_text(size=15),
               plot.title = element_text(size=16, face="bold")) +
@@ -222,4 +222,4 @@ n.not.dia %>%
 dev.off()
 
 ## Voltando ao master
-system("cd ../../../clone_repo_seade_SP/; git checkout master")
+## system("cd ../../../clone_repo_seade_SP/; git checkout master")
