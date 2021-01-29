@@ -49,6 +49,11 @@ kable(tabela[,c("data.preval","prevalencia", "IHR", "prev.proj.IHR" )], digits =
 ## Graficos
 ################################################################################
 ## Grafico de N de novas infecções por dia, estimados pelo IFF e pelo IHR
-p1(manaus.76)
+p1(manaus.out)
+png("N_novas_infeccoes_calculadas_IHR_jun_2020.png", width = 600)
+p1(manaus.jun)
+dev.off()
 ## Grafico de infectados + resistentes, estimador pelo IFF e IHR
-p2(manaus.76)
+p2(manaus.out)
+
+
