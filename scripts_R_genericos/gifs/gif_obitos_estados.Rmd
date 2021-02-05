@@ -17,69 +17,112 @@ library("RColorBrewer")
 library("transformr")
 library("readr")
 
-dados <- read_csv("../../dados_processados/integridade_SIVEP/dados_obcovid_est.csv")
-# dt.plot <- reshape2::melt(dados, id.vars = "Data")
-# dt.plot$Data <- as.Date(dt.plot$Data, format = "%Y-%m-%d")
-# dt.plot$variable <- as.Date(dt.plot$variable, format = "%d/%m/%y")
-dados<-dados %>%
-  filter(!is.na(sg_uf))
-dados <- dados %>% 
-  filter(data == max(data)) %>% 
-  as.data.frame()
-last_data<-max(dados$data)
+casos <- read_csv("../../dados_processados/integridade_SIVEP/dados_covid_br.csv")
+obs <- read_csv("../../dados_processados/integridade_SIVEP/dados_obcovid_br.csv")
+
+casos<-casos %>%
+  filter(dt_sin_pri >=  "2020-01-01")
+obs<-obs %>%
+  filter(dt_evoluca >=  "2020-01-01")
+last_data_casos<-max(casos$data)
+last_data_obs<-max(obs$data)
 # Setting locale to Brasil
 Sys.setlocale(category = "LC_TIME", locale = "pt_BR.UTF-8")
 
 ```
 
 
-```{r Brasil_por_estado}
-  dados<- dados %>% 
-  mutate(Region = case_when(sg_uf == "RS" | sg_uf == "SC" | sg_uf == "PR" ~ "Região Sul",
-            sg_uf == "SP" | sg_uf == "MG" | sg_uf == "RJ" | sg_uf == "ES" ~ "Região Sudeste",
-          sg_uf == "MS" | sg_uf == "MT" | sg_uf == "GO" | sg_uf == "DF" ~ "Região Centro-Oeste",
-          sg_uf == "AC" | sg_uf == "AM" | sg_uf == "RO" | sg_uf == "RR" | sg_uf == "PA" | sg_uf == "TO" | sg_uf == "AP" ~ "Região Norte",
-          sg_uf == "BA" | sg_uf == "PE" | sg_uf == "SE" | sg_uf == "CE" | sg_uf == "PI" | sg_uf == "MA" | sg_uf == "AL" | sg_uf == "RN" | sg_uf == "PB" ~ "Região Nordeste")) %>% 
-  as.data.frame()
-
-
-  nowc <-
-  ggplot(data = dados, aes(x = dt_evoluca, y = n, fill = Region)) +
-  geom_col(width = 1,position = position_stack(reverse = TRUE))+
-  # scale_x_date(date_labels = "%d/%B") +
-  scale_fill_viridis_d(direction = 1,
+```{r gif Brasil casos}
+## Gif casos ##
+nowc <-
+  ggplot(data = casos, aes(x = dt_sin_pri, y = n, col = as.factor(data))) +
+  # geom_col(width = 1,position = position_stack(reverse = TRUE))+
+  geom_line()+
+  scale_x_date(date_labels = "%d/%B", date_breaks = "2 month") +
+  scale_color_viridis_d(direction = 1,
+                        aesthetics = "colour",
                          option = "viridis") +
-  labs(x = "Data do Óbito", y = "Número de Óbitos", 
-       colour = "Data do Boletim", 
-       title = "Evolução de Óbitos por Data de Óbito", 
+  labs(x = "Data do 1º Sintoma", y = "Número de Casos", 
+       colour = "Data da Base", 
+       title = "Evolução de Nº de Casos", 
        subtitle = "Observatório COVID19 BR; covid19br.github.io",
        caption = paste0("Fonte: SIVEP-Gripe até a base do dia ", last_data)) +
   theme_cowplot() +
-  theme(legend.position = "bottom",
+  theme(legend.position = "none",
         plot.title = element_text(hjust = 0.5, size = 22),
         plot.subtitle = element_text(hjust = 0.5, size = 18),
         axis.text.x = element_text(size = 16, angle = 90),
         axis.text.y = element_text(size = 16),
         axis.title.x = element_text(size = 18, face = "bold"),
-        axis.title.y = element_text(size = 18, face = "bold"),)
+        axis.title.y = element_text(size = 18, face = "bold"),)+
   # facet_wrap(~sg_uf,
   #            scales = "free",
   #            nrow = 3)
-  # transition_states(factor(data))+
-  # shadow_mark(colour = "lightgrey",
-  #             alpha = 0.5,
-  #             size = .7,
-  #             exclude_layer = c(2, 3))
+  transition_states(factor(data))+
+  shadow_mark(colour = "lightgrey",
+              alpha = 0.5,
+              size = .7,
+              exclude_layer = c(2, 3))
 
-# animate(nowc,
-#         duration = 20,
-#         end_pause = 5,
-#         width = 1920,
-#         height = 1080)
+animate(nowc,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 600)
 
 ```
 
+```{r gif Brasil obs}
+## Gif obitos ##
+nowo <-
+  ggplot(data = obs, aes(x = dt_evoluca, y = n, col = as.factor(data))) +
+  # geom_col(width = 1,position = position_stack(reverse = TRUE))+
+  geom_line()+
+  scale_x_date(date_labels = "%d/%B", date_breaks = "2 month") +
+  scale_color_viridis_d(direction = 1,
+                        aesthetics = "colour",
+                         option = "viridis") +
+  labs(x = "Data do Óbito", y = "Número de Óbitos", 
+       colour = "Data da Base", 
+       title = "Evolução de Nº de Óbitos", 
+       subtitle = "Observatório COVID19 BR; covid19br.github.io",
+       caption = paste0("Fonte: SIVEP-Gripe até a base do dia ", last_data)) +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 22),
+        plot.subtitle = element_text(hjust = 0.5, size = 18),
+        axis.text.x = element_text(size = 16, angle = 90),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(size = 18, face = "bold"),
+        axis.title.y = element_text(size = 18, face = "bold"),)+
+  # facet_wrap(~sg_uf,
+  #            scales = "free",
+  #            nrow = 3)
+  transition_states(factor(data))+
+  shadow_mark(colour = "lightgrey",
+              alpha = 0.5,
+              size = .7,
+              exclude_layer = c(2, 3))
+
+animate(nowo,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 600)
+
+```
+
+
 ```{r Por_regioes}
+dados<- dados %>%
+mutate(Region = case_when(sg_uf == "RS" | sg_uf == "SC" | sg_uf == "PR" ~ "Região Sul",
+          sg_uf == "SP" | sg_uf == "MG" | sg_uf == "RJ" | sg_uf == "ES" ~ "Região Sudeste",
+        sg_uf == "MS" | sg_uf == "MT" | sg_uf == "GO" | sg_uf == "DF" ~ "Região Centro-Oeste",
+        sg_uf == "AC" | sg_uf == "AM" | sg_uf == "RO" | sg_uf == "RR" | sg_uf == "PA" | sg_uf == "TO" | sg_uf == "AP" ~ "Região Norte",
+        sg_uf == "BA" | sg_uf == "PE" | sg_uf == "SE" | sg_uf == "CE" | sg_uf == "PI" | sg_uf == "MA" | sg_uf == "AL" | sg_uf == "RN" | sg_uf == "PB" ~ "Região Nordeste")) %>%
+as.data.frame()
+
+
 regiao_sul<-dados %>% 
   filter(sg_uf == "RS" | sg_uf == "SC" | sg_uf == "PR") %>% 
   as.data.frame()
