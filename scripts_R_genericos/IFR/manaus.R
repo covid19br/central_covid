@@ -1,5 +1,6 @@
 library(ggplot2)
 library(readr)
+library(knitr)
 source("functions.R")
 source("../../nowcasting/fct/read.sivep.R")
 ## Estimativas de total de infectados a partir do dados do inquérito de Manaus em
@@ -10,8 +11,10 @@ source("../../nowcasting/fct/read.sivep.R")
 data.dir <- "../../dados/SIVEP-Gripe/"
 raw.data <- read.sivep(dir = data.dir, escala = "municipio",
                        geocode = 1302603, data = get.last.date(data.dir))
-## Calculo do nowcasting de obitos e casos, idade minima na amostra do inquérito foi 16 anos
+## Calculo do nowcasting de obitos e casos confirmados, idade minima na amostra do inquérito foi 16 anos
 lista <- prepara.sivep(raw.data, inq.idade = 16, trim.now = 7, window = 40)
+## Calculo do nowcasting de obitos e casos suspeitos (SRAG), idade minima na amostra do inquérito foi 16 anos
+lista2 <- prepara.sivep(raw.data, inq.idade = 16, trim.now = 7, window = 40, srag =TRUE)
 
 ##  Projecoes do n de infectados e infectados + resistentes e da prevalência atual
 ## Populacao maior que 15 anos em 2020
@@ -20,6 +23,9 @@ Npop <- 1675488
 
 ## Prevalencias para diferentes momentos, com e sem correcao soro-reversão (Table S2)
 ## https://science.sciencemag.org/content/sci/suppl/2020/12/07/science.abe9728.DC1/abe9728_Buss_SM.pdf
+## Para casos confirmados
+## Prevalencia de 76%, estimada para 17/10/2020, com correcao de sororeversão
+manaus.out <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-10-17"), inq.preval = 0.76, lista = lista)
 ## Prevalencia de 76%, estimada para 17/10/2020, com correcao de sororeversão
 manaus.out <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-10-17"), inq.preval = 0.76, lista = lista)
 ## Prevalencia de 72,2% 14/09/2020, com correcao de sororeversao
@@ -40,10 +46,63 @@ manaus.mar <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-03-12"), i
 ## Uma tabela com os valores de prevalência atuais projetados com cada uma das prevalencias acima
 tabela <- tab1(manaus.abr, manaus.mai, manaus.jun, manaus.jul, manaus.ago, manaus.set, manaus.out)
 
+## Para casos suspeitos (SRAG)
+## Prevalencia de 76%, estimada para 17/10/2020, com correcao de sororeversão
+manaus.srag.out <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-10-17"), inq.preval = 0.76, lista = lista2)
+## Prevalencia de 76%, estimada para 17/10/2020, com correcao de sororeversão
+manaus.srag.out <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-10-17"), inq.preval = 0.76, lista = lista2)
+## Prevalencia de 72,2% 14/09/2020, com correcao de sororeversao
+manaus.srag.set <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-09-14"), inq.preval = 0.722, lista = lista2)
+## Prevalencia de 66,2% 19/08/2020, com correcao de sororeversao
+manaus.srag.ago <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-08-19"), inq.preval = 0.662, lista = lista2)
+## Prevalencia de 66,2% 15/07/2020, com correcao de sororeversao
+manaus.srag.jul <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-07-15"), inq.preval = 0.662, lista = lista2)
+## Prevalencia de 65,2% 15/06/2020, com correcao de sororeversao
+manaus.srag.jun <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-06-15"), inq.preval = 0.652, lista = lista2)
+## Prevalencia de 44,5% 14/05/2020, com correcao de sororeversao (que neste momento é mínima)
+manaus.srag.mai <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-05-14"), inq.preval = 0.459, lista = lista2)
+## Prevalencia de 4,8% em  17/04/2020, com correcao de sororeversao (que neste momento é mínima)
+manaus.srag.abr <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-04-17"), inq.preval = 0.05, lista = lista2)
+## Prevalencia de 0,7% em  12/03/2020, com correcao de sororeversao (que neste momento é mínima)
+manaus.srag.mar <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-03-12"), inq.preval = 0.007, lista = lista)
+
+## Uma tabela com os valores de prevalência atuais projetados com cada uma das prevalencias acima
+tabela.srag <- tab1(manaus.srag.abr, manaus.srag.mai, manaus.srag.jun, manaus.srag.jul, manaus.srag.ago, manaus.srag.set, manaus.srag.out)
+
+
 ## Tabelas para exportar
 kable(tabela[,c("data.preval","prevalencia", "IFR", "prev.proj.IFR" )], digits = c(NA,1,3,1))
 kable(tabela[,c("data.preval","prevalencia", "IHR", "prev.proj.IHR" )], digits = c(NA,1,3,1))
 
+kable(tabela.srag[,c("data.preval","prevalencia", "IFR", "prev.proj.IFR" )], digits = c(NA,1,3,1))
+kable(tabela.srag[,c("data.preval","prevalencia", "IHR", "prev.proj.IHR" )], digits = c(NA,1,3,1))
+
+## Total de casos até  01/12/2020
+## Com estimativa de outubro
+window(manaus.out$casos.ihr, as.Date("2020-12-01"),as.Date("2020-12-01"))$IR / manaus.out$Npop
+## Com estimativa de junho
+window(manaus.jun$casos.ihr, as.Date("2020-12-01"),as.Date("2020-12-01"))$IR / manaus.jun$Npop 
+## Tabela
+kable(tabela[,c("data.preval","prevalencia", "IFR", "prev.proj.IFR" )], digits = c(NA,1,3,1))
+kable(tabela[,c("data.preval","prevalencia", "IHR", "prev.proj.IHR" )], digits = c(NA,1,3,1))
+
+## Preprint de Lalwani et al ##
+##https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3774177
+## "Using these data, we estimated a 27% antibody decay for the whole cohort, putting a maximum disease prevalence at 41.53%."
+## Não esta claro quando terminou a coleta, pela figura S3 parece ser fim de outubro
+## Prevalencia de 41,53%, estimada para 31/10/2020
+## COVID
+manaus.lalwani <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-10-31"), inq.preval = 0.4153, lista = lista)
+## SRAG
+manaus.srag.lalwani <- projeta.inquerito(Npop = Npop, inq.data = as.Date("2020-10-31"), inq.preval = 0.4153, lista = lista2)
+## Tabela
+tab.lalwani <- tab1(manaus.lalwani, manaus.srag.lalwani)
+## Tabela
+kable(tab.lalwani[,c("data.preval","prevalencia", "IFR", "prev.proj.IFR" )], digits = c(NA,1,3,1))
+kable(tab.lalwani[,c("data.preval","prevalencia", "IHR", "prev.proj.IHR" )], digits = c(NA,1,3,1))
+## Prevalencias em 01/12/2020
+window(manaus.lalwani$casos.ihr, as.Date("2020-12-01"),as.Date("2020-12-01"))$IR / manaus.lalwani$Npop
+window(manaus.srag.lalwani$casos.ihr, as.Date("2020-12-01"),as.Date("2020-12-01"))$IR / manaus.srag.lalwani$Npop 
 
 ################################################################################
 ## Graficos
