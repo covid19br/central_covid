@@ -72,7 +72,7 @@ projeta.inquerito <- function(Npop, inq.data, inq.preval, lista) {
     ## calculo do n de pessoas no compartimento IR e I a cada tempo
     casos.ihr$IR  <- casos.ihr$estimate.merged.c / IHR
     casos.ihr$I <- c(casos.ihr$IR[1], diff(casos.ihr$IR))
-    casos.ihr <- merge.zoo(casos.ihr, n.not= zoo(covid.ncasos$n.not[,2],covid.ncasos$n.not[,1])) 
+    ##casos.ihr <- merge.zoo(casos.ihr, n.not= zoo(lista$n.not[,2],lista$n.not[,1])) ## Removido por enquanto, era pra junta n de casos notificados em cada data, mas a prepara.dados2 nao está guardando n de casos por data de notificacao
     ## Prevalencias nas datas mais recentes na sivep(veja tb os graficos, abaixo)
     ## Usando IFR
     prev.atual.ifr <- ob.ifr$IR[ob.ifr$IR==max(ob.ifr$IR, na.rm=TRUE)] / Npop
@@ -101,7 +101,7 @@ p1 <- function(lista){
         ggplot(aes(Index, I)) +
         geom_line(aes(color="IFR")) +
         geom_line(data = fortify(lista$casos.ihr), aes(Index, I, color="IHR")) +
-        geom_line(data = lista$casos.ihr, aes(Index, n.not, color="Notificados")) +
+        ## geom_line(data = lista$casos.ihr, aes(Index, n.not, color="Notificados")) +
         ylab("Novas infecções")
 }
 ## Grafico de infectados + resistentes, estimador pelo IFF e IHR
