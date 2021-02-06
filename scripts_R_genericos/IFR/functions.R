@@ -60,7 +60,8 @@ projeta.inquerito <- function(Npop, inq.data, inq.preval, lista) {
     ## Separando data frame para facilitar
     ob.ifr <- lista$obitos$now.pred.zoo
     ## IFR
-    IFR <- as.numeric(ob.ifr$estimate.merged.c[time(ob.ifr)==ref.data] / inq.IR)
+    ref.data2 <- max(time(ob.ifr)[time(ob.ifr)<=ref.data])
+    IFR <- as.numeric(ob.ifr$estimate.merged.c[time(ob.ifr)==ref.data2] / inq.IR)
     ## calculo do n de pessoas no compartimento IR e I a cada tempo
     ob.ifr$IR  <- ob.ifr$estimate.merged.c / IFR
     ob.ifr$I <- c(ob.ifr$IR[1], diff(ob.ifr$IR))
@@ -68,7 +69,9 @@ projeta.inquerito <- function(Npop, inq.data, inq.preval, lista) {
     ## Separando data frame para facilitar
     casos.ihr <- lista$casos$now.pred.zoo
     ## IHR
-    IHR <- as.numeric(casos.ihr$estimate.merged.c[time(casos.ihr)==ref.data] / inq.IR)
+    ## data de referencia
+    ref.data2 <- max(time(casos.ihr)[time(casos.ihr)<=ref.data])
+    IHR <- as.numeric(casos.ihr$estimate.merged.c[time(casos.ihr)==ref.data2] / inq.IR)
     ## calculo do n de pessoas no compartimento IR e I a cada tempo
     casos.ihr$IR  <- casos.ihr$estimate.merged.c / IHR
     casos.ihr$I <- c(casos.ihr$IR[1], diff(casos.ihr$IR))
