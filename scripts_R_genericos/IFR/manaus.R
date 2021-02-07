@@ -8,7 +8,7 @@ source("../../nowcasting/fct/read.sivep.R")
 
 
 ## Leitura dos dados mais recentes: sivep residentes, maiores de 15 anos
-data.dir <- "dados/SIVEP-Gripe/"
+data.dir <- "../../dados/SIVEP-Gripe/"
 raw.data <- read.sivep(dir = data.dir, escala = "municipio",
                        geocode = 1302603, data = get.last.date(data.dir))
 ## Calculo do nowcasting de obitos e casos confirmados, idade minima na amostra do inquérito foi 16 anos
