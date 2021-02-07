@@ -12,7 +12,7 @@ data.dir <- "../../dados/SIVEP-Gripe/"
 raw.data <- read.sivep(dir = data.dir, escala = "municipio",
                        geocode = 3550308, data = get.last.date(data.dir))
 ## Calculo do nowcasting de obitos e casos, idade minima na amostra do inquérito foi 16 anos
-lista <- prepara.sivep(raw.data, inq.idade = 16, trim.now = 7, window = 40)
+lista <- prepara.sivep(raw.data, inq.idade = 16, trim.now = 7, window = 40, srag = FALSE)
 
 ##  Projecoes do n de infectados e infectados + resistentes e da prevalência atual
 ## Populacao maior que 15 anos em 2020
