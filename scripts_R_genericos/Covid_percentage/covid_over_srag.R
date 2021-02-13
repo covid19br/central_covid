@@ -35,12 +35,13 @@ joint_filtered<-joint_filtered %>%
   mutate(covid_over_srag = n.y/n.x) %>% 
   as.data.frame()
 
-joint_filtered<-joint_filtered %>%
-  filter(data == max(data)) %>%
-  as.data.frame()
+### Só o plot usar esse filtro ###
+# joint_filtered<-joint_filtered %>%
+#   filter(data == max(data)) %>%
+#   as.data.frame()
 
 p.plot<-ggplot(data = joint_filtered)+
-  geom_col(aes(x=dt_sin_pri, y=n.x, fill = covid_over_srag), 
+  geom_col(aes(x=dt_sin_pri, y=n.x, fill = covid_over_srag),
            width = 1, na.rm = TRUE, position = "stack")+
   theme_minimal()+
   labs(x = "Data de 1º Sintomas", 
@@ -53,10 +54,11 @@ p.plot<-ggplot(data = joint_filtered)+
         axis.text.y = element_text(size = 8),
         plot.title = element_text(size = 14))+
   facet_geo(~sg_uf, grid = "br_states_grid1", scales = "free_y") +
-  scale_x_date(date_breaks = "3 months", date_labels = "%b") 
-  # transition_states(factor(data))
+  scale_x_date(date_breaks = "3 months", date_labels = "%b") +
+  transition_states(factor(data)) ## Desligar se for fazer plot ##
 p.plot
 
+## Gif ##
 animate(p.plot,
         duration = 20,
         end_pause = 5,
@@ -153,7 +155,7 @@ for (estado in estados) {
 df.ob.srag.diario <- plyr::ldply(df.ob.srag.diario, .id="UF")
 plot.nowcast.ob.srag <- plot.nowcast.diario.brasil(df.ob.srag.diario)
 
-casos_joint<-left_join(df.srag.diario[,c(1,2,5)], df.covid.diario[,c(1,2,5)], by = c("data", "UF"))
+casos_joint<-left_join(df.srag.diario[,c(1,2,5)], df.covid.diario[,c(1,2,5)], by = c("data", "UF"), suffixes = c(".srag", ".covid"))
 casos_joint<- casos_joint %>% 
   mutate(covid_over_srag = estimate.merged.y/estimate.merged.x) %>% 
   as.data.frame()
@@ -164,10 +166,10 @@ obitos_joint <- obitos_joint %>%
 
 
 p.plot_casos_nowcasted<-ggplot(data = casos_joint)+
-  geom_col( aes(x=data, y= estimate.merged.x, fill = covid_over_srag), 
+  geom_col( aes(x=data, y= estimate.merged.x, fill = covid_over_srag),
             width = NULL, na.rm = TRUE, position = "stack")+
   theme_minimal()+
-  labs(x = "Data de 1º Sintomas", 
+  labs(x = "Data 1º Sintomas", 
        y = "Nº SRAG Cases")+
   scale_fill_gradientn(name = "SRAG by Covid/SRAG",
                        colors = pal_wes)+
@@ -179,3 +181,30 @@ p.plot_casos_nowcasted<-ggplot(data = casos_joint)+
   facet_geo(~UF, grid = "br_states_grid1", scales = "free_y") +
   scale_x_date(date_breaks = "3 months", date_labels = "%b")
 p.plot_casos_nowcasted
+
+
+###########
+## trajetória no plano covid x SRAG
+###########
+
+traj.nowcasted<-
+  merge(df.srag.diario[,c(1,2,5)], df.covid.diario[, c(1,2,5)], all = TRUE, by = c("UF", "data"), suffixes = c(".srag", ".covid")) %>% 
+  mutate(covid_over_srag = estimate.merged.covid/estimate.merged.srag) %>% 
+  as.data.frame()
+
+p.traj.nowcasted<-ggplot(data = traj.nowcasted,
+                         aes(y = estimate.merged.srag, x = estimate.merged.covid))+
+  geom_path(aes(colour=covid_over_srag)) +
+  theme_minimal()+
+  labs(x = "Nº SRAG by Covid Cases", 
+       y = "Nº SRAG Cases")+
+  scale_fill_gradientn(name = "SRAG by Covid/SRAG",
+                       colors = pal_wes)+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_geo(~UF, grid = "br_states_grid1", scales = "free_y") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b")
+p.traj.nowcasted
