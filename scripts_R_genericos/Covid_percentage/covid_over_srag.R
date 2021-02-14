@@ -18,9 +18,15 @@ source("nowcasting/fct/00_load_libraries.R")
 
 pal_wes<-wes_palette("Zissou1", 10, "continuous")
 
+## Carregando CSV sem nowcasting
+### Casos
 srag_est<-read_csv("dados_processados/integridade_SIVEP/dados_srag_est.csv")
 covid_est<-read_csv("dados_processados/integridade_SIVEP/dados_covid_est.csv")
+### Obitos
+srag_obs_est<-read_csv("dados_processados/integridade_SIVEP/dados_obsrag_est.csv")
+covid_obs_est<-read_csv("dados_processados/integridade_SIVEP/dados_obcovid_est.csv")
 
+### Casos
 srag_filtered<-srag_est %>% 
   filter(dt_sin_pri >= "2020-01-01" & !is.na(sg_uf)) %>%
   select(dt_sin_pri, sg_uf, n, data) %>% 
@@ -35,17 +41,31 @@ joint_filtered<-joint_filtered %>%
   mutate(covid_over_srag = n.y/n.x) %>% 
   as.data.frame()
 
-### Só o plot usar esse filtro ###
-# joint_filtered<-joint_filtered %>%
-#   filter(data == max(data)) %>%
-#   as.data.frame()
+### Obitos
+srag_obs_filtered<-srag_obs_est %>% 
+  filter(dt_evoluca >= "2020-01-01" & !is.na(sg_uf)) %>%
+  select(dt_evoluca, sg_uf, n, data) %>% 
+  as.data.frame()
+covid_obs_filtered<-covid_obs_est %>% 
+  filter(dt_evoluca >= "2020-01-01" & !is.na(sg_uf)) %>% 
+  select(dt_evoluca, sg_uf, n, data) %>% 
+  as.data.frame()
 
-p.plot<-ggplot(data = joint_filtered)+
-  geom_col(aes(x=dt_sin_pri, y=n.x, fill = covid_over_srag),
-           width = 1, na.rm = TRUE, position = "stack")+
+joint_obs_filtered<-left_join(srag_obs_filtered, covid_obs_filtered, by = c("dt_evoluca", "sg_uf", "data"))
+joint_obs_filtered<-joint_obs_filtered %>% 
+  mutate(covid_over_srag = n.y/n.x) %>% 
+  as.data.frame()
+
+### Casos
+p.casos<-
+  joint_filtered %>% 
+  filter(data == max(data)) %>%
+  ggplot(aes(x=dt_sin_pri, y=n.x, fill = covid_over_srag))+
+  geom_col(width = 1, na.rm = TRUE, position = "stack")+
   theme_minimal()+
-  labs(x = "Data de 1º Sintomas", 
-       y = "Nº SRAG Cases")+
+  labs(x = "1º symptoms Date", 
+       y = "Nº SRAG Cases",
+       title = "Cases")+
   scale_fill_gradientn(name = "SRAG by Covid/SRAG",
                        colors = pal_wes)+
   theme(legend.position = "bottom",
@@ -54,12 +74,80 @@ p.plot<-ggplot(data = joint_filtered)+
         axis.text.y = element_text(size = 8),
         plot.title = element_text(size = 14))+
   facet_geo(~sg_uf, grid = "br_states_grid1", scales = "free_y") +
-  scale_x_date(date_breaks = "3 months", date_labels = "%b") +
-  transition_states(factor(data)) ## Desligar se for fazer plot ##
-p.plot
+  scale_x_date(date_breaks = "3 months", date_labels = "%b")
+p.casos
 
-## Gif ##
-animate(p.plot,
+### Obitos
+p.obitos<-
+  joint_obs_filtered %>% 
+  filter(data == max(data)) %>%
+  ggplot(aes(x=dt_evoluca, y=n.x, fill = covid_over_srag))+
+  geom_col(width = 1, na.rm = TRUE, position = "stack")+
+  theme_minimal()+
+  labs(x = "Death Date", 
+       y = "Nº SRAG Deaths",
+       title = "Deaths")+
+  scale_fill_gradientn(name = "SRAG by Covid/SRAG",
+                       colors = pal_wes)+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_geo(~sg_uf, grid = "br_states_grid1", scales = "free_y") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b")
+p.obitos
+
+
+## Gifs##
+
+### Cases
+g.casos<- joint_filtered %>% 
+  ggplot(aes(x=dt_sin_pri, y=n.x, fill = covid_over_srag))+
+  geom_col(width = 1, na.rm = TRUE, position = "stack")+
+  theme_minimal()+
+  labs(x = "1º symptoms Date", 
+       y = "Nº SRAG Cases",
+       title = "Cases")+
+  scale_fill_gradientn(name = "SRAG by Covid/SRAG",
+                       colors = pal_wes)+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_geo(~sg_uf, grid = "br_states_grid1", scales = "free_y") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b")+
+  transition_states(factor(data))
+g.casos
+
+animate(g.casos,
+        duration = 20,
+        end_pause = 5,
+        width = 800,
+        height = 600)
+
+### Obitos
+g.obitos<- joint_obs_filtered %>% 
+  ggplot(aes(x=dt_evoluca, y=n.x, fill = covid_over_srag))+
+  geom_col(width = 1, na.rm = TRUE, position = "stack")+
+  theme_minimal()+
+  labs(x = "Death Date", 
+       y = "Nº SRAG Deaths",
+       title = "Deaths")+
+  scale_fill_gradientn(name = "SRAG by Covid/SRAG",
+                       colors = pal_wes)+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_geo(~sg_uf, grid = "br_states_grid1", scales = "free_y") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b")+
+  transition_states(factor(data))
+g.obitos
+
+animate(g.obitos,
         duration = 20,
         end_pause = 5,
         width = 800,
@@ -78,6 +166,7 @@ library(plotly)
 library(dplyr)
 library(tidyr)
 library(withr)
+library(scales)
 
 estados <- c("AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG",
              "MS", "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR",
@@ -182,6 +271,23 @@ p.plot_casos_nowcasted<-ggplot(data = casos_joint)+
   scale_x_date(date_breaks = "3 months", date_labels = "%b")
 p.plot_casos_nowcasted
 
+p.plot_obitos_nowcasted<-ggplot(data = obitos_joint)+
+  geom_col( aes(x=data, y= estimate.merged.x, fill = covid_over_srag),
+            width = NULL, na.rm = TRUE, position = "stack")+
+  theme_minimal()+
+  labs(x = "Data 1º Sintomas", 
+       y = "Nº SRAG Deaths")+
+  scale_fill_gradientn(name = "SRAG by Covid/SRAG",
+                       colors = pal_wes)+
+  theme(legend.position = "bottom",
+        panel.spacing = unit(0.01, "lines"),
+        strip.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        plot.title = element_text(size = 14))+
+  facet_geo(~UF, grid = "br_states_grid1", scales = "free_y") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b")
+p.plot_obitos_nowcasted
+
 
 ###########
 ## trajetória no plano covid x SRAG
@@ -193,18 +299,13 @@ traj.nowcasted<-
   as.data.frame()
 
 p.traj.nowcasted<-ggplot(data = traj.nowcasted,
-                         aes(y = estimate.merged.srag, x = estimate.merged.covid))+
-  geom_path(aes(colour=covid_over_srag)) +
+                         aes(x = estimate.merged.srag, y = estimate.merged.covid))+
+  geom_path(aes(colour = covid_over_srag))+
   theme_minimal()+
-  labs(x = "Nº SRAG by Covid Cases", 
-       y = "Nº SRAG Cases")+
-  scale_fill_gradientn(name = "SRAG by Covid/SRAG",
+  labs(x = "SRAG Cases",
+       y = "Covid Cases")+
+  scale_color_gradientn(name = "SRAG by Covid/SRAG",
                        colors = pal_wes)+
-  theme(legend.position = "bottom",
-        panel.spacing = unit(0.01, "lines"),
-        strip.text.x = element_text(size = 8),
-        axis.text.y = element_text(size = 8),
-        plot.title = element_text(size = 14))+
-  facet_geo(~UF, grid = "br_states_grid1", scales = "free_y") +
-  scale_x_date(date_breaks = "3 months", date_labels = "%b")
+  theme(legend.position = "bottom")+
+  facet_geo(~UF, grid = "br_states_grid1", scales = "free")
 p.traj.nowcasted
