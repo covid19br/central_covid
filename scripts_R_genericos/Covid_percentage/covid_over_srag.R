@@ -343,3 +343,33 @@ p.obitos.traj.nowcasted<-
         plot.title = element_text(size = 14))+
   facet_geo(~UF, grid = "br_states_grid1", scales = "free")
 p.obitos.traj.nowcasted
+
+p.casos.list<-list()
+
+for (i in unique(casos_joint$UF)) {
+  p.casos.list[[i]]<-
+    merge(casos_joint, obitos_joint, by = c("data","UF"), suffixes = c(".casos", ".obitos")) %>% 
+    filter(UF == i) %>% 
+    mutate(fac = ceiling(max(estimate.merged.srag.casos)/100)*100, 
+           bar = estimate.merged.srag.casos/fac) %>% 
+    filter(!is.na(estimate.merged.srag.casos)) %>% 
+    ggplot(aes(x = data))+
+    geom_line(aes(y = covid_over_srag.casos, col = "SRAG by Covid/SRAG Cases"))+
+    geom_line(aes(y = covid_over_srag.obitos, col = "SRAG by Covid/SRAG Deaths"))+
+    geom_col(aes(y = bar, fill = "Cases"), 
+             width = 7,
+             # stat = "identity",
+             position = position_dodge(), 
+             alpha = 0.5)+
+    labs(x = "First symptoms Date",
+         y = "SRAG by Covid/SRAG",
+         title = i)+
+    theme(legend.position = "bottom",
+          panel.spacing = unit(0.01, "lines"),
+          strip.text.x = element_text(size = 8),
+          axis.text.y = element_text(size = 8),
+          plot.title = element_text(size = 14))+
+    theme_minimal()+
+    scale_color_manual(name = "Type", values = c(pal_wes[1], pal_wes[10]))+
+    scale_fill_manual(name = "", values = pal_wes[5])
+}
