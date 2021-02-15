@@ -78,6 +78,12 @@ p.casos.raw<-
   scale_x_date(date_breaks = "3 months", date_labels = "%b")
 p.casos.raw
 
+ggsave("scripts_R_genericos/Covid_percentage/img/cases_rawdata.png",
+       plot = p.casos.raw,
+       dpi = 300, 
+       height = 9,
+       width = 9)
+
 
 ### Obitos
 #### Pixel Plot
@@ -100,6 +106,12 @@ p.obitos.raw<-
   facet_geo(~sg_uf, grid = "br_states_grid1", scales = "free_y") +
   scale_x_date(date_breaks = "3 months", date_labels = "%b")
 p.obitos.raw
+
+ggsave("scripts_R_genericos/Covid_percentage/img/deaths_rawdata.png",
+       plot = p.obitos.raw,
+       dpi = 300, 
+       height = 9,
+       width = 9)
 
 
 ## Gifs##
@@ -286,6 +298,12 @@ p.casos.nowcasted<-casos_joint %>%
   scale_x_date(date_breaks = "3 months", date_labels = "%b")
 p.casos.nowcasted
 
+ggsave("scripts_R_genericos/Covid_percentage/img/casos_nowcasted.png",
+       plot = p.casos.nowcasted,
+       dpi = 300, 
+       height = 9,
+       width = 9)
+
 p.obitos.nowcasted<-obitos_joint %>% 
   ggplot(aes(x = data,
              fill = covid_over_srag,
@@ -306,6 +324,12 @@ p.obitos.nowcasted<-obitos_joint %>%
   scale_x_date(date_breaks = "3 months", date_labels = "%b")
 p.obitos.nowcasted
 
+ggsave("scripts_R_genericos/Covid_percentage/img/deaths_nowcasted.png",
+       plot = p.obitos.nowcasted,
+       dpi = 300, 
+       height = 9,
+       width = 9)
+
 p.casos.traj.nowcasted<-
   casos_joint %>% 
   ggplot(aes(x = estimate.merged.srag, y = covid_over_srag))+
@@ -324,6 +348,12 @@ p.casos.traj.nowcasted<-
         plot.title = element_text(size = 14))+
   facet_geo(~UF, grid = "br_states_grid1", scales = "free")
 p.casos.traj.nowcasted
+
+ggsave("scripts_R_genericos/Covid_percentage/img/trajectories_cases_nowcasted.png",
+       plot = p.casos.traj.nowcasted,
+       dpi = 300, 
+       height = 9,
+       width = 9)
 
 p.obitos.traj.nowcasted<-
   obitos_joint %>% 
@@ -344,6 +374,12 @@ p.obitos.traj.nowcasted<-
   facet_geo(~UF, grid = "br_states_grid1", scales = "free")
 p.obitos.traj.nowcasted
 
+ggsave("scripts_R_genericos/Covid_percentage/img/trajectories_deaths_nowcasted.png",
+       plot = p.obitos.traj.nowcasted,
+       dpi = 300, 
+       height = 9,
+       width = 9)
+
 p.casos.list<-list()
 
 for (i in unique(casos_joint$UF)) {
@@ -354,25 +390,62 @@ for (i in unique(casos_joint$UF)) {
            bar = estimate.merged.srag.casos/fac) %>% 
     filter(!is.na(estimate.merged.srag.casos)) %>% 
     ggplot(aes(x = data))+
-    geom_line(aes(y = covid_over_srag.casos, col = "SRAG by Covid/SRAG Cases"))+
-    geom_line(aes(y = covid_over_srag.obitos, col = "SRAG by Covid/SRAG Deaths"))+
-    geom_col(aes(y = bar, fill = "Cases"), 
+    geom_line(aes(y = covid_over_srag.casos, col = pal_wes[1]))+
+    geom_line(aes(y = covid_over_srag.obitos, col = pal_wes[10]))+
+    geom_col(aes(y = bar, fill = pal_wes[5]), 
              width = 7,
-             # stat = "identity",
              position = position_dodge(), 
              alpha = 0.5)+
-    labs(x = "First symptoms Date",
-         y = "SRAG by Covid/SRAG",
-         title = i)+
-    theme(legend.position = "bottom",
-          panel.spacing = unit(0.01, "lines"),
-          strip.text.x = element_text(size = 8),
-          axis.text.y = element_text(size = 8),
-          plot.title = element_text(size = 14))+
-    theme_minimal()+
-    scale_color_manual(name = "Type", values = c(pal_wes[1], pal_wes[10]))+
-    scale_fill_manual(name = "", values = pal_wes[5])
+    labs(title = i,
+         x = element_blank(),
+         y = element_blank())+
+    theme(plot.title = element_text(size = 14))+
+    theme(legend.position = "none")+ ### NÃO SEI PQ ISSO AQUILO NÃO DESLIGA AS LEGENDA ##
+    theme_minimal()
+  ggsave(paste0("scripts_R_genericos/Covid_percentage/img/", i,"_percentage_covid_srag.png"),
+         plot = p.casos.list[[i]],
+         dpi = 300, 
+         height = 9,
+         width = 9)
 }
 
+library(grid)
+library(gridExtra)
 
-#### FAZER GRID COM TODOS OS ESTADOS ###
+grid.plot<-grid.arrange(
+  p.casos.list$AC+theme(legend.position = "none"),
+  p.casos.list$AL+theme(legend.position = "none"),
+  p.casos.list$AM+theme(legend.position = "none"),
+  p.casos.list$BA+theme(legend.position = "none"),
+  p.casos.list$CE+theme(legend.position = "none"),
+  p.casos.list$DF+theme(legend.position = "none"),
+  p.casos.list$ES+theme(legend.position = "none"),
+  p.casos.list$GO+theme(legend.position = "none"),
+  p.casos.list$MA+theme(legend.position = "none"),
+  p.casos.list$MG+theme(legend.position = "none"),
+  p.casos.list$MS+theme(legend.position = "none"),
+  p.casos.list$MT+theme(legend.position = "none"),
+  p.casos.list$PA+theme(legend.position = "none"),
+  p.casos.list$PB+theme(legend.position = "none"),
+  p.casos.list$PE+theme(legend.position = "none"),
+  p.casos.list$PI+theme(legend.position = "none"),
+  p.casos.list$PR+theme(legend.position = "none"),
+  p.casos.list$RJ+theme(legend.position = "none"),
+  p.casos.list$RN+theme(legend.position = "none"),
+  p.casos.list$RS+theme(legend.position = "none"),
+  p.casos.list$SC+theme(legend.position = "none"),
+  p.casos.list$SE+theme(legend.position = "none"),
+  p.casos.list$SP+theme(legend.position = "none"),
+  p.casos.list$TO+theme(legend.position = "none"),
+  p.casos.list$AP+theme(legend.position = "none"),
+  p.casos.list$RO+theme(legend.position = "none"),
+  p.casos.list$RR+theme(legend.position = "none"),
+  ncol = 3,
+  nrow = 9,
+  left = "SRAG by Covid/SRAG",
+  bottom = "First symptoms Date"
+)
+grid.plot+facet_geo(~names(p.casos.list), grid = "br_state_grid1")
+
+
+#### FAZER GRID COM TODOS OS ESTADOS ###  
