@@ -373,3 +373,6 @@ for (i in unique(casos_joint$UF)) {
     scale_color_manual(name = "Type", values = c(pal_wes[1], pal_wes[10]))+
     scale_fill_manual(name = "", values = pal_wes[5])
 }
+
+
+#### FAZER GRID COM TODOS OS ESTADOS ###
