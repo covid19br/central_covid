@@ -491,5 +491,34 @@ grid.plot<-ggarrange(
   bottom = "First symptoms Date"
 )
 
-
 #### FAZER GRID COM TODOS OS ESTADOS ###  
+
+p.casos.obitos.merged<-
+  merge(casos_joint, obitos_joint, 
+        by = c("UF", "data"), 
+        suffixes = c(".cases", ".deaths")) %>% 
+  mutate(deaths_over_cases_srag = estimate.merged.srag.deaths/estimate.merged.srag.cases,
+         deaths_over_cases_covid = estimate.merged.covid.deaths/estimate.merged.covid.cases,
+         covid_over_srag = (deaths_over_cases_covid/deaths_over_cases_srag)) %>% 
+  as.data.frame()
+p.plot.cases.over.deaths<-
+  p.casos.obitos.merged %>% 
+  # filter(UF != "RR") %>%
+  ggplot(aes(x = data))+
+  # geom_col(aes(y = estimate.merged.srag.cases, fill = deaths_over_cases_srag))+
+  # geom_col(aes(y = estimate.merged.srag.cases, fill = deaths_over_cases_covid))+
+  # geom_col(aes(y = estimate.merged.srag.cases, fill = covid_over_srag))+
+  geom_line(aes(y = deaths_over_cases_srag, col = "SRAG"))+
+  geom_line(aes(y = deaths_over_cases_covid, col = "SRAG by Covid"))+
+  # geom_line(aes(y = covid_over_srag, col = "SRAG by Covid/SRAG"))+
+  scale_fill_gradientn(name = "Deaths/Cases",
+                       colors = pal_wes)+
+  theme_minimal()+
+  theme(legend.position = "bottom")+
+  labs(x = "First symptoms Date",
+       y = "Deaths/Cases Ratio")+
+  scale_color_manual(name = "Type", values = c(pal_wes[10], pal_wes[1], "Black"))+
+  facet_geo(~UF, grid = "br_states_grid1", scales = "free_y")+
+  scale_x_date(date_breaks = "3 months", date_labels = "%b")
+p.plot.cases.over.deaths  
+
