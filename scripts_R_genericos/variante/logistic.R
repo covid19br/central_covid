@@ -1,6 +1,9 @@
 library(ggplot2)
 library(viridis)
 
+## dados de google mobility:
+# https://datastudio.google.com/u/0/reporting/a529e043-e2b9-4e6f-86c6-ec99a5d7b9a4/page/yY2MB?s=ho2bve3abdM
+
 # dados obtidos por inspeção visual! 2021-02-05
 # http://www.genomahcov.fiocruz.br/presenca-das-linhagens-por-estado/
 d = data.frame(t=11:13,
