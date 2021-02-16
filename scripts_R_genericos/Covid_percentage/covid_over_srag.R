@@ -397,7 +397,7 @@ ggsave("scripts_R_genericos/Covid_percentage/img/trajectories_deaths_nowcasted.p
 # ESTÁ ERRADO, FICA COM O MÁXIMO DE 200 PARA TODOS OS ESTADOS MESMO SENDO 
 # CALCULADO INDEPENDEMENTE
 
-p.casos.list<-list()
+p.plots.list<-list()
 p.casos.merged<-list()
 p.obitos.merged<-list()
 
@@ -409,13 +409,14 @@ for (i in unique(casos_joint$UF)) {
            bar_covid = estimate.merged.covid/fac_srag,
            ) %>%
     as.data.frame()
-  # p.obitos.merged[[i]]<-obitos_joint %>% 
-  #   filter(UF == i) %>% 
-  #   # mutate(fac = ceiling(max(estimate.merged.srag)/100)*100, 
-  #   #        bar = estimate.merged.srag/fac) %>% 
+  # p.obitos.merged[[i]]<-obitos_joint %>%
+  #   filter(UF == i) %>%
+  #   mutate(fac_obs_srag = ceiling(max(estimate.merged.srag)/100)*100,
+  #          bar_obs_srag = estimate.merged.srag/fac_obs_srag,
+  #          bar_obs_covid = estimate.merged.covid/fac_obs_srag) %>%
   #   as.data.frame()
-  fac_lab<-max(p.casos.merged[[i]]$fac_srag)
-  p.casos.list[[i]]<- 
+  fac_lab<-max(p.casos.merged[[i]]$fac_srag) ## É UM ABSURDO TER Q PASSAR UM NÚMERO ASSIM
+  p.plots.list[[i]]<- 
     ggplot(data = p.casos.merged[[i]], aes(x = data))+
     geom_line(data = p.casos.merged[[i]],
               aes(y = covid_over_srag,
