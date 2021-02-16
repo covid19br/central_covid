@@ -11,8 +11,6 @@ library("transformr")
 library("readr")
 library(geofacet)
 
-setwd("~/Área de Trabalho/central_covid/")
-
 source("scripts_R_genericos/comparacao_bases/format_all_nowcasting.R")
 source("nowcasting/fct/00_load_libraries.R")
 
@@ -278,7 +276,7 @@ obitos_joint <- obitos_joint %>%
   as.data.frame()
 
 p.casos.nowcasted<-casos_joint %>% 
-  # filter(UF != "AC") %>% 
+  filter(UF != "AC") %>%
   ggplot(aes(x = data, 
              fill = covid_over_srag, 
              y = estimate.merged.srag))+
@@ -298,7 +296,14 @@ p.casos.nowcasted<-casos_joint %>%
   scale_x_date(date_breaks = "3 months", date_labels = "%b")
 p.casos.nowcasted
 
+## Tudo
 ggsave("scripts_R_genericos/Covid_percentage/img/casos_nowcasted.png",
+       plot = p.casos.nowcasted,
+       dpi = 300, 
+       height = 9,
+       width = 9)
+## Sem Acre
+ggsave("scripts_R_genericos/Covid_percentage/img/casos_nowcasted_no_acre.png",
        plot = p.casos.nowcasted,
        dpi = 300, 
        height = 9,
@@ -332,14 +337,14 @@ ggsave("scripts_R_genericos/Covid_percentage/img/deaths_nowcasted.png",
 
 p.casos.traj.nowcasted<-
   casos_joint %>% 
-  ggplot(aes(x = estimate.merged.srag, y = covid_over_srag))+
-  geom_path(aes(colour = data))+
+  filter(UF != "AC") %>%
+  ggplot(aes(x = estimate.merged.srag, y = estimate.merged.covid))+
+  geom_path(aes(colour = covid_over_srag))+
   theme_minimal()+
-  scale_colour_gradientn(name = "Data",
-                        colors = pal_wes, 
-                        trans = "date")+
+  scale_colour_gradientn(name = "SRAG by Covid/SRAG",
+                        colors = pal_wes)+
   labs(x = "SRAG Cases",
-       y = "SRAG by Covid/SRAG",
+       y = "SRAG by Covid Cases",
        title = "Trajectories Cases")+
   theme(legend.position = "bottom",
         panel.spacing = unit(0.01, "lines"),
@@ -349,7 +354,14 @@ p.casos.traj.nowcasted<-
   facet_geo(~UF, grid = "br_states_grid1", scales = "free")
 p.casos.traj.nowcasted
 
+## Tudo
 ggsave("scripts_R_genericos/Covid_percentage/img/trajectories_cases_nowcasted.png",
+       plot = p.casos.traj.nowcasted,
+       dpi = 300, 
+       height = 9,
+       width = 9)
+## Sem Acre
+ggsave("scripts_R_genericos/Covid_percentage/img/trajectories_cases_nowcasted_no_acre.png",
        plot = p.casos.traj.nowcasted,
        dpi = 300, 
        height = 9,
@@ -357,14 +369,13 @@ ggsave("scripts_R_genericos/Covid_percentage/img/trajectories_cases_nowcasted.pn
 
 p.obitos.traj.nowcasted<-
   obitos_joint %>% 
-  ggplot(aes(x = estimate.merged.srag, y = covid_over_srag))+
-  geom_path(aes(colour = data))+
+  ggplot(aes(x = estimate.merged.srag, y = estimate.merged.covid))+
+  geom_path(aes(colour = covid_over_srag))+
   theme_minimal()+
-  scale_colour_gradientn(name = "Data",
-                         colors = pal_wes, 
-                         trans = "date")+
+  scale_colour_gradientn(name = "SRAG by Covid/SRAG",
+                         colors = pal_wes)+
   labs(x = "SRAG Deaths",
-       y = "SRAG by Covid/SRAG",
+       y = "SRAG by Covid Deaths",
        title = "Trajectories Deaths")+
   theme(legend.position = "bottom",
         panel.spacing = unit(0.01, "lines"),
@@ -380,39 +391,72 @@ ggsave("scripts_R_genericos/Covid_percentage/img/trajectories_deaths_nowcasted.p
        height = 9,
        width = 9)
 
+
+# DAQUI PRA BAIXO TENTATIVA DE SOMBRA DE CASOS COM GEOM_COL E 
+# LINHAS PARA COVID OVER SRAG, O FAC, FATOR DE RESCALA DO EIXO SECUNDÁRIO
+# ESTÁ ERRADO, FICA COM O MÁXIMO DE 200 PARA TODOS OS ESTADOS MESMO SENDO 
+# CALCULADO INDEPENDEMENTE
+
 p.casos.list<-list()
+p.casos.merged<-list()
+p.obitos.merged<-list()
 
 for (i in unique(casos_joint$UF)) {
-  p.casos.list[[i]]<-
-    merge(casos_joint, obitos_joint, by = c("data","UF"), suffixes = c(".casos", ".obitos")) %>% 
+  p.casos.merged[[i]]<-casos_joint %>% 
     filter(UF == i) %>% 
-    mutate(fac = ceiling(max(estimate.merged.srag.casos)/100)*100, 
-           bar = estimate.merged.srag.casos/fac) %>% 
-    filter(!is.na(estimate.merged.srag.casos)) %>% 
-    ggplot(aes(x = data))+
-    geom_line(aes(y = covid_over_srag.casos, col = pal_wes[1]))+
-    geom_line(aes(y = covid_over_srag.obitos, col = pal_wes[10]))+
-    geom_col(aes(y = bar, fill = pal_wes[5]), 
+    mutate(fac_srag = ceiling(max(estimate.merged.srag)/100)*100,
+           bar_srag = estimate.merged.srag/fac_srag,
+           bar_covid = estimate.merged.covid/fac_srag,
+           ) %>%
+    as.data.frame()
+  # p.obitos.merged[[i]]<-obitos_joint %>% 
+  #   filter(UF == i) %>% 
+  #   # mutate(fac = ceiling(max(estimate.merged.srag)/100)*100, 
+  #   #        bar = estimate.merged.srag/fac) %>% 
+  #   as.data.frame()
+  fac_lab<-max(p.casos.merged[[i]]$fac_srag)
+  p.casos.list[[i]]<- 
+    ggplot(data = p.casos.merged[[i]], aes(x = data))+
+    geom_line(data = p.casos.merged[[i]],
+              aes(y = covid_over_srag,
+                  col = "SRAG by Covid/SRAG Cases"))+
+    # geom_line(data = p.obitos.merged[[i]], 
+    #           aes(y = covid_over_srag, 
+    #               col = "SRAG by Covid/SRAG Deaths"))+
+    geom_col(data = p.casos.merged[[i]],
+             aes(y = bar_srag, fill = "SRAG Cases"), 
+             width = 7,
+             position = position_dodge(), 
+             alpha = 0.5)+
+    geom_col(data = p.casos.merged[[i]],
+             aes(y = bar_covid, fill = "SRAG by Covid Cases"), 
              width = 7,
              position = position_dodge(), 
              alpha = 0.5)+
     labs(title = i,
-         x = element_blank(),
-         y = element_blank())+
-    theme(plot.title = element_text(size = 14))+
-    theme(legend.position = "none")+ ### NÃO SEI PQ ISSO AQUILO NÃO DESLIGA AS LEGENDA ##
-    theme_minimal()
-  ggsave(paste0("scripts_R_genericos/Covid_percentage/img/", i,"_percentage_covid_srag.png"),
-         plot = p.casos.list[[i]],
-         dpi = 300, 
-         height = 9,
-         width = 9)
+         x = "First symptoms Date",
+         y = "Number of Cases")+
+    theme(legend.position = "bottom",
+          plot.title = element_text(size = 14))+
+    theme_minimal()+
+    scale_y_continuous(name = "SRAG by Covid/SRAG",
+                       sec.axis = sec_axis(~ . * fac_lab,
+                                           name = "Number of Cases "))+
+    scale_color_manual(values = "Black")+
+    scale_fill_manual(values = c(pal_wes[10], pal_wes[1]), 
+                      name = element_blank())
+  # ggsave(paste0("scripts_R_genericos/Covid_percentage/img/", i,"_percentage_covid_srag.png"),
+  #        plot = p.casos.list[[i]],
+  #        dpi = 300,
+  #        height = 9,
+  #        width = 9)
 }
 
 library(grid)
 library(gridExtra)
 
-grid.plot<-grid.arrange(
+
+grid.plot<-ggarrange(
   p.casos.list$AC+theme(legend.position = "none"),
   p.casos.list$AL+theme(legend.position = "none"),
   p.casos.list$AM+theme(legend.position = "none"),
@@ -445,7 +489,6 @@ grid.plot<-grid.arrange(
   left = "SRAG by Covid/SRAG",
   bottom = "First symptoms Date"
 )
-grid.plot+facet_geo(~names(p.casos.list), grid = "br_state_grid1")
 
 
 #### FAZER GRID COM TODOS OS ESTADOS ###  
