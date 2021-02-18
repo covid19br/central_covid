@@ -58,15 +58,15 @@ if __name__ == '__main__':
         outfile = os.path.join(output_folder, output_fname)
 
         print("Sending out e-mails")
-        emails = [ "renato.coutinho@gmail.com", "lopes1313@gmail.com",
-                    "piklprado@gmail.com", "carolina.moreno@g.globo"]
+        with open("emails.txt", "r") as f:
+            emails = f.read().strip("\n")
         os.system('''echo -e "Nova base SIVEP-Gripe atualizada.\n
         O relatório de integridade será disponibilizado em alguns minutos no {link}\n
         Atenciosamente,\nRobot mailer" | 
             mail -s "nova base SIVEP-Gripe de {data}" {emails}'''.format(
                         data=newfile20[0].strftime("%Y_%m_%d"),
                         link="https://github.com/covid19br/central_covid/blob/master/dados_processados/integridade_SIVEP/integridade_SIVEP_{data}.html".format(data=newfile20[0].strftime("%Y-%m-%d")),
-                        emails=' '.join(emails)))
+                        emails=emails))
 
         print("Downloading new SIVEP database...")
         get_file(newfile20[1], outfile)
