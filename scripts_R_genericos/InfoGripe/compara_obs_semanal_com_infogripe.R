@@ -52,7 +52,9 @@ for(i in 2:length(siglas.estado)){
 ## Junta os dois objetos
 observ.seman <- merge(observ.now[, -3], observ.ncasos, by = c("estado", "data"), all=TRUE) 
 ## Adiciona semana epidemiologica
-observ.seman %<>% mutate(data = as.Date(data)-1, semana = date2week(data, numeric = TRUE))
+observ.seman %<>% mutate(data = as.Date(data)-1,
+                         semana = date2week(data, numeric = TRUE),
+                         semana = ifelse(data>as.Date("2021-01-02"), semana+53, semana)) ## POG para ter os dois anos epidmiologicos, consertar isso
 
 
 ## Maiores datas em cada estado
@@ -75,6 +77,7 @@ infogr.estado <- filter(infogripe, Tipo == "Estado"&
                                    escala == "casos") %>%
     select(UF,
            Unidade.da.Federação,
+           Ano.epidemiológico,
            Semana.epidemiológica,
            Casos.semanais.reportados.até.a.última.atualização,
            limite.inferior.da.estimativa,
@@ -88,7 +91,8 @@ infogr.estado <- filter(infogripe, Tipo == "Estado"&
            lower = limite.inferior.da.estimativa,
            casos.est = casos.estimados,
            upper = limite.superior.da.estimativa,
-           sigla.estado = sigla)
+           sigla.estado = sigla) %>%
+    mutate(semana = ifelse(Ano.epidemiológico == 2021, semana + 53, semana))
 
 ## Ultima semana e sua última data no Infogripe
 ##ultima.sem <- max(infogr.estado$semana)
@@ -114,6 +118,7 @@ infogr2.estado <- filter(infogripe2, Tipo == "Estado"&
     select(UF,
            Unidade.da.Federação,
            Semana.epidemiológica,
+           Ano.epidemiológico,
            Casos.semanais.reportados.até.a.última.atualização,
            limite.inferior.da.estimativa,
            casos.estimados,
@@ -126,7 +131,8 @@ infogr2.estado <- filter(infogripe2, Tipo == "Estado"&
            lower = limite.inferior.da.estimativa,
            casos.est = casos.estimados,
            upper = limite.superior.da.estimativa,
-           sigla.estado = sigla)
+           sigla.estado = sigla) %>%
+    mutate(semana = ifelse(Ano.epidemiológico == 2021, semana + 53, semana))
 
 ################################################################################
 ## Dados do Infogripe com filtros de febre
@@ -143,6 +149,7 @@ infogr3.estado <- filter(infogripe3, Tipo == "Estado"&
     select(UF,
            Unidade.da.Federação,
            Semana.epidemiológica,
+           Ano.epidemiológico,
            Casos.semanais.reportados.até.a.última.atualização,
            limite.inferior.da.estimativa,
            casos.estimados,
@@ -155,8 +162,8 @@ infogr3.estado <- filter(infogripe3, Tipo == "Estado"&
            lower = limite.inferior.da.estimativa,
            casos.est = casos.estimados,
            upper = limite.superior.da.estimativa,
-           sigla.estado = sigla)
-
+           sigla.estado = sigla) %>%
+    mutate(semana = ifelse(Ano.epidemiológico == 2021, semana + 53, semana))
 ################################################################################
 ## Funcoes para graficos
 ################################################################################
