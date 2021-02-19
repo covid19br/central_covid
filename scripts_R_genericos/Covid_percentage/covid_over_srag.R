@@ -339,9 +339,10 @@ p.casos.traj.nowcasted<-
   casos_joint %>% 
   filter(UF != "AC") %>%
   ggplot(aes(x = estimate.merged.srag, y = estimate.merged.covid))+
-  geom_path(aes(colour = covid_over_srag))+
+  # geom_path(aes(colour = covid_over_srag))+
+  geom_point(aes(colour = epiweek(data)))+
   theme_minimal()+
-  scale_colour_gradientn(name = "SRAG by Covid/SRAG",
+  scale_colour_gradientn(name = "Epiweek",
                         colors = pal_wes)+
   labs(x = "SRAG Cases",
        y = "SRAG by Covid Cases",
@@ -351,7 +352,10 @@ p.casos.traj.nowcasted<-
         strip.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 8),
         plot.title = element_text(size = 14))+
-  facet_geo(~UF, grid = "br_states_grid1", scales = "free")
+  facet_geo(~UF, grid = "br_states_grid1", scales = "free")+
+  geom_abline(intercept = 0, slope = 0.5, lty = 3)+
+  geom_abline(intercept = 0, slope = 0.75, lty = 2)+
+  geom_abline(intercept = 0, slope = 0.25, lty = 1)
 p.casos.traj.nowcasted
 
 ## Tudo
