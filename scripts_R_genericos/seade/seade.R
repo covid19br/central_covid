@@ -65,6 +65,9 @@ filtra.drs <- function(dados, drs){
     return(dados)
 }
 
+caption <- paste0("fonte: Seade ", format(Sys.Date(), "%d/%m/%Y"),
+                  ". Cŕedito: Observatório Covid-19 BR")
+
 dadossp <- filtra.drs(dados_seade, "01")
 p <- ggplot(dadossp) +
     geom_line(aes(x=datahora, y=internacoes_7d)) +
@@ -72,8 +75,18 @@ p <- ggplot(dadossp) +
     labs(x="data de notificação",
          y="internações nos últimos 7 dias",
          title="DRS 01 Grande São Paulo",
-         caption="fonte: Seade")
+         caption=caption)
 #ggsave('internacoes7d.png', width=8, height=6)
+
+p_tudo <- dados_seade %>%
+    filter(nome_drs == "Estado de São Paulo") %>%
+    ggplot() +
+    geom_line(aes(x=datahora, y=internacoes_7d)) +
+    scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+    labs(x="data de notificação",
+         y="internações nos últimos 7 dias",
+         title="Estado de São Paulo",
+         caption=caption)
 
 p_estado <- ggplot(dados_seade) +
     geom_line(aes(x=datahora, y=internacoes_7d)) +
@@ -81,7 +94,7 @@ p_estado <- ggplot(dados_seade) +
     labs(x="data de notificação",
          y="internações nos últimos 7 dias",
          title="Internações nos últimos 7 dias",
-         caption="fonte: Seade") +
+         caption=caption) +
     facet_wrap(~nome_drs, scales="free")
 
 p_ufabc <- dados_seade %>%
@@ -106,7 +119,7 @@ p_estado2 <- ggplot(dados_estado) +
     labs(x="data de notificação",
          y="internações nos últimos 7 dias",
          title="Internações nos últimos 7 dias",
-         caption="fonte: Seade") +
+         caption=caption) +
     facet_geo(~nome_drs, grid=grid_drs2, scales="free")
 
 p_estado3 <- dados_seade %>%
@@ -117,6 +130,6 @@ p_estado3 <- dados_seade %>%
     labs(x="data de notificação",
          y="internações nos últimos 7 dias",
          title="Internações nos últimos 7 dias",
-         caption="fonte: Seade") +
+         caption=caption) +
     facet_geo(~nome_drs, grid=grid_drs3, scales="free")
 
