@@ -7,13 +7,13 @@
 
 ### Variáveis
 
+* nome_drs : Nome da Delegacia Regional de Saúde (DRS)
 * tot.casos: total de casos até a semana final que consta na planilha 	`casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
 * tot.casos.pc	: taxa de ataque (casos/100mil hab) dos casos até a semana final que consta na planilha `casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
 * tot.obitos	: total de óbitos  até a semana final que consta na planilha 	`casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
 * tot.obitos.pc: mortalidade (óbitos/100mil hab) dos óbitos até a semana final que consta na planilha 	`casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
-* nome_drs : Nome da Delegacia Regional de Saúde (DRS)
-*  casos.max: numero de casos na semana epiemdiológica em que houve o maior número de casos registrados
-* casos.pc.max: taxa de ataque (casos/100.00 habitantes) na  na semana epiemdiológica em que houve o maior número de casos registrados
+* casos.max: numero de casos na semana epiemdiológica em que houve o maior número de casos registrados
+* casos.pc.max: taxa de ataque (casos/100.00 habitantes) na semana epiemdiológica em que houve o maior número de casos registrados
 * semana.casos.max: semana epidemiológica em que houve maior número de casos resgistrados	
 * obitos.max	: numero de óbitos na semana epiemdiológica em que houve o maior número de óbitos registrados
 * obitos.pc.max	: mortalidade (óbitos/100.00 habitantes) na  na semana epiemdiológica em que houve o maior número de óbitos registrados
@@ -26,7 +26,8 @@
 ## Variáveis
 
 * nome_drs: 	Nome da Delegacia Regional de Saúde (DRS)
-* semana_epidem	: semana epidemiológica
+* dt_semana: data do último dia da semana epidemiológica
+* semana: semana epidemiológica
 * cod_drs.x	: código numeŕico da DRS (SEADE)
 * pop	: população estimada da DRS (SEADE)
 * pop_60	: população acima de 60 anos estimada (SEADE)
