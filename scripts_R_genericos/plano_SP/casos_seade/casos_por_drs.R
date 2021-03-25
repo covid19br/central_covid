@@ -14,8 +14,8 @@ set_week_start("sunday")
 ################################################################################
 ## Leitura do arquivo com os dados de notificacao, que tem os dados dos municipios
 not.mun <- read.csv2("../../../clone_repo_seade_SP/data/dados_covid_sp.csv") %>%
-    mutate(datahora = as.Date(datahora)) %>%
-    filter(datahora < as.Date("2021-01-03"))
+    mutate(datahora = as.Date(datahora))
+#%>% filter(datahora < as.Date("2021-01-03"))
 
 ## Seleciona as varaveis para usar na tabela de muncipios e retém apenas um resgistro por município
 dic.mun <-
@@ -35,7 +35,8 @@ dic.drs <-
 ## Casos por DRS e semana epidemiológica
 not.drs <-
     not.mun %>%
-    group_by(nome_drs, semana_epidem) %>%
+    mutate(semana = ifelse(datahora > as.Date("2021-01-02"), semana_epidem + 53, semana_epidem)) %>%
+    group_by(nome_drs, semana) %>%
     summarise(casos_not = sum(casos_novos),
               obitos_not = sum(obitos_novos)) %>%
     as.data.frame() %>%
@@ -54,34 +55,34 @@ not.drs <-
 zip::unzip("../../../clone_repo_seade_SP/data/casos_obitos_doencas_preexistentes.csv.zip", junkpaths = TRUE)
 ## zip::unzip("casos_obitos_doencas_preexistentes.csv_2021_01_15.zip", junkpaths = TRUE)
 
-casos.all <- read.csv2("casos_obitos_doencas_preexistentes.csv") %>% 
-    mutate(data_inicio_sintomas = as.Date(data_inicio_sintomas)) %>%  
-    filter(data_inicio_sintomas < as.Date("2021-01-03")) %>% ## para filtrar apenas semanas epidemiológicas de 2020
-    mutate(semana_epidem = date2week(data_inicio_sintomas, numeric = TRUE)) 
+casos.all <- read.csv2("casos_obitos_doencas_preexistentes.csv") %>%
+    mutate(dt_sint = as.Date(data_inicio_sintomas)) %>%
+    ##filter(data_inicio_sintomas < as.Date("2021-01-03")) %>% ## para filtrar apenas semanas epidemiológicas de 2020
+    mutate(semana = date2week(dt_sint, numeric = TRUE),
+           semana = ifelse(dt_sint > as.Date("2021-01-02"), semana + 53, semana))
     
-
 casos.semana <-
     casos.all %>%
-    filter(diagnostico_covid19 == "CONFIRMADO") %>% 
-    group_by(nome_munic, semana_epidem) %>%
+    filter(diagnostico_covid19 == "CONFIRMADO", !is.na(semana)) %>%
+    group_by(nome_munic, semana) %>%
     summarise(casos_novos = n(), obitos_novos = sum(obito ==1)) %>%
     ungroup() %>%
     merge(dic.mun[,c("nome_munic", "nome_drs", "cod_drs")], by = "nome_munic", all.x=TRUE)
     
 casos.semana.drs <-
     casos.semana %>%
-    group_by(nome_drs, semana_epidem) %>%
+    group_by(nome_drs, semana) %>%
     summarise(casos_sin = sum(casos_novos),
               obitos_sin = sum(obitos_novos)) %>%
     ungroup() %>%
     inner_join(dic.drs, by = "nome_drs") %>% 
     mutate(casos_sin_pc = 1e5*casos_sin/pop, obitos_sin_pc = 1e5*obitos_sin/pop) %>%
-    inner_join(not.drs, by = c("nome_drs", "semana_epidem")) %>%
-    select(nome_drs, semana_epidem, cod_drs.x, pop, pop_60, area, casos_not, casos_sin, casos_not_pc, casos_sin_pc,
+    inner_join(not.drs, by = c("nome_drs", "semana")) %>%
+    select(nome_drs, semana, cod_drs.x, pop, pop_60, area, casos_not, casos_sin, casos_not_pc, casos_sin_pc,
            obitos_not, obitos_sin, obitos_not_pc, obitos_sin_pc)
 
 ## Total de casos
-total.casos.drs <- aggregate( casos.semana.drs[,c(3,4,11,12)], by = list(drs = casos.semana.drs$nome_drs), sum)[, c(1,2,4,3,5)]
+total.casos.drs <- aggregate( casos.semana.drs[,7:10], by = list(drs = casos.semana.drs$nome_drs), sum)[, c(1,2,4,3,5)]
 
 
 ## Maximo de casos e obitos e semanas de pico
@@ -94,10 +95,10 @@ maximos.sin <- casos.semana.drs %>%
               tot.obitos.pc = sum(obitos_not_pc),
               casos.max = max(casos_sin),
               casos.pc.max = max(casos_sin_pc),
-              semana.casos.max = semana_epidem[which.max(casos_sin)],
+              semana.casos.max = semana[which.max(casos_sin)],
               obitos.max = max(obitos_sin),
               obitos.pc.max = max(obitos_sin_pc),
-              semana.obitos.max = semana_epidem[which.max(obitos_sin)]) %>%
+              semana.obitos.max = semana[which.max(obitos_sin)]) %>%
     as.data.frame()
 
 ## Por data de notificação
@@ -109,10 +110,10 @@ maximos.not <- not.drs %>%
               tot.obitos.pc = sum(obitos_not_pc),
               casos.max = max(casos_not),
               casos.pc.max = max(casos_not_pc),
-              semana.casos.max = semana_epidem[which.max(casos_not)],
+              semana.casos.max = semana[which.max(casos_not)],
               obitos.max = max(obitos_not),
               obitos.pc.max = max(obitos_not_pc),
-              semana.obitos.max = semana_epidem[which.max(obitos_not)]) %>%
+              semana.obitos.max = semana[which.max(obitos_not)]) %>%
     as.data.frame()
 
 ## Exporta planilhas
@@ -128,9 +129,8 @@ write.csv(maximos.sin , file = "outputs/totais_maximos_e_semana_pico_semana_sint
 ## Todos os graficos juntos
 png("outputs/casos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
-    ##filter(semana_epidem < max(semana_epidem)-1) %>%
-    ##filter(semana_epidem < 42) %>%
-    ggplot(aes(semana_epidem, casos_not_pc)) +
+    filter(semana < max(semana)-1) %>%
+    ggplot(aes(semana, casos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=casos_sin_pc, col = "Sintoma")) +
     facet_wrap(~nome_drs, nrow =) +
@@ -145,9 +145,9 @@ for(nome in unique(casos.semana.drs$nome_drs)){
     png(paste0("outputs/casos_por_semana_",nome,".png"))
     p1 <-
         casos.semana.drs %>%
-        ##filter(semana_epidem < max(semana_epidem) & nome_drs == nome) %>%
-        filter(nome_drs == nome) %>%
-        ggplot(aes(semana_epidem, casos_not_pc)) +
+        filter(semana < max(semana) & nome_drs == nome) %>%
+        ##filter(nome_drs == nome) %>%
+        ggplot(aes(semana, casos_not_pc)) +
         geom_line(aes(col = "Notificação"), size = 1.25) +
         geom_line(aes(y=casos_sin_pc, col = "Sintoma"), size = 1.25) +
         xlab("Semana epidemiológica") +
@@ -167,8 +167,8 @@ for(nome in unique(casos.semana.drs$nome_drs)){
 ## Obitos
 png("outputs/obitos_por_semana.png", width =900, height = 600)
 casos.semana.drs %>%
-    ##filter(semana_epidem < max(semana_epidem)-1) %>%
-    ggplot(aes(semana_epidem, obitos_not_pc)) +
+    filter(semana < max(semana)-1) %>%
+    ggplot(aes(semana, obitos_not_pc)) +
     geom_line(aes(col = "Notificação")) +
     geom_line(aes(y=obitos_sin_pc, col = "Sintoma")) +
     facet_wrap(~nome_drs) +
@@ -183,9 +183,9 @@ for(nome in unique(casos.semana.drs$nome_drs)){
     png(paste0("outputs/obitos_por_semana_",nome,".png"))
     p1 <-
         casos.semana.drs %>%
-        ##filter(semana_epidem < max(semana_epidem) & nome_drs == nome) %>%
-        filter(nome_drs == nome) %>%
-        ggplot(aes(semana_epidem, obitos_not_pc)) +
+        filter(semana < max(semana) & nome_drs == nome) %>%
+        ##filter(nome_drs == nome) %>%
+        ggplot(aes(semana, obitos_not_pc)) +
         geom_line(aes(col = "Notificação"), size = 1.25) +
         geom_line(aes(y=obitos_sin_pc, col = "Sintoma"), size = 1.25) +
         xlab("Semana epidemiológica") +
