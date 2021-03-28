@@ -133,3 +133,18 @@ p_estado3 <- dados_seade %>%
          caption=caption) +
     facet_geo(~nome_drs, grid=grid_drs3, scales="free")
 
+
+## Ocupação
+png("ocupacao_UTI.png", width =600)
+    dados_seade %>%
+    filter(nome_drs != "Estado de São Paulo") %>%
+    ggplot() +
+    geom_line(aes(x=datahora, y=ocupacao_leitos)) +
+    scale_x_date(date_breaks = "3 month", date_labels = "%b") +
+    labs(x="data de notificação",
+         y="Ocupação de leitos UTI %",
+         title="Ocupação de UTIS destinadas a COVID",
+         caption=caption) +
+    ylim(c(0,100)) +
+    facet_geo(~nome_drs, grid=grid_drs3)
+dev.off()

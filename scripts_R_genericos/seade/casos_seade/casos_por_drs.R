@@ -211,7 +211,7 @@ for(nome in unique(casos.semana.drs$nome_drs)){
 }
 
 ################################################################################
-## SEADE: media movel de internacao em 7 dias
+## SEADE: dados de internação
 ################################################################################
 ## Leitura e preparação
 ## Junta Gde São Paulo na DRS 01, tira os dados do municṕio de SP e do Estado
@@ -280,7 +280,7 @@ for(nome in unique(interna$nome_drs2)){
               axis.title=element_text(size=15),
               plot.title = element_text(size=16, face="bold")) +
         scale_x_date(date_breaks = "2 months", date_labels = "%b") +
-        ylim(c(0,1)) +
+        ylim(c(0,100)) +
         ggtitle(nome)
     print(p1)
     dev.off()
@@ -335,23 +335,23 @@ for(nome in unique(interna$nome_drs2)){
 
 ################################################################################
 ## Notificacoes por dia no estado: contam casos que entraram no dia (argh!), não é data de notificação
-n.not.dia <-
-    not.mun %>%
-    mutate(datahora = as.Date(datahora)) %>%
-    group_by(datahora) %>%
-    summarise(casos.cum = sum(casos), casos_novos = sum(casos_novos)) %>%
-    ungroup
-n.not.dia$diff.cum <- c(n.not.dia$casos.cum[1], diff(n.not.dia$casos.cum))
+## n.not.dia <-
+##     not.mun %>%
+##     mutate(datahora = as.Date(datahora)) %>%
+##     group_by(datahora) %>%
+##     summarise(casos.cum = sum(casos), casos_novos = sum(casos_novos)) %>%
+##     ungroup
+## n.not.dia$diff.cum <- c(n.not.dia$casos.cum[1], diff(n.not.dia$casos.cum))
 
-## Aqui vemos o represamento de notificações em 12/nov, o que mostra que o campo "casos_novos"
-## registra n de casos novo digitados em cada data
-png("casos_novos_dia_seade.png", width = 600)
-n.not.dia %>%
-    ggplot(aes(datahora, casos_novos)) +
-    geom_line() +
-    theme_bw()
-    ## geom_line(aes(y=diff.cum), col = "red")
-dev.off()
+## ## Aqui vemos o represamento de notificações em 12/nov, o que mostra que o campo "casos_novos"
+## ## registra n de casos novo digitados em cada data
+## png("casos_novos_dia_seade.png", width = 600)
+## n.not.dia %>%
+##     ggplot(aes(datahora, casos_novos)) +
+##     geom_line() +
+##     theme_bw()
+##     ## geom_line(aes(y=diff.cum), col = "red")
+## dev.off()
 
-## Voltando ao master
-## system("cd ../../../dados/seade; git checkout master")
+## ## Voltando ao master
+## ## system("cd ../../../dados/seade; git checkout master")
