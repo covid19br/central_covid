@@ -3,6 +3,7 @@ library(dplyr)
 library(ggplot2)
 library(zip)
 library(aweek)
+library(lubridate)
 set_week_start("sunday")
 
 ## Em 21/01/2021 commits posteriores a 15/01 parece ter tabelas com linhas faltantes
@@ -164,6 +165,7 @@ for(nome in unique(casos.semana.drs$nome_drs)){
               plot.title = element_text(size=16, face="bold")) +
         labs(color = "Data de referência") +
         scale_color_manual(values = c("darkblue", "darkred")) +
+        scale_x_date(date_breaks = "2 months", date_labels = "%b") +
         ggtitle(nome)
     print(p1)
     dev.off()
@@ -202,11 +204,136 @@ for(nome in unique(casos.semana.drs$nome_drs)){
               plot.title = element_text(size=16, face="bold")) +
         labs(color = "Data de referência") +
         scale_color_manual(values = c("darkblue", "darkred")) +
+        scale_x_date(date_breaks = "2 months", date_labels = "%b") +
         ggtitle(nome)
     print(p1)
     dev.off()
 }
 
+################################################################################
+## SEADE: media movel de internacao em 7 dias
+################################################################################
+## Leitura e preparação
+## Junta Gde São Paulo na DRS 01, tira os dados do municṕio de SP e do Estado
+## para ficar apenas com as DRS
+dir_dados <- "../../../dados/seade/data/"
+interna <-
+    read.csv(paste0(dir_dados, "plano_sp_leitos_internacoes.csv"), sep=';', dec=',') %>%
+    filter(nome_drs != "Município de São Paulo" & nome_drs != "Estado de São Paulo") %>%
+    mutate(datahora = as_date(parse_date_time(datahora, "ymd")),
+           week = date2week(datahora, floor_day=TRUE),
+           nome_drs2 = ifelse(grepl("Grande SP", nome_drs ), "DRS 01 Grande SP", nome_drs)) %>%
+    group_by(datahora, nome_drs2) %>%
+    summarise(pacientes_uti_mm7d = sum(pacientes_uti_mm7d),
+              total_covid_uti_mm7d = sum(total_covid_uti_mm7d),
+              pop = sum(pop),
+              internacoes_7d = sum(internacoes_7d)) %>%
+    ungroup() %>%
+    mutate(ocupacao_leitos = 100 * pacientes_uti_mm7d / total_covid_uti_mm7d,
+           leitos_pc = 1e5*total_covid_uti_mm7d / pop,
+           internacoes_7d_pc = 1e5*internacoes_7d / pop)
+
+## valores máximos e respectivos dias e semanas
+interna.max.min <-
+    interna %>%
+    group_by(nome_drs2) %>%
+    summarise(
+        pacientes_uti_mm7d.min = min(pacientes_uti_mm7d),
+        pacientes_uti_mm7d.max = max(pacientes_uti_mm7d),
+        total_covid_uti_mm7d.min = min(total_covid_uti_mm7d),
+        total_covid_uti_mm7d.max = max(total_covid_uti_mm7d),
+        leitos_pc.min = min(leitos_pc),
+        leitos_pc.max = max(leitos_pc),
+        ocupacao_leitos.min = min(ocupacao_leitos),
+        ocupacao_leitos.max = max(ocupacao_leitos),
+        internacoes_7d.min = min(internacoes_7d),
+        internacoes_7d.max = max(internacoes_7d),
+        internacoes_7d_pc.min = min(internacoes_7d_pc),
+        internacoes_7d_pc.max = max(internacoes_7d_pc),
+        dia.pacientes_uti_mm7d.min = datahora[which.min(pacientes_uti_mm7d)],
+        dia.pacientes_uti_mm7d.max = datahora[which.max(pacientes_uti_mm7d)],
+        dia.leitos_pc.min = datahora[which.min(leitos_pc)],
+        dia.leitos_pc.max = datahora[which.max(leitos_pc)],
+        dia.ocupacao_leitos.min = datahora[which.min(ocupacao_leitos)],
+        dia.ocupacao_leitos.max = datahora[which.max(ocupacao_leitos)],
+        dia.internacoes_7d_pc.min = datahora[which.min(internacoes_7d_pc)],
+        dia.internacoes_7d_pc.max = datahora[which.max(internacoes_7d_pc)])
+        
+## Exporta planilha
+write.csv(interna.max.min, file = "outputs/maximos_minimos_internacoes.csv")
+
+## Graficos
+## Ocupação
+for(nome in unique(interna$nome_drs2)){
+    png(paste0("outputs/ocupacao_UTI_",nome,".png"))
+    p1 <-
+        interna %>%
+        filter(nome_drs2 == nome) %>%
+        ##filter(nome_drs == nome) %>%
+        ggplot(aes(datahora, ocupacao_leitos)) +
+        geom_line() +
+        xlab("Dia") +
+        ylab("Ocupação leitos UTI COVID %") +
+        theme_bw() +
+        theme(
+              axis.text=element_text(size=14),
+              axis.title=element_text(size=15),
+              plot.title = element_text(size=16, face="bold")) +
+        scale_x_date(date_breaks = "2 months", date_labels = "%b") +
+        ylim(c(0,1)) +
+        ggtitle(nome)
+    print(p1)
+    dev.off()
+}
+
+## Media movel de casos internados por 100 mil habitantes
+for(nome in unique(interna$nome_drs2)){
+    png(paste0("outputs/leitos_UTI_100_mil_hab_",nome,".png"))
+    p1 <-
+        interna %>%
+        filter(nome_drs2 == nome) %>%
+        ##filter(nome_drs == nome) %>%
+        ggplot(aes(datahora, leitos_pc)) +
+        geom_line() +
+        xlab("Dia") +
+        ylab("Leitos UTI COVID / 100 mil hab") +
+        theme_bw() +
+        theme(
+              axis.text=element_text(size=14),
+              axis.title=element_text(size=15),
+              plot.title = element_text(size=16, face="bold")) +
+        scale_x_date(date_breaks = "2 months", date_labels = "%b") +
+        ylim(range(interna$leitos_pc)) +
+        ggtitle(nome)
+    print(p1)
+    dev.off()
+}
+
+## Media móvel de internações por 100 mil habitantes
+for(nome in unique(interna$nome_drs2)){
+    png(paste0("outputs/media_movel_7d_internacoes_100_mil_hab",nome,".png"))
+    p1 <-
+        interna %>%
+        filter(nome_drs2 == nome) %>%
+        ##filter(nome_drs == nome) %>%
+        ggplot(aes(datahora, internacoes_7d_pc)) +
+        geom_line() +
+        xlab("Dia") +
+        ylab("Novas internações / 100 mil hab (Média 7 dias)") +
+        theme_bw() +
+        theme(
+              axis.text=element_text(size=14),
+              axis.title=element_text(size=15),
+              plot.title = element_text(size=16, face="bold")) +
+        scale_x_date(date_breaks = "2 months", date_labels = "%b") +
+        ylim(range(interna$internacoes_7d_pc)) +
+        ggtitle(nome)
+    print(p1)
+    dev.off()
+}
+
+
+################################################################################
 ## Notificacoes por dia no estado: contam casos que entraram no dia (argh!), não é data de notificação
 n.not.dia <-
     not.mun %>%

@@ -63,6 +63,7 @@ write.csv(covid.drs, file = "outputs/srag_confirmado_por_drs_com_nowcasting.csv"
 write.csv(covid.ob.drs, file = "outputs/obitos_srag_confirmado_por_drs_com_nowcasting.csv")
 
 ## Graficos com nowcasting e N notificado a cada semana de primeiro sintoma
+## Casos
 for(i in 1:length(nomes)){
     png(paste0("outputs/srag_conf_por_semana_com_nowcasting_",nomes[i],".png"))
     p1 <-
@@ -81,7 +82,34 @@ for(i in 1:length(nomes)){
               axis.title=element_text(size=15),
               plot.title = element_text(size=16, face="bold"))  +
         scale_color_manual(values = c("darkblue", "darkred")) +
+        scale_x_date(date_breaks = "2 months", date_labels = "%b") +
         ggtitle(names(nomes)[i])
     print(p1)
     dev.off()
 }
+
+## obitos
+for(i in 1:length(nomes)){
+    png(paste0("outputs/obitos_srag_conf_por_semana_com_nowcasting_",nomes[i],".png"))
+    p1 <-
+        covid.ob.drs %>%
+        filter(DRS == names(nomes)[i]) %>%
+        ggplot(aes(data)) +
+        geom_line(aes(y = n.casos, col = "Notificados"),size = 1.25) +
+        geom_line(aes(y=estimate, col = "Nowcasting"), size = 1.25) +
+        geom_ribbon(aes(ymin=lower, ymax = upper), fill = "darkred", alpha=0.25) +
+        xlab("Último dia da semana epidemiológica") +
+        ylab("Óbitos confirmados") +
+        theme_bw() +
+        theme(legend.position = c(0.15, 0.9),
+              legend.title = element_blank(),
+              axis.text=element_text(size=14),
+              axis.title=element_text(size=15),
+              plot.title = element_text(size=16, face="bold"))  +
+        scale_color_manual(values = c("darkblue", "darkred")) +
+        scale_x_date(date_breaks = "2 months", date_labels = "%b") +
+        ggtitle(names(nomes)[i])
+    print(p1)
+    dev.off()
+}
+

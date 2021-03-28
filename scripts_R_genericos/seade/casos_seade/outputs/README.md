@@ -19,6 +19,32 @@
 * obitos.pc.max	: mortalidade (óbitos/100.00 habitantes) na  na semana epiemdiológica em que houve o maior número de óbitos registrados
 * semana.obitos.max: semana epidemiológica em que houve maior número de óbitos registrados
 
+## Máximos e mínimos de dados de internação por DRS
+### PLanilha
+* `maximos_minimos_internacoes.csv`
+### Variáveis
+* nome_drs2: nome da DRS
+* pacientes_uti_mm7d.min: mínimo da média móvel para 7 dias do Pacientes Internados em Leitos de UTI Destinados para COVID-19 no dia
+* pacientes_uti_mm7d.max: máximo da média móvel para 7 dias do Pacientes Internados em Leitos de UTI Destinados para COVID-19 no dia
+* total_covid_uti_mm7d.min: mínimo da média móvel para 7 dias do Total de Leitos de UTI Destinados para COVID-19 no dia
+* total_covid_uti_mm7d.max: máximo da média móvel para 7 dias do Total de Leitos de UTI Destinados para COVID-19 no dia
+* leitos_pc.min: mínimo de leitos Covid-19 UTI por 100 mil habitantes 
+* leitos_pc.max: máximo de leitos Covid-19 UTI por 100 mil habitantes 
+* ocupacao_leitos.min: mínimo da ocupação de leitos de UTI destinados para COVID-19 (pacientes_uti_mm7d / total_covid_uti_mm7d)
+* ocupacao_leitos.max:máximo da ocupação de leitos de UTI destinados para COVID-19 (pacientes_uti_mm7d / total_covid_uti_mm7d)
+* internacoes_7d.min: mínimo do número de novas internações (UTI e Enfermaria) de pacientes confirmados ou com suspeita de COVID-19 nos últimos 7 dias
+* internacoes_7d.max: máximo do número de novas internações (UTI e Enfermaria) de pacientes confirmados ou com suspeita de COVID-19 nos últimos 7 dias
+* internacoes_7d_pc.min: mínimo de `internacoes_7d` por 100 mil habitantes
+* internacoes_7d_pc.max: máximo de `internacoes_7d` por 100 mil habitantes
+* dia.pacientes_uti_mm7d.min: data de `pacientes_uti_mm7d.min` 
+* dia.pacientes_uti_mm7d.max: data de `pacientes_uti_mm7d.max`
+* dia.leitos_pc.min: data de `leitos_pc.min` 
+* dia.leitos_pc.max: data de `leitos_pc.max`
+* dia.ocupacao_leitos.min: data de `ocupacao_leitos.min`
+* dia.ocupacao_leitos.max: data de `ocupacao_leitos.max`
+* dia.internacoes_7d_pc.min: data de `internacoes_7d_pc.min`
+* dia.internacoes_7d_pc.max: data de `internacoes_7d_pc.min`
+
 ## Números de casos e óbitos por semana epidemiológica e DRS
 ### Planilha
 *  `casos_e_incidencias_DRS_semana_de_notificacao_e_sintomas.csv`
