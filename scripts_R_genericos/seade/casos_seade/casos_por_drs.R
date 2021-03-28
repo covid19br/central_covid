@@ -7,17 +7,18 @@ set_week_start("sunday")
 
 ## Em 21/01/2021 commits posteriores a 15/01 parece ter tabelas com linhas faltantes
 ## Usando o ultimo commit que parece bem
-## system("cd ../../../clone_repo_seade_SP/; git checkout 89c35a9")
+## system("cd ../../../dados/seade/; git checkout 89c35a9")
+system("cd ../../../dados/seade/; git pull")
 
 ################################################################################
 ## SEADE: Tabela com codigos municipios, DRS e populacao
 ################################################################################
 ## Leitura do arquivo com os dados de notificacao, que tem os dados dos municipios
-not.mun <- read.csv2("../../../clone_repo_seade_SP/data/dados_covid_sp.csv") %>%
+not.mun <- read.csv2("../../../dados/seade/data/dados_covid_sp.csv") %>%
     mutate(datahora = as.Date(datahora))
 #%>% filter(datahora < as.Date("2021-01-03"))
 
-## Seleciona as varaveis para usar na tabela de muncipios e retém apenas um resgistro por município
+## Seleciona as varaveis para usar na tabela de muncipios e retém apenas um registro por município
 dic.mun <-
     not.mun %>%
     select(nome_munic,codigo_ibge,nome_ra,cod_ra,nome_drs,cod_drs,pop,pop_60,area,latitude,longitude) %>%
@@ -54,7 +55,7 @@ not.drs <-
 ##              destfile = "casos_obitos_doencas_preexistentes.csv.zip")
 
 ## é preciso um clone do respositorio do SEAD neste path
-zip::unzip("../../../clone_repo_seade_SP/data/casos_obitos_doencas_preexistentes.csv.zip", junkpaths = TRUE)
+zip::unzip("../../../dados/seade/data/casos_obitos_doencas_preexistentes.csv.zip", junkpaths = TRUE)
 ## zip::unzip("casos_obitos_doencas_preexistentes.csv_2021_01_15.zip", junkpaths = TRUE)
 
 casos.all <- read.csv2("casos_obitos_doencas_preexistentes.csv") %>%
@@ -226,4 +227,4 @@ n.not.dia %>%
 dev.off()
 
 ## Voltando ao master
-## system("cd ../../../clone_repo_seade_SP/; git checkout master")
+## system("cd ../../../dados/seade; git checkout master")

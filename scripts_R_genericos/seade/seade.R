@@ -66,7 +66,7 @@ filtra.drs <- function(dados, drs){
 }
 
 caption <- paste0("fonte: Seade ", format(Sys.Date(), "%d/%m/%Y"),
-                  ". Cŕedito: Observatório Covid-19 BR")
+                  ". Crédito: Observatório Covid-19 BR")
 
 dadossp <- filtra.drs(dados_seade, "01")
 p <- ggplot(dadossp) +
