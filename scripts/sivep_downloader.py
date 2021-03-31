@@ -81,7 +81,6 @@ if __name__ == '__main__':
             os.system('''cd {folder} &&
                    git add {outfile}.xz &&
                    git commit -m "[auto] base SIVEP-Gripe de {data}" &&
-                   rm {outfile} &&
                    git push'''.format(folder=output_folder,
                                     outfile=output_fname,
                                     data=newfile20[0].strftime("%Y_%m_%d")))
