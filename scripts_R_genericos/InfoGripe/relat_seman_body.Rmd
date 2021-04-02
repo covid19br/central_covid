@@ -3,43 +3,43 @@
 ## Acre 
  
 ```{r } 
- plot.seman("AC") 
+ plot.seman2("AC") 
 ``` 
  
 ## Amazonas 
  
 ```{r } 
- plot.seman("AM") 
+ plot.seman2("AM") 
 ``` 
  
 ## Amapá 
  
 ```{r } 
- plot.seman("AP") 
+ plot.seman2("AP") 
 ``` 
  
 ## Pará 
  
 ```{r } 
- plot.seman("PA") 
+ plot.seman2("PA") 
 ``` 
  
 ## Rondônia 
  
 ```{r } 
- plot.seman("RO") 
+ plot.seman2("RO") 
 ``` 
  
 ## Roraima 
  
 ```{r } 
- plot.seman("RR") 
+ plot.seman2("RR") 
 ``` 
  
 ## Tocantins 
  
 ```{r } 
- plot.seman("TO") 
+ plot.seman2("TO") 
 ``` 
  
 # Região Nordeste 
@@ -47,55 +47,55 @@
 ## Alagoas 
  
 ```{r } 
- plot.seman("AL") 
+ plot.seman2("AL") 
 ``` 
  
 ## Bahia 
  
 ```{r } 
- plot.seman("BA") 
+ plot.seman2("BA") 
 ``` 
  
 ## Ceará 
  
 ```{r } 
- plot.seman("CE") 
+ plot.seman2("CE") 
 ``` 
  
 ## Maranhão 
  
 ```{r } 
- plot.seman("MA") 
+ plot.seman2("MA") 
 ``` 
  
 ## Paraíba 
  
 ```{r } 
- plot.seman("PB") 
+ plot.seman2("PB") 
 ``` 
  
 ## Pernambuco 
  
 ```{r } 
- plot.seman("PE") 
+ plot.seman2("PE") 
 ``` 
  
 ## Piauí 
  
 ```{r } 
- plot.seman("PI") 
+ plot.seman2("PI") 
 ``` 
  
 ## Rio Grande do Norte 
  
 ```{r } 
- plot.seman("RN") 
+ plot.seman2("RN") 
 ``` 
  
 ## Sergipe 
  
 ```{r } 
- plot.seman("SE") 
+ plot.seman2("SE") 
 ``` 
  
 # Região Sudeste 
@@ -103,25 +103,25 @@
 ## Espírito Santo 
  
 ```{r } 
- plot.seman("ES") 
+ plot.seman2("ES") 
 ``` 
  
 ## Minas Gerais 
  
 ```{r } 
- plot.seman("MG") 
+ plot.seman2("MG") 
 ``` 
  
 ## Rio de Janeiro 
  
 ```{r } 
- plot.seman("RJ") 
+ plot.seman2("RJ") 
 ``` 
  
 ## São Paulo 
  
 ```{r } 
- plot.seman("SP") 
+ plot.seman2("SP") 
 ``` 
  
 # Região Sul 
@@ -129,19 +129,19 @@
 ## Paraná 
  
 ```{r } 
- plot.seman("PR") 
+ plot.seman2("PR") 
 ``` 
  
 ## Rio Grande do Sul 
  
 ```{r } 
- plot.seman("RS") 
+ plot.seman2("RS") 
 ``` 
  
 ## Santa Catarina 
  
 ```{r } 
- plot.seman("SC") 
+ plot.seman2("SC") 
 ``` 
  
 # Região Centro-Oeste 
@@ -149,24 +149,24 @@
 ## Distrito Federal 
  
 ```{r } 
- plot.seman("DF") 
+ plot.seman2("DF") 
 ``` 
  
 ## Goiás 
  
 ```{r } 
- plot.seman("GO") 
+ plot.seman2("GO") 
 ``` 
  
 ## Mato Grosso do Sul 
  
 ```{r } 
- plot.seman("MS") 
+ plot.seman2("MS") 
 ``` 
  
 ## Mato Grosso 
  
 ```{r } 
- plot.seman("MT") 
+ plot.seman2("MT") 
 ``` 
  

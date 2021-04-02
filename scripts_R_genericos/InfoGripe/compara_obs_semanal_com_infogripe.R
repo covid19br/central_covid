@@ -4,6 +4,7 @@ library(magrittr)
 library(ggplot2)
 library(zip)
 library(aweek)
+library(lubridate)
 library(rmarkdown)
 source("../../nowcasting/fct/get.last.date.R")
 set_week_start("Sunday")
@@ -54,7 +55,7 @@ observ.seman <- merge(observ.now[, -3], observ.ncasos, by = c("estado", "data"),
 ## Adiciona semana epidemiologica
 observ.seman %<>% mutate(data = as.Date(data)-1,
                          semana = date2week(data, numeric = TRUE),
-                         semana = ifelse(data>as.Date("2021-01-02"), semana+53, semana)) ## POG para ter os dois anos epidmiologicos, consertar isso
+                         semana = ifelse(data>as.Date("2021-01-02"), semana+53, semana)) ## POG para ter os dois anos epidemiologicos, consertar isso
 
 
 ## Maiores datas em cada estado
@@ -164,12 +165,29 @@ infogr3.estado <- filter(infogripe3, Tipo == "Estado"&
            upper = limite.superior.da.estimativa,
            sigla.estado = sigla) %>%
     mutate(semana = ifelse(Ano.epidemiológico == 2021, semana + 53, semana))
+
+################################################################################
+## Nowcasting por diferença de bases, por Leo Bastos
+################################################################################
+difsragh <- read.csv("https://gitlab.procc.fiocruz.br/lsbastos/nowcasting_data/-/raw/master/csvs/tbl.UF.h.srag.csv") %>%
+    filter(Estado!="Brasil") %>%
+    mutate(semana = date2week(dt_event, numeric = TRUE),
+           semana = ifelse ( year(dt_event) == 2021,  semana + 53 , semana)) %>%
+    dplyr::rename(
+               casos.obs = n,
+               lower = LI,
+               casos.est = Median,
+               upper = LS,
+               sigla.estado = Estado)
+
+
+
 ################################################################################
 ## Funcoes para graficos
 ################################################################################
 
 
-## Funcao para graficos semanais
+## Funcao para graficos semanais de SRAG: todos os filtros do Infogripe e o nowcasting Observatório
 plot.seman <- function(sigla){
     ##max.sem <- observ.data.max$sem.max[observ.data.max$estado==sigla]
     data1  <-  infogr.estado %>% filter(sigla.estado == sigla) 
@@ -201,6 +219,33 @@ plot.seman <- function(sigla){
     p1
 }
 
+## SRAG sem filtros Infogripe, nowcasting por dif de bases e Observatório
+plot.seman2 <- function(sigla){
+    data1  <-  infogr.estado %>% filter(sigla.estado == sigla) 
+    data2 <- observ.seman %>% filter(estado == sigla)
+    data3  <-  difsragh %>% filter(sigla.estado == sigla)
+    p1 <-
+        ggplot(data1, aes(semana)) +
+        geom_line(aes(y=casos.obs, color = "InfoGripe sem filtros"), lty =2 ) +
+        geom_line(aes(y=casos.est, color = "InfoGripe sem filtros")) +
+        geom_ribbon(aes(ymin = lower, ymax = upper, fill= "InfoGripe sem filtros"), alpha =0.2) +
+        geom_line(data = data3, aes(y=casos.obs, color = "Dif. bases"), lty =2) +
+        geom_line(data = data3, aes(y=casos.est, color = "Dif. bases")) +
+        geom_ribbon(data=data3, aes(ymin = lower, ymax = upper, fill = "Dif. bases"), alpha =0.2) +
+        geom_line(data = data2, aes(y=n.casos, color= "Observatório"), lty =2 ) +
+        geom_line(data = data2, aes(y=estimate, color= "Observatório")) +
+        geom_ribbon(data = data2, aes(ymin = lower.merged.pred, ymax = upper.merged.pred, fill= "Observatório"),
+                    alpha =0.2) +
+        xlab("Semana epidemiológica dos sintomas") +
+            ylab("N de casos semanais SRAG") +
+        scale_color_manual(name="", values = 4:2) +
+        scale_fill_manual(name = "", values = 4:2) +
+        ggtitle(sigla) +
+        theme_bw() +
+        theme(legend.position = c(0.15, 0.8))
+    p1
+}
+
 
 ################################################################################
 ## Gera o relatorio
@@ -210,7 +255,7 @@ for(regiao in unique(dic.estados$regiao)){
     cat("# Região", regiao, "\n \n")
     for(sigla in sort(dic.estados$sigla[dic.estados$regiao == regiao])){
         cat("##", dic.estados$nome[dic.estados$sigla == sigla], "\n \n")
-        cat("```{r } \n plot.seman(\"",sigla,"\") \n``` \n \n", sep="")
+        cat("```{r } \n plot.seman2(\"",sigla,"\") \n``` \n \n", sep="")
     }
 }
 sink()

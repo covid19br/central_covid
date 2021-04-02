@@ -148,3 +148,20 @@ png("ocupacao_UTI.png", width =600)
     ylim(c(0,100)) +
     facet_geo(~nome_drs, grid=grid_drs3)
 dev.off()
+
+
+## N internaçãoes em  UTI
+## No repo do SEADe está
+## PI: "Média móvel para 7 dias do Pacientes Internados em Leitos de UTI Destinados para COVID-19 no dia". Me parece ser n de internados em cada dia, não n de novas internações. Mas não é 100% claro, né. Verificar em alguma documentação?
+png("internados_UTI.png", width =600)
+    dados_seade %>%
+    filter(nome_drs != "Estado de São Paulo") %>%
+    ggplot() +
+    geom_line(aes(x=datahora, y=pacientes_uti_mm7d)) +
+    scale_x_date(date_breaks = "3 month", date_labels = "%b") +
+    labs(x="",
+         y="Média móvel internados em UTI",
+         title="Média móvel de 7 dias de internados em UTI",
+         caption=caption) +
+    facet_geo(~nome_drs, grid=grid_drs3, scale = "free")
+dev.off()

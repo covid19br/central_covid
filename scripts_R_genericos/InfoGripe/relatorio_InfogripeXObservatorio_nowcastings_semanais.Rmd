@@ -1,5 +1,5 @@
 ---
-title: "Nowcasting de SRAG por Estado: InforGripe e Observatório COVID-19 BR"
+title: "Nowcasting de SRAG por Estado: InfoGripe e Observatório COVID-19 BR"
 date: "`r Sys.Date()`"
 output:
   rmdformats::readthedown:
@@ -26,7 +26,7 @@ opts_knit$set(width=75)
 
 # Introdução
 
-Comparação dos nowcastings de casos de SRAG do Observatório COVID-19 BR sem filtros de sintoma com nowcastings do InfoGripe, também sem filtros de sintoma e com diferentes tipos de filtros. 
+Comparação dos nowcastings de casos de SRAG do Observatório COVID-19 BR sem filtros de sintoma com nowcastings do InfoGripe, também sem filtros de sintoma e o novo nowcasting em teste, feito a partir de comparação de versões da base SIVEP. 
 
 Todos com nowcasting de casos de SRAG agregados por semana.
 
