@@ -50,8 +50,12 @@ prepara.sivep <- function(sivep, inq.idade, srag = FALSE, ...){
 #' @param PopTot tamanho da população total amostrada.
 #' @param inq.data data final do inquérito
 #' @param inq.preval prevalência estimada pelo inquérito
-#' @param lista lista com os dados e nowcasting, retornada pela função prepara.sivep
-projeta.inquerito <- function(Npop, inq.data, inq.preval, lista) {
+#' @param data.proj data para a qual projetar a pervalência. Se não
+#'     fornecida utiliza-se a data mais recente no objeto indicado
+#'     pleo argumento lista, abaixo.
+#' @param lista lista com os dados e nowcasting, retornada pela função
+#'     prepara.sivep
+projeta.inquerito <- function(Npop, inq.data, inq.preval, data.proj, lista) {
     ## uso como referencia a data do fim da amostra menos 7 dias (tempo de resposta imune)
     ref.data <- inq.data - 7
     ## Total de infectados e recuperados no inquerito
@@ -78,9 +82,19 @@ projeta.inquerito <- function(Npop, inq.data, inq.preval, lista) {
     ##casos.ihr <- merge.zoo(casos.ihr, n.not= zoo(lista$n.not[,2],lista$n.not[,1])) ## Removido por enquanto, era pra junta n de casos notificados em cada data, mas a prepara.dados2 nao está guardando n de casos por data de notificacao
     ## Prevalencias nas datas mais recentes na sivep(veja tb os graficos, abaixo)
     ## Usando IFR
-    prev.atual.ifr <- ob.ifr$IR[ob.ifr$IR==max(ob.ifr$IR, na.rm=TRUE)] / Npop
+    if(missing(data.proj))
+        criterio <- time(ob.ifr)[ob.ifr$IR==max(ob.ifr$IR, na.rm=TRUE)]
+    else
+        criterio <- max(time(ob.ifr)[time(ob.ifr)<=data.proj])
+    prev.atual.ifr <- ob.ifr$IR[time(ob.ifr)==criterio] / Npop
+    cat("\n Prevalência com IFR projetada para ", format(criterio, "%d de %B de %Y"), "\n")
     ## Usando o IHR
-    prev.atual.ihr <- casos.ihr$IR[casos.ihr$IR==max(casos.ihr$IR, na.rm=TRUE)] / Npop
+    if(missing(data.proj))
+        criterio <- time(casos.ihr)[casos.ihr$IR==max(casos.ihr$IR, na.rm=TRUE)]
+    else
+        criterio <- max(time(casos.ihr)[time(casos.ihr)<=data.proj])
+    prev.atual.ihr <- casos.ihr$IR[time(casos.ihr) == criterio] / Npop
+    cat("\n Prevalência com IHR projetada para ", format(criterio, "%d de %B de %Y"), "\n")
     ## Guarda todos os resultados em uma lista
     list(lista.dados = lista,
          Npop=Npop,
