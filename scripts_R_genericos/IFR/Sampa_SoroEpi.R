@@ -87,6 +87,33 @@ tabela.MSP.10 <- tab1(MSP.proj.10.low, MSP.proj.10, MSP.proj.10.up)
 rownames(tabela.MSP.10)  <- c("IC low", "Média", "IC up")
 
 
+## Prevalencia estimada para 03/01/2021 ##
+## Estimativa media
+## Data para projetar a prevalencia
+target.data <- as.Date("2021-01-03")
+## Projecoes
+MSP.proj.01 <- projeta.inquerito(Npop = Npop.MSP,
+                            inq.data = as.Date("2020-06-24"),
+                            inq.preval = 0.114,
+                            data.proj = target.data,
+                            lista = lista.MSP)
+## Limite inferior do IC
+MSP.proj.01.low <- projeta.inquerito(Npop = Npop.MSP,
+                            inq.data = as.Date("2020-06-24"),
+                            inq.preval = 0.092,
+                            data.proj = target.data,
+                            lista = lista.MSP)
+## Limite superior do IC
+MSP.proj.01.up <- projeta.inquerito(Npop = Npop.MSP,
+                            inq.data = as.Date("2020-06-24"),
+                            inq.preval = 0.136,
+                            data.proj = target.data,
+                            lista = lista.MSP)
+## Uma tabela com os valores de prevalência atuais projetados com cada uma das prevalencias acima
+tabela.MSP.01 <- tab1(MSP.proj.01.low, MSP.proj.01, MSP.proj.01.up)
+rownames(tabela.MSP.01)  <- c("IC low", "Média", "IC up")
+
+
 ## Tabelas para exportar
 ## Projeções para 01/12/2020
 ## por IFR
@@ -107,5 +134,13 @@ kable(tabela.MSP.10[,c("prevalencia", "IHR", "prev.proj.IHR" )],
       digits = c(1,3,1),
       col.names = c("Prevalência %", "IHR %", "Prevalência projetada"))
 
-
+## Projeções para 03/01/2020
+## por IFR
+kable(tabela.MSP.01[,c("prevalencia", "IFR", "prev.proj.IFR" )],
+      digits = c(1,3,1),
+      col.names = c("Prevalência %", "IFR %", "Prevalência projetada"))
+## por IHR
+kable(tabela.MSP.01[,c("prevalencia", "IHR", "prev.proj.IHR" )],
+      digits = c(1,3,1),
+      col.names = c("Prevalência %", "IHR %", "Prevalência projetada"))
 
