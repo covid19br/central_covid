@@ -23,6 +23,7 @@ MSPdata <- read.sivep(dir = data.dir, escala = "municipio",sigla = "SP",
 ## Calculo do nowcasting de obitos e casos confirmados
 lista.MSP <- prepara.sivep(MSPdata, inq.idade = 18, trim.now = 7, window = 40)
 
+
 ##  Projecoes do n de infectados e infectados + resistentes e da prevalência atual
 ## Populacao maior que 17 anos em 2020
 ## Usando a populacao estimada em 2020 por faixa etaria, projecoes SEADE
@@ -93,7 +94,7 @@ rownames(tabela.MSP.10)  <- c("IC low", "Média", "IC up")
 target.data <- as.Date("2021-01-03")
 ## Projecoes
 MSP.proj.01 <- projeta.inquerito(Npop = Npop.MSP,
-                            inq.data = as.Date("2020-06-24"),
+                                 inq.data = as.Date("2020-06-24"),
                             inq.preval = 0.114,
                             data.proj = target.data,
                             lista = lista.MSP)
@@ -115,17 +116,10 @@ rownames(tabela.MSP.01)  <- c("IC low", "Média", "IC up")
 
 
 ## Tabelas para exportar
-## Projeções para 01/12/2020
-## por IFR
-kable(tabela.MSP.12[,c("prevalencia", "IFR", "prev.proj.IFR" )],
-      digits = c(1,3,1),
-      col.names = c("Prevalência %", "IFR %", "Prevalência projetada"))
-## por IHR
-kable(tabela.MSP.12[,c("prevalencia", "IHR", "prev.proj.IHR" )],
-      digits = c(1,3,1),
-      col.names = c("Prevalência %", "IHR %", "Prevalência projetada"))
 ## Projeções para 01/10/2020
 ## por IFR
+sink("Sampa_SoroEpi.out")
+cat("\n Projeções para 01/10/2020 \n")
 kable(tabela.MSP.10[,c("prevalencia", "IFR", "prev.proj.IFR" )],
       digits = c(1,3,1),
       col.names = c("Prevalência %", "IFR %", "Prevalência projetada"))
@@ -134,8 +128,20 @@ kable(tabela.MSP.10[,c("prevalencia", "IHR", "prev.proj.IHR" )],
       digits = c(1,3,1),
       col.names = c("Prevalência %", "IHR %", "Prevalência projetada"))
 
+## Projeções para 01/12/2020
+## por IFR
+cat("\n Projeções para 01/12/2020 \n")
+kable(tabela.MSP.12[,c("prevalencia", "IFR", "prev.proj.IFR" )],
+      digits = c(1,3,1),
+      col.names = c("Prevalência %", "IFR %", "Prevalência projetada"))
+## por IHR
+kable(tabela.MSP.12[,c("prevalencia", "IHR", "prev.proj.IHR" )],
+      digits = c(1,3,1),
+      col.names = c("Prevalência %", "IHR %", "Prevalência projetada"))
+
 ## Projeções para 03/01/2020
 ## por IFR
+cat("\n Projeções para 03/01/2021 \n")
 kable(tabela.MSP.01[,c("prevalencia", "IFR", "prev.proj.IFR" )],
       digits = c(1,3,1),
       col.names = c("Prevalência %", "IFR %", "Prevalência projetada"))
@@ -143,4 +149,6 @@ kable(tabela.MSP.01[,c("prevalencia", "IFR", "prev.proj.IFR" )],
 kable(tabela.MSP.01[,c("prevalencia", "IHR", "prev.proj.IHR" )],
       digits = c(1,3,1),
       col.names = c("Prevalência %", "IHR %", "Prevalência projetada"))
-
+sink()
+## salva os IHR e IFR
+write.csv(tabela.MSP.01[,c("IFR", "IHR")]/100,file="IHR_IFR_casos_confirmados_SoroEpi_fase2.csv")

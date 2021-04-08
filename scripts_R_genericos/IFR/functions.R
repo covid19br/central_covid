@@ -47,7 +47,7 @@ prepara.sivep <- function(sivep, inq.idade, srag = FALSE, ...){
     return(list(dados = dados, casos = casos.merge, obitos=obitos.merge))
 }
 
-#' @param PopTot tamanho da população total amostrada.
+#' @param Npop tamanho da população amostrada pelo inquérito.
 #' @param inq.data data final do inquérito
 #' @param inq.preval prevalência estimada pelo inquérito
 #' @param data.proj data para a qual projetar a pervalência. Se não
@@ -59,23 +59,23 @@ projeta.inquerito <- function(Npop, inq.data, inq.preval, data.proj, lista) {
     ## uso como referencia a data do fim da amostra menos 7 dias (tempo de resposta imune)
     ref.data <- inq.data - 7
     ## Total de infectados e recuperados no inquerito
-    inq.IR <- Npop * inq.preval    
-    ## Calculo do IFR
-    ## Separando data frame para facilitar
-    ob.ifr <- lista$obitos$now.pred.zoo
-    ## IFR
-    ref.data2 <- max(time(ob.ifr)[time(ob.ifr)<=ref.data])
-    IFR <- as.numeric(ob.ifr$estimate.merged.c[time(ob.ifr)==ref.data2] / inq.IR)
-    ## calculo do n de pessoas no compartimento IR e I a cada tempo
+        inq.IR <- Npop * inq.preval    
+        ## Calculo do IFR
+        ## Separando data frame para facilitar
+        ob.ifr <- lista$obitos$now.pred.zoo
+        ## IFR
+        ref.data2 <- max(time(ob.ifr)[time(ob.ifr)<=ref.data])
+        IFR <- as.numeric(ob.ifr$estimate.merged.c[time(ob.ifr)==ref.data2] / inq.IR)
+        ## calculo do n de pessoas no compartimento IR e I a cada tempo
     ob.ifr$IR  <- ob.ifr$estimate.merged.c / IFR
     ob.ifr$I <- c(ob.ifr$IR[1], diff(ob.ifr$IR))
-    ## Calculo do IHR e do n de novas infeccoes por dia
-    ## Separando data frame para facilitar
-    casos.ihr <- lista$casos$now.pred.zoo
-    ## IHR
-    ## data de referencia
-    ref.data2 <- max(time(casos.ihr)[time(casos.ihr)<=ref.data])
-    IHR <- as.numeric(casos.ihr$estimate.merged.c[time(casos.ihr)==ref.data2] / inq.IR)
+        ## Calculo do IHR e do n de novas infeccoes por dia
+        ## Separando data frame para facilitar
+        casos.ihr <- lista$casos$now.pred.zoo
+        ## IHR
+        ## data de referencia
+        ref.data2 <- max(time(casos.ihr)[time(casos.ihr)<=ref.data])
+        IHR <- as.numeric(casos.ihr$estimate.merged.c[time(casos.ihr)==ref.data2] / inq.IR)
     ## calculo do n de pessoas no compartimento IR e I a cada tempo
     casos.ihr$IR  <- casos.ihr$estimate.merged.c / IHR
     casos.ihr$I <- c(casos.ihr$IR[1], diff(casos.ihr$IR))
@@ -102,6 +102,52 @@ projeta.inquerito <- function(Npop, inq.data, inq.preval, data.proj, lista) {
          ref.data = ref.data,
          inq.IR=inq.IR,
          inq.preval = inq.preval,
+         ob.ifr = ob.ifr,
+         casos.ihr = casos.ihr,
+         IFR = IFR, 
+         IHR = IHR,
+         prev.atual.ihr = prev.atual.ihr,
+         prev.atual.ifr = prev.atual.ifr)
+}
+
+#' @param Npop tamanho da população total amostrada.
+#' @param IHR Infection-hospitalization rate, em unidades de proporção (não de %)
+#' @param IFR Infection-fatality rate, em unidades de proporção (não de %)
+#' @param data.proj data para a qual projetar a pervalência. Se não
+#'     fornecida utiliza-se a data mais recente no objeto indicado
+#'     pleo argumento lista, abaixo.
+#' @param lista lista com os dados e nowcasting, retornada pela função
+#'     prepara.sivep
+projeta.IHR <- function(Npop, IHR, IFR, data.proj, lista) {
+    ## Separando data frame para facilitar
+    ob.ifr <- lista$obitos$now.pred.zoo
+    ob.ifr$IR  <- ob.ifr$estimate.merged.c / IFR
+    ob.ifr$I <- c(ob.ifr$IR[1], diff(ob.ifr$IR))
+    ## Calculo do IHR e do n de novas infeccoes por dia
+    ## Separando data frame para facilitar
+    casos.ihr <- lista$casos$now.pred.zoo
+    ## calculo do n de pessoas no compartimento IR e I a cada tempo
+    casos.ihr$IR  <- casos.ihr$estimate.merged.c / IHR
+    casos.ihr$I <- c(casos.ihr$IR[1], diff(casos.ihr$IR))
+    ## Prevalencias nas datas mais recentes na sivep(veja tb os graficos, abaixo)
+    ## Usando IFR
+    if(missing(data.proj))
+        criterio <- time(ob.ifr)[ob.ifr$IR==max(ob.ifr$IR, na.rm=TRUE)]
+    else
+        criterio <- max(time(ob.ifr)[time(ob.ifr)<=data.proj])
+    prev.atual.ifr <- ob.ifr$IR[time(ob.ifr)==criterio] / Npop
+    cat("\n Prevalência com IFR projetada para ", format(criterio, "%d de %B de %Y"), "\n")
+    ## Usando o IHR
+    if(missing(data.proj))
+        criterio <- time(casos.ihr)[casos.ihr$IR==max(casos.ihr$IR, na.rm=TRUE)]
+    else
+        criterio <- max(time(casos.ihr)[time(casos.ihr)<=data.proj])
+    prev.atual.ihr <- casos.ihr$IR[time(casos.ihr) == criterio] / Npop
+    cat("\n Prevalência com IHR projetada para ", format(criterio, "%d de %B de %Y"), "\n")
+    ## Guarda todos os resultados em uma lista
+    list(lista.dados = lista,
+         Npop = Npop,
+         data.proj = data.proj,
          ob.ifr = ob.ifr,
          casos.ihr = casos.ihr,
          IFR = IFR, 
@@ -145,9 +191,28 @@ tab1 <- function(..., nomes = FALSE){
                  prevalencia =inq.preval*100,
                  IFR = IFR*100,
                  IHR = IHR*100,
-                 data.proj.IHR= max(time(casos.ihr)),
+                 data.proj.IHR= time(prev.atual.ihr),
                  prev.proj.IHR = prev.atual.ihr*100,
-                 data.proj.IFR =max(time(ob.ifr)),
+                 data.proj.IFR = time(prev.atual.ihr),
+                 prev.proj.IFR =prev.atual.ifr*100))
+    }
+    ldply(lista, f1 )
+    
+}
+
+## tabela com estimativas e projecoes de prevalencia
+tab2 <- function(..., nomes = FALSE){
+    lista <- list(...)
+    if(nomes)
+        names(lista)  <- as.list(match.call())[-1]
+    f1 <- function(x){
+        with(x,
+             data.frame(
+                 IFR = IFR*100,
+                 IHR = IHR*100,
+                 data.proj.IHR= time(prev.atual.ihr),
+                 prev.proj.IHR = prev.atual.ihr*100,
+                 data.proj.IFR = time(prev.atual.ifr),
                  prev.proj.IFR =prev.atual.ifr*100))
     }
     ldply(lista, f1 )

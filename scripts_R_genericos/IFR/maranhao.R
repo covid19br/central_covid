@@ -88,19 +88,19 @@ window(MA.srag.ago$casos.ihr, as.Date("2020-10-30"),as.Date("2020-10-30"))$IR / 
 ## Graficos
 ################################################################################
 ## Grafico de N de novas infecções por dia, estimados pelo IFF e pelo IHR
-png("N_novas_infeccoes_calculadas_IHR_mai_2020.png", width = 650)
-p1(MA.mai)
-dev.off()
-png("N_novas_infeccoes_calculadas_IHR_out_2020.png", width = 650)
-p1(MA.out)
-dev.off()
-## Grafico de infectados + resistentes, estimador pelo IFF e IHR
-png("Acumuladoinfeccoes_calculadas_IHR_mai_2020.png", width = 650)
-p2(MA.mai)
-dev.off()
+## png("N_novas_infeccoes_calculadas_IHR_mai_2020.png", width = 650)
+## p1(MA.mai)
+## dev.off()
+## png("N_novas_infeccoes_calculadas_IHR_out_2020.png", width = 650)
+## p1(MA.out)
+## dev.off()
+## ## Grafico de infectados + resistentes, estimador pelo IFF e IHR
+## png("Acumuladoinfeccoes_calculadas_IHR_mai_2020.png", width = 650)
+## p2(MA.mai)
+## dev.off()
 
-png("Acumuladoinfeccoes_calculadas_IHR_out_2020.png", width = 650)
-p2(MA.out)
-dev.off()
+## png("Acumuladoinfeccoes_calculadas_IHR_out_2020.png", width = 650)
+## p2(MA.out)
+## dev.off()
 
 
