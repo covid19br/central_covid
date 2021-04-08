@@ -135,7 +135,7 @@ p_estado3 <- dados_seade %>%
 
 
 ## Ocupação
-png("ocupacao_UTI.png", width =600)
+png("ocupacao_UTI.png", width =800)
     dados_seade %>%
     filter(nome_drs != "Estado de São Paulo") %>%
     ggplot() +
@@ -153,7 +153,7 @@ dev.off()
 ## N internaçãoes em  UTI
 ## No repo do SEADe está
 ## PI: "Média móvel para 7 dias do Pacientes Internados em Leitos de UTI Destinados para COVID-19 no dia". Me parece ser n de internados em cada dia, não n de novas internações. Mas não é 100% claro, né. Verificar em alguma documentação?
-png("internados_UTI.png", width =600)
+png("internados_UTI.png", width =800)
     dados_seade %>%
     filter(nome_drs != "Estado de São Paulo") %>%
     ggplot() +
