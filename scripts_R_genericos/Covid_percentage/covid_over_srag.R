@@ -275,11 +275,13 @@ obitos_joint <- obitos_joint %>%
          lower_covid_over_srag = lower.merged.pred.covid/lower.merged.pred.srag) %>% ## PRECISA VERIFICAR ESSA CONTA!!##
   as.data.frame()
 
-p.casos.nowcasted<-casos_joint %>% 
-  filter(UF != "AC") %>%
-  ggplot(aes(x = data, 
-             fill = covid_over_srag, 
-             y = estimate.merged.srag))+
+p.casos.nowcasted<-
+  # casos_joint %>% 
+  # filter(UF != "AC") %>%
+  df.srag.diario.cumsum %>% 
+  ggplot(aes(x = data,
+             # fill = covid_over_srag,
+             y = Total_srag))+
   geom_col(width = 7.0, position = position_dodge())+
   scale_fill_gradientn(name = "SRAG by Covid/SRAG",
                        colors = pal_wes)+
