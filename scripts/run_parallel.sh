@@ -13,13 +13,21 @@ if [ -f $RUNFILE ]; then
 fi
 touch $RUNFILE
 
-METAREPO=/mnt/data/Renato/central_covid
+source functions.sh
+
+METAREPO=`get_abspath ..`
 # script assume que o meta-repo tem a estrutura usual:
 # nowcasting: repo nowcasting
 # site: repo site
 
 data=$1
 task=$2
+
+if [ ${#@} -gt 2 ]; then
+    NPJOBS=$3
+else
+    NPJOBS=9
+fi
 
 if [ $task == "todos" ]; then
     LISTA_JOBS=lista_jobs.txt
@@ -78,8 +86,8 @@ popd
 
 cd $METAREPO/scripts
 date
-echo "Rodando: parallel -a $LISTA_JOBS --colsep ' ' -j 9 ./single_job.sh $DATAFOLDER $data"
-parallel -a $LISTA_JOBS --colsep ' ' -j 9 ./single_job.sh $DATAFOLDER $data
+echo "Rodando: parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DATAFOLDER $data"
+parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DATAFOLDER $data
 
 if [[ $task == "outros" || $task == "todos" ]]; then
     rm ${DATAFOLDER}/SRAGHospitalizado_${data}.csv
