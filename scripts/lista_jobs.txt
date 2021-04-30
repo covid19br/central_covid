@@ -79,6 +79,7 @@ municipio RS 431490 Porto_Alegre
 municipio SC 420540 Florianopolis
 municipio SE 280030 Aracaju
 municipio SP 350160 Americana
+municipio SP 350320 Araraquara
 municipio SP 350570 Barueri
 municipio SP 350750 Botucatu
 municipio SP 350950 Campinas
@@ -88,6 +89,7 @@ municipio SP 352530 Jau
 municipio SP 352590 Jundiai
 municipio SP 352940 Maua
 municipio SP 353440 Osasco
+municipio SP 354060 Porto_Feliz
 municipio SP 354340 Ribeirao_Preto
 municipio SP 354580 Santa_Barbara_dOeste
 municipio SP 354780 Santo_Andre
