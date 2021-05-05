@@ -32,7 +32,7 @@ if [ $? -eq 0 ]; then
 fi
 
 # make starter commit
-git commit --allow-empty ":robot: automatic nowcasting started $date" && git push
+git commit --allow-empty -m ":robot: automatic nowcasting started $date" && git push
 
 # run the stuff
 cd $METAREPO/scripts
