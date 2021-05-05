@@ -12,7 +12,7 @@ cd $METAREPO/site
 git pull --rebase || (git rebase --abort ; echo "Erro no pull, saindo..."; exit 1)
 trigger=`git log --since=yesterday --pretty=oneline | grep "trigger nowcasting update"`
 
-if [ -z $trigger ]; then
+if [ -z "$trigger" ]; then
     echo "Sem commit de disparo ainda, saindo..."
     exit 0
 fi
