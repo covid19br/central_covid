@@ -85,7 +85,7 @@ if __name__ == '__main__':
                    git push &&
                    cd {site_folder} &&
                    git pull --rebase &&
-                   git commit --allow-empty "[auto] trigger nowcasting update {data}" &&
+                   git commit --allow-empty -m "[auto] trigger nowcasting update {data}" &&
                    git push'''.format(folder=output_folder,
                                       outfile=output_fname,
                                       data=newfile20[0].strftime("%Y_%m_%d"),
