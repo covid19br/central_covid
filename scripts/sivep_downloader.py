@@ -78,12 +78,18 @@ if __name__ == '__main__':
             folder=output_folder, outfile=output_fname))
         # add to git and let the other robots work
         if gitUpdate:
+            site_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../site')
             os.system('''cd {folder} &&
                    git add {outfile}.xz &&
                    git commit -m "[auto] base SIVEP-Gripe de {data}" &&
+                   git push &&
+                   cd {site_folder} &&
+                   git pull --rebase &&
+                   git commit --allow-empty "[auto] trigger nowcasting update {data}" &&
                    git push'''.format(folder=output_folder,
-                                    outfile=output_fname,
-                                    data=newfile20[0].strftime("%Y_%m_%d")))
+                                      outfile=output_fname,
+                                      data=newfile20[0].strftime("%Y_%m_%d"),
+                                      site_folder=site_folder))
             nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
             os.system('''cd {nowcast_folder} &&
                     Rscript checa_base.R --updateGit TRUE'''.format(nowcast_folder = nowcast_folder))
