@@ -30,7 +30,7 @@ dic.estados <- merge(dic.estados, data.frame(id.regiao = 1:5, regiao = c("Norte"
 ################################################################################
 dir1 <- "../../site/dados/estado/"
 siglas.estado <- dir(dir1)
-dir2 <- paste0(dir1,siglas.estado[1],"/tabelas_nowcasting_para_grafico/")
+dir2 <- paste0(dir1, "DF", "/tabelas_nowcasting_para_grafico/")
 data <- get.last.date(dir2)
 
 # last report is more recent than last data
