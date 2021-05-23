@@ -7,7 +7,7 @@ last_update=`git log --pretty=oneline output/relatorio_InfogripeXObservatorio_no
 
 if [ -z $last_update ]; then
     # no robots before:
-    date="2021_05_14"
+    date="2021_05_22"
 else
     # get date from the commit message
     date=`echo $last_update | sed 's/.*nowcastings \(20[0-9][0-9]_[0-9][0-9]_[0-9][0-9]\).*/\1/g'`
@@ -24,8 +24,8 @@ if [ $? -eq 0 ]; then
     git commit output/relatorio_InfogripeXObservatorio_nowcastings_semanais.html -m ":robot: atualizando relatório comparação de nowcastings `date +%Y_%m_%d`" &&
     git push
     emails 
-    echo -e "O relatório de comparação de nowcastings foi atualizado.\n\n
-Ele já está disponível para download no link https://github.com/covid19br/central_covid/raw/master/scripts_R_genericos/InfoGripe/output/relatorio_InfogripeXObservatorio_nowcastings_semanais.html.\n\n
+    echo -e "O relatório de comparação de nowcastings foi atualizado.\n
+Ele já está disponível para download no link https://github.com/covid19br/central_covid/raw/master/scripts_R_genericos/InfoGripe/output/relatorio_InfogripeXObservatorio_nowcastings_semanais.html.\n
 Atenciosamente,\nRobot mailer" |
     mail -s "relatório de comparação de nowcastings atualizado" $(<emails.txt)
 fi
