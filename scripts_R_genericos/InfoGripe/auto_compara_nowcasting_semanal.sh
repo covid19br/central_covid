@@ -5,7 +5,7 @@ git pull --ff-only --commit || (echo "Erro no pull, saindo..."; exit 1)
 
 last_update=`git log --pretty=oneline output/relatorio_InfogripeXObservatorio_nowcastings_semanais.html | grep ":robot: atualizando relatório comparação de nowcastings" | head -n 1`
 
-if [ -z $last_update ]; then
+if [ -z "$last_update" ]; then
     # no robots before:
     date="2021_05_22"
 else
