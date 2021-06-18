@@ -16,6 +16,7 @@ if (sys.nframe() == 0L) {
     if (length(args) > 1 && args[1] == "--auto") {
         last_update <- args[2]
         AUTO <- TRUE
+        print(paste('data de atualização:', last_update))
     }
 }
 
@@ -32,6 +33,7 @@ dir1 <- "../../site/dados/estado/"
 siglas.estado <- dir(dir1)
 dir2 <- paste0(dir1, "DF", "/tabelas_nowcasting_para_grafico/")
 data <- get.last.date(dir2)
+print(paste('data nowcasting Obs:', data))
 
 # last report is more recent than last data
 if (AUTO && last_update > data)
@@ -86,6 +88,7 @@ observ.data.max <- observ.seman %>%
 infogripe <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_sintomas.csv")
 ##infogripe$data.de.publicação <- as.Date(infogripe$data.de.publicação)
 infogr.last.date <- format(as.Date(max(infogripe$data.de.publicação)), format = "%Y_%m_%d")
+print(paste('data nowcasting InfoGripe:', infogr.last.date))
 # last report is more recent than latest data
 if (AUTO && last_update > infogr.last.date)
     quit(save = "no", status = 1)
@@ -201,6 +204,7 @@ difsragh <- read.csv("https://gitlab.procc.fiocruz.br/lsbastos/nowcasting_data/-
                sigla.estado = Estado)
 
 difsragh.last.date <- format(as.Date(max(difsragh$dt_event)), format = "%Y_%m_%d")
+print(paste('data nowcasting diff bases:', difsragh.last.date))
 # last report is more recent than latest data
 if (AUTO && last_update > difsragh.last.date)
     quit(save = "no", status = 1)
