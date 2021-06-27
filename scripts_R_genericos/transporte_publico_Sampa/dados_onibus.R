@@ -105,7 +105,7 @@ onibus.19.21 %>%
     ylab("N de passageiros")
 
 onibus.sem %>%
-    fortify() %>%
+    ##fortify() %>%
     ggplot(aes(semana.dia1, mean.pass)) +
     geom_line(col="grey") +
     geom_point() +
