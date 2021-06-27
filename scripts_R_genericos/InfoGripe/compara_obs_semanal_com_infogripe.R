@@ -9,6 +9,17 @@ library(rmarkdown)
 source("../../nowcasting/fct/get.last.date.R")
 set_week_start("Sunday")
 
+## check if this is being run automatically to auto-update
+AUTO <- FALSE
+if (sys.nframe() == 0L) {
+    args = commandArgs(trailingOnly=TRUE)
+    if (length(args) > 1 && args[1] == "--auto") {
+        last_update <- args[2]
+        AUTO <- TRUE
+        print(paste('data de atualização:', last_update))
+    }
+}
+
 ## Dicionario de nomes de estados, do InfoGripe
 dic.territ <- read.csv("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/base_territorial/DICIONARIO_territorios_id.csv")
 dic.estados <- filter(dic.territ, tipo_id ==1 & id != 99)
@@ -20,8 +31,14 @@ dic.estados <- merge(dic.estados, data.frame(id.regiao = 1:5, regiao = c("Norte"
 ################################################################################
 dir1 <- "../../site/dados/estado/"
 siglas.estado <- dir(dir1)
-dir2 <- paste0(dir1,siglas.estado[1],"/tabelas_nowcasting_para_grafico/")
+dir2 <- paste0(dir1, "DF", "/tabelas_nowcasting_para_grafico/")
 data <- get.last.date(dir2)
+print(paste('data nowcasting Obs:', data))
+
+# last report is more recent than last data
+if (AUTO && last_update > data)
+    quit(save = "no", status = 1)
+
 tmp <- read.csv(paste0(dir2,"nowcasting_diario_srag_",data,".csv"))
 tmp$estado <- siglas.estado[1]
 observ.now <- tmp[,c(8,1:7)]
@@ -70,6 +87,12 @@ observ.data.max <- observ.seman %>%
 ## Leitura 
 infogripe <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_sintomas.csv")
 ##infogripe$data.de.publicação <- as.Date(infogripe$data.de.publicação)
+infogr.last.date <- format(as.Date(max(infogripe$data.de.publicação)), format = "%Y_%m_%d")
+print(paste('data nowcasting InfoGripe:', infogr.last.date))
+# last report is more recent than latest data
+if (AUTO && last_update > infogr.last.date)
+    quit(save = "no", status = 1)
+
 ## Filtra apenas os dados de casos de srag do estado
 infogr.estado <- filter(infogripe, Tipo == "Estado"&
                                    Ano.epidemiológico > 2019 &
@@ -180,7 +203,11 @@ difsragh <- read.csv("https://gitlab.procc.fiocruz.br/lsbastos/nowcasting_data/-
                upper = LS,
                sigla.estado = Estado)
 
-
+difsragh.last.date <- format(as.Date(max(difsragh$dt_event)), format = "%Y_%m_%d")
+print(paste('data nowcasting diff bases:', difsragh.last.date))
+# last report is more recent than latest data
+if (AUTO && last_update > difsragh.last.date)
+    quit(save = "no", status = 1)
 
 ################################################################################
 ## Funcoes para graficos
@@ -263,3 +290,7 @@ sink()
 save.image()
 
 render("relatorio_InfogripeXObservatorio_nowcastings_semanais.Rmd", output_dir="output")
+
+# superfluo?!
+if (AUTO)
+    quit(save = "no", status = 0)

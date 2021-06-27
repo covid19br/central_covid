@@ -73,7 +73,7 @@ if __name__ == '__main__':
         get_file(newfile21[1], outfile + '.21')
         os.system('''cd {folder} &&
                    tail -n +2 {outfile}.21 >> {outfile} &&
-                   xz -T4 {outfile} &&
+                   xz -9 -T4 {outfile} &&
                    rm {outfile}.21'''.format(
             folder=output_folder, outfile=output_fname))
         # add to git and let the other robots work
