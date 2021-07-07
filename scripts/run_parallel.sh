@@ -40,6 +40,13 @@ if [ $task == "todos" ]; then
         exit 1
     fi
     unxz -T 8 SRAGHospitalizado_${data}.csv.xz
+    # a partir de 07/07/2021 a base vem quebrada
+    wget "https://github.com/covid19br/central_covid/raw/master/dados/SIVEP-Gripe/SRAGHospitalizado_${data}.csv.21.xz"
+    if [ $? == 0 ]; then
+        unxz -T 8 SRAGHospitalizado_${data}.csv.21.xz
+        tail -n +2 SRAGHospitalizado_${data}.csv.21 >> SRAGHospitalizado_${data}.csv
+        rm SRAGHospitalizado_${data}.csv.21
+    fi
     #rm SRAGHospitalizado_${data}.zip
 elif [ $task == "outros" ]; then
     LISTA_JOBS=lista_jobs_outros.txt
@@ -52,6 +59,13 @@ elif [ $task == "outros" ]; then
         exit 1
     fi
     unxz -T 8 SRAGHospitalizado_${data}.csv.xz
+    # a partir de 07/07/2021 a base vem quebrada
+    wget "https://github.com/covid19br/central_covid/raw/master/dados/SIVEP-Gripe/SRAGHospitalizado_${data}.csv.21.xz"
+    if [ $? == 0 ]; then
+        unxz -T 8 SRAGHospitalizado_${data}.csv.21.xz
+        tail -n +2 SRAGHospitalizado_${data}.csv.21 >> SRAGHospitalizado_${data}.csv
+    fi
+
     #rm SRAGHospitalizado_${data}.zip
 elif [ $task == "SP" ]; then
     LISTA_JOBS=lista_jobs_SP.txt
