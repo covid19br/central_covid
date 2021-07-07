@@ -71,26 +71,22 @@ if __name__ == '__main__':
         print("Downloading new SIVEP database...")
         get_file(newfile20[1], outfile)
         get_file(newfile21[1], outfile + '.21')
-        os.system('''cd {folder} &&
-                   tail -n +2 {outfile}.21 >> {outfile} &&
-                   xz -9 -T4 {outfile} &&
-                   rm {outfile}.21'''.format(
-            folder=output_folder, outfile=output_fname))
+        os.system(f'''cd {output_folder} &&
+                   xz -9 -T4 {output_fname} &&
+                   xz -9 -T4 {output_fname + ".21"}''')
         # add to git and let the other robots work
         if gitUpdate:
             site_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../site')
-            os.system('''cd {folder} &&
-                   git add {outfile}.xz &&
-                   git commit -m "[auto] base SIVEP-Gripe de {data}" &&
+            data_base = newfile20[0].strftime("%Y_%m_%d")
+            os.system(f'''cd {output_folder} &&
+                   git add {output_fname}.xz {output_fname + ".21"}.xz &&
+                   git commit -m "[auto] base SIVEP-Gripe de {data_base}" &&
                    git push &&
                    cd {site_folder} &&
                    git pull --rebase &&
-                   git commit --allow-empty -m "[auto] trigger nowcasting update {data}" &&
-                   git push'''.format(folder=output_folder,
-                                      outfile=output_fname,
-                                      data=newfile20[0].strftime("%Y_%m_%d"),
-                                      site_folder=site_folder))
+                   git commit --allow-empty -m "[auto] trigger nowcasting update {data_base}" &&
+                   git push''')
             nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
-            os.system('''cd {nowcast_folder} &&
-                    Rscript checa_base.R --updateGit TRUE'''.format(nowcast_folder = nowcast_folder))
+            os.system(f'''cd {nowcast_folder} &&
+                    Rscript checa_base.R --updateGit TRUE''')
 
