@@ -72,8 +72,10 @@ if __name__ == '__main__':
         get_file(newfile20[1], outfile)
         get_file(newfile21[1], outfile + '.21')
         os.system(f'''cd {output_folder} &&
-                   xz -9 -T4 {output_fname} &&
-                   xz -9 -T4 {output_fname + ".21"}''')
+                   xz -k -9 -T4 {output_fname} &&
+                   xz -k -9 -T4 {output_fname + ".21"} &&
+                   tail -n +2 {output_fname + ".21"} >>  {output_fname} &&
+                   rm {output_fname + ".21"}''')
         # add to git and let the other robots work
         if gitUpdate:
             site_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../site')
@@ -86,7 +88,22 @@ if __name__ == '__main__':
                    git pull --rebase &&
                    git commit --allow-empty -m "[auto] trigger nowcasting update {data_base}" &&
                    git push''')
+            # POG
+            os.system(f'''cd {output_folder} &&
+                    mv {output_fname}.xz {output_fname + ".21"}.xz tmp/''')
             nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
             os.system(f'''cd {nowcast_folder} &&
                     Rscript checa_base.R --updateGit TRUE''')
+            integridade_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados_processados/integridade_SIVEP')
+            os.system(f'''cd {integridade_folder} &&
+                    for i in age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz; do unxz $i; done &&
+                    cd {nowcast_folder} &&
+                    Rscript diff_bases_idade.R &&
+                    cd {integridade_folder} &&
+                    for i in age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv; do xz $i; done &&
+                    git commit age_db.info.csv age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz -m ":robot: atualizando diff de bases por idade {data}" &&
+                    git push''')
+            os.system(f'''cd {output_folder} &&
+                    mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz . &&
+                    mv {output_fname} tmp/''')
 
