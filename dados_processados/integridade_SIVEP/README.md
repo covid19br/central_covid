@@ -12,8 +12,8 @@ Os arquivos com nome começando com `age` são estruturados por idade em faixas 
 
 | campo      | formato  | conteúdo |
 | ---------- | -------- | -------- |
-| data       | %Y-%m-%h | data da base ao qual o dado se refere |
-| dt_sin_pri | %Y-%m-%h | data de primeiro sintomas, que é a data de referência do caso. Esta coluna é a data de óbito nos arquivos pra óbitos |
+| data       | %Y-%m-%d | data da base ao qual o dado se refere |
+| dt_sin_pri | %Y-%m-%d | data de primeiro sintomas, que é a data de referência do caso. Esta coluna é a data de óbito nos arquivos pra óbitos |
 | age_class  | age_N    | faixa etária, "age_1" = 0-9, "age2" = 10-19 etc, age_9 = 80+ |
 | sg_uf      | XX       | sigla do estado |
 | n          | int      | número de casos |
