@@ -4,6 +4,9 @@ library(ggplot2)
 library(cowplot)
 library(zoo)
 library(geofacet)
+library(stringr)
+
+source('../../modelo-variante/functions/end.of.epiweek.R')
 
 Sys.setlocale("LC_ALL","pt_BR.utf8")
 
@@ -41,8 +44,21 @@ grid_drs3 <- data.frame(
 # checkout local de https://github.com/seade-R/dados-covid-sp
 dir_dados <- "../../dados/seade/data/"
 
+# dados de internações
 dados_seade <- read.csv(paste0(dir_dados, "plano_sp_leitos_internacoes.csv"), sep=';', dec=',')
 dados_seade$datahora <- as_date(parse_date_time(dados_seade$datahora, "ymd"))
+
+# dados de casos totais
+dados_casos <- read.csv(file.path(dir_dados, "dados_covid_sp.csv"), sep=";", dec=",")
+dados_casos$datahora <- as.Date(dados$datahora)
+dados_casos %>%
+    filter(cod_drs != 0) %>%
+    mutate(epiweek = end.of.epiweek(datahora)) %>%
+    group_by(epiweek, nome_drs) %>%
+    summarise(n = sum(casos_novos)) %>%
+    as.data.frame() -> dados_casos_drs
+# yoy
+dados_casos_drs$nome_drs[dados_casos_drs$nome_drs == "DRS 01 Grande São Paulo"] <- "DRS 01 Grande SP"
 
 # recebe nome 
 filtra.drs <- function(dados, drs){
@@ -65,8 +81,28 @@ filtra.drs <- function(dados, drs){
     return(dados)
 }
 
+converte.nome.drs <- function(x){
+    drs <- c("DRS 02 Araçatuba", "DRS 03 Araraquara", "DRS 04 Baixada Santista",
+      "DRS 05 Barretos", "DRS 06 Bauru", "DRS 07 Campinas",
+      "DRS 08 Franca", "DRS 09 Marília", "DRS 10 Piracicaba",
+      "DRS 11 Presidente Prudente", "DRS 12 Registro", "DRS 13 Ribeirão Preto",
+      "DRS 14 São João da Boa Vista", "DRS 15 São José do Rio Preto", "DRS 16 Sorocaba",
+      "DRS 17 Taubaté", "DRS 01 Grande São Paulo")
+    drs.nome <- substr(drs, 8, stop=100)
+    return(drs[which(x == drs.nome)])
+}
+
 caption <- paste0("fonte: Seade ", format(Sys.Date(), "%d/%m/%Y"),
                   ". Crédito: Observatório Covid-19 BR")
+
+p_casos_drs <- dados_casos_drs %>%
+    filter(epiweek < end.of.epiweek(Sys.Date())) %>%
+    ggplot() +
+    geom_line(aes(x=epiweek, y=n)) +
+    scale_x_date(date_breaks = "2 month", date_labels = "%b") +
+    facet_geo(~nome_drs, grid=grid_drs2, scales="free") +
+    labs(x = "data de notificação", y = "casos totais",
+         caption=caption)
 
 dadossp <- filtra.drs(dados_seade, "01")
 p <- ggplot(dadossp) +
@@ -76,7 +112,6 @@ p <- ggplot(dadossp) +
          y="internações nos últimos 7 dias",
          title="DRS 01 Grande São Paulo",
          caption=caption)
-#ggsave('internacoes7d.png', width=8, height=6)
 
 p_tudo <- dados_seade %>%
     filter(nome_drs == "Estado de São Paulo") %>%
