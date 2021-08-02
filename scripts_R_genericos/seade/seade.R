@@ -48,18 +48,6 @@ dir_dados <- "../../dados/seade/data/"
 dados_seade <- read.csv(paste0(dir_dados, "plano_sp_leitos_internacoes.csv"), sep=';', dec=',')
 dados_seade$datahora <- as_date(parse_date_time(dados_seade$datahora, "ymd"))
 
-# dados de casos totais
-dados_casos <- read.csv(file.path(dir_dados, "dados_covid_sp.csv"), sep=";", dec=",")
-dados_casos$datahora <- as.Date(dados$datahora)
-dados_casos %>%
-    filter(cod_drs != 0) %>%
-    mutate(epiweek = end.of.epiweek(datahora)) %>%
-    group_by(epiweek, nome_drs) %>%
-    summarise(n = sum(casos_novos)) %>%
-    as.data.frame() -> dados_casos_drs
-# yoy
-dados_casos_drs$nome_drs[dados_casos_drs$nome_drs == "DRS 01 Grande São Paulo"] <- "DRS 01 Grande SP"
-
 # recebe nome 
 filtra.drs <- function(dados, drs){
     pattern <- drs
@@ -91,6 +79,19 @@ converte.nome.drs <- function(x){
     drs.nome <- substr(drs, 8, stop=100)
     return(drs[which(x == drs.nome)])
 }
+
+# dados de casos totais
+dados_casos <- read.csv(file.path(dir_dados, "dados_covid_sp.csv"), sep=";", dec=",")
+dados_casos$datahora <- as.Date(dados_casos$datahora)
+dados_casos %>%
+    filter(cod_drs != 0) %>%
+    mutate(epiweek = end.of.epiweek(datahora)) %>%
+    group_by(epiweek, nome_drs) %>%
+    summarise(n = sum(casos_novos)) %>%
+    as.data.frame() -> dados_casos_drs
+# yoy
+dados_casos_drs$nome_drs <- sapply(dados_casos_drs$nome_drs, converte.nome.drs)
+dados_casos_drs$nome_drs[dados_casos_drs$nome_drs == "DRS 01 Grande São Paulo"] <- "DRS 01 Grande SP"
 
 caption <- paste0("fonte: Seade ", format(Sys.Date(), "%d/%m/%Y"),
                   ". Crédito: Observatório Covid-19 BR")
