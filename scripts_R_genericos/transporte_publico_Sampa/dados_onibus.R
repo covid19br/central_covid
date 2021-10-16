@@ -5,8 +5,9 @@ library(zoo)
 library(aweek)
 library(stringr)
 library(RCurl)
+library(lubridate)
 source("../../nowcasting/fct/get.last.date.R")
-
+Sys.setlocale("LC_TIME", "pt_BR.UTF-8") 
 ################################################################################
 ## Importacao da planilhas de n de passageiros da Prefeitura
 ## De https://www.prefeitura.sp.gov.br/cidade/secretarias/transportes/institucional/sptrans/acesso_a_informacao/agenda/index.php?p=292723
@@ -59,18 +60,19 @@ for(i in 1:length(datas.novas)){
 ## Junta todos em um unico arquivo com total de passageiros por dia
 ## PIP: sim, é um loop com um rbind dentro. Feio mas funciona, aguardo experts para dar mais elegância e efetividade a esta parte
 ## Primeiro passo do loop: cria um data.frame com uma linha
-dados <-  read_xls(paste0("onibus/",datas.texto[1],".xls"), skip=1)
-onibus.19.21 <- data.frame(data = dados$Data[1], tot.pass = sum( dados[,"Tot Passageiros Transportados"]))
+dados <-  read_xls(paste0("onibus/",datas.texto[1],".xls"), skip=2)
+onibus.19.21 <- data.frame(data = dados$Data[1], tot.pass = sum(dados[,"Tot Passageiros Transportados"]))
+onibus.19.21$data <- as_date(parse_date_time(onibus.19.21$data, c("dmY", "Ymd", "dmy", "dmy HMs", "Ymd HMs")))
 ## O loop: vai colando linha a este data.frame
 dir.all <- str_sub(dir("onibus/"), end = 9)
 nomes <- dir.all[ dir.all %in% datas.texto]
 for(i in  nomes){
-    dados <-  read_xls(paste0("onibus/",i,".xls"), skip=1)
+    dados <-  read_xls(paste0("onibus/",i,".xls"), skip=2)
     dados2 <- data.frame(data = dados$Data[1], tot.pass = sum( dados[,"Tot Passageiros Transportados"]))
+    dados2$data <- as_date(parse_date_time(dados2$data, c("dmY", "Ymd", "dmy", "dmy HMs", "Ymd HMs")))
     onibus.19.21 <- rbind(onibus.19.21, dados2)
 }
 
-onibus.19.21$data <- as.Date(onibus.19.21$data)
 ## Correcoes de erros. Na mao por enquanto, para documentar
 ## Tem um dado discrepante em abril, removendo
 onibus.19.21[onibus.19.21$data>as.Date("2020-04-01")&onibus.19.21$tot.pass>6e6,] <- NA
