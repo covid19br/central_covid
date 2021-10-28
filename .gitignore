@@ -79,3 +79,11 @@ scripts_R_genericos/plano_SP/casos_seade/casos_obitos_doencas_preexistentes.csv.
 /Indicadores_notifica
 /Multinomial_sivep
 /shinyVaxModel
+/dados/vacinas/
+/dados/sumario_SIVEP/
+/markov_vaccine/
+/school_reopening_manuscript/
+/scripts/emails.txt
+/scripts_R_genericos/InfoGripe/emails.txt
+/vacinas/
+
