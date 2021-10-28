@@ -1,4 +1,4 @@
-import os, shutil
+import os, sys, shutil
 from datetime import date, timedelta, datetime
 from lxml import html 
 import requests 
@@ -106,4 +106,6 @@ if __name__ == '__main__':
             os.system(f'''cd {output_folder} &&
                     mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz . &&
                     mv {output_fname} tmp/''')
+    else:
+        sys.exit(1)
 
