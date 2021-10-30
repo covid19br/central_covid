@@ -3,23 +3,22 @@
 ## CONFIGURAÇÂO E PASTAS
 
 # script assume que o meta-repo tem a estrutura usual
-SCRIPT_FOLDER=`basename $0`
+SCRIPT_FOLDER=`dirname $0`
 cd $SCRIPT_FOLDER
 
-source functions.sh
-METAREPO=`get_abspath ..`
+METAREPO=`readlink -f ..`
 
 DADOS=$METAREPO/dados/SIVEP-Gripe
 SITE=$METAREPO/site
 NOWCAST=$METAREPO/nowcasting
-NOWCASTOLD=$METAREPO/nowcasting_old
+NOWCAST2=$METAREPO/nowcasting2
 
 
 ## FUNÇÔES
 
 integridade(){
     # integridade sem estrutura etária
-    pushd $NOWCASTOLD
+    pushd $NOWCAST
     Rscript checa_base.R --updateGit TRUE
 
     # integridade com estrutura etária
@@ -44,7 +43,7 @@ integridade(){
 }
 
 sumario_SIVEP(){
-    pushd $NOWCAST
+    pushd $NOWCAST2
     Rscript summary_database.R  --dataBase $1 --updateGit TRUE
     popd
 }
@@ -74,12 +73,14 @@ nowcast(){
 ## MAIN
 
 # DOWNLOAD
-/usr/bin/python3 $SCRIPT_FOLDER/sivep_downloader.py >> ~/.cache/covid-sivep-down.log 2>&1
+/usr/bin/python3 sivep_downloader.py >> ~/.cache/covid-sivep-down.log 2>&1
 
 # se tem base SIVEP nova
 if [ $? -eq 0 ]; then
+    echo "Nova base SIVEP"
     commit=`git log --since=1am --pretty=oneline | grep "base SIVEP-Gripe de"`
     date=`echo $commit | sed 's/.*Gripe de \(20[0-9][0-9]_[0-9][0-9]_[0-9][0-9]\).*/\1/g'`
+    echo "data da base: $date"
 
     # deixando apenas base descompactada
     FNAME="SRAGHospitalizado_${date}.csv"
