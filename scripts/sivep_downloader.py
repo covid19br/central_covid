@@ -83,29 +83,31 @@ if __name__ == '__main__':
             os.system(f'''cd {output_folder} &&
                    git add {output_fname}.xz {output_fname + ".21"}.xz &&
                    git commit -m "[auto] base SIVEP-Gripe de {data_base}" &&
-                   git push &&
-                   cd {site_folder} &&
+                   git push''')
+            # POG!
+            POG_trigger_tasks = False
+            if POG_trigger_tasks:
+                os.system('''cd {site_folder} &&
                    git pull --rebase &&
                    git commit --allow-empty -m "[auto] trigger nowcasting update {data_base}" &&
                    git push''')
-            # POG
-            os.system(f'''cd {output_folder} &&
-                    mv {output_fname}.xz {output_fname + ".21"}.xz tmp/''')
-            nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
-            os.system(f'''cd {nowcast_folder} &&
-                    Rscript checa_base.R --updateGit TRUE''')
-            integridade_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados_processados/integridade_SIVEP')
-            os.system(f'''cd {integridade_folder} &&
-                    for i in age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz; do unxz $i; done &&
-                    cd {nowcast_folder} &&
-                    Rscript diff_bases_idade.R &&
-                    cd {integridade_folder} &&
-                    for i in age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv; do xz $i; done &&
-                    git commit age_db.info.csv age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz -m ":robot: atualizando diff de bases por idade {data}" &&
-                    git push''')
-            os.system(f'''cd {output_folder} &&
-                    mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz . &&
-                    mv {output_fname} tmp/''')
+                os.system(f'''cd {output_folder} &&
+                        mv {output_fname}.xz {output_fname + ".21"}.xz tmp/''')
+                nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
+                os.system(f'''cd {nowcast_folder} &&
+                        Rscript checa_base.R --updateGit TRUE''')
+                integridade_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados_processados/integridade_SIVEP')
+                os.system(f'''cd {integridade_folder} &&
+                        for i in age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz; do unxz $i; done &&
+                        cd {nowcast_folder} &&
+                        Rscript diff_bases_idade.R &&
+                        cd {integridade_folder} &&
+                        for i in age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv; do xz $i; done &&
+                        git commit age_db.info.csv age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz -m ":robot: atualizando diff de bases por idade {data}" &&
+                        git push''')
+                os.system(f'''cd {output_folder} &&
+                        mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz . &&
+                        mv {output_fname} tmp/''')
     else:
         sys.exit(1)
 
