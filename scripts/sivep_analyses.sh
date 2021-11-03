@@ -32,7 +32,7 @@ integridade(){
 
     pushd $METAREPO/dados_processados/integridade_SIVEP
     for i in age_dados_{,ob}{covid,srag}_{br,est}.csv; do
-        xz $i
+        xz -T 4 $i
     done
 
     git commit age_db.info.csv age_dados_{,ob}{covid,srag}_{br,est}.csv.xz -m ":robot: atualizando diff de bases por idade $1" &&
@@ -63,8 +63,11 @@ nowcast(){
     # make starter commit
     git commit --allow-empty -m ":robot: automatic nowcasting started $date" && git push
 
+    if [ ! -d "../../logs/" ]; then
+        mkdir ../../logs
+    fi
     echo "Rodando: parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DADOS $date"
-    parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DATAFOLDER $data
+    parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DADOS $date
 
     popd
 }
@@ -85,6 +88,9 @@ if [ $? -eq 0 ]; then
     # deixando apenas base descompactada
     FNAME="SRAGHospitalizado_${date}.csv"
     cd $DADOS
+    if [ ! -d "tmp" ]; then
+        mkdir tmp
+    fi
     mv ${FNAME}.xz "${FNAME}.21.xz" tmp/
 
     integridade $date & sumario_SIVEP $date
