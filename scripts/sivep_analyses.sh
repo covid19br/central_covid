@@ -100,5 +100,6 @@ if [ $? -eq 0 ]; then
     # limpando
     cd $DADOS/tmp
     mv ${FNAME}.xz "${FNAME}.21.xz" ../
+    cd ..
     rm ${FNAME}
 fi
