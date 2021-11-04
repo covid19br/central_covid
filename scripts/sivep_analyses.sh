@@ -55,7 +55,7 @@ nowcast(){
     if [ ${#@} -gt 1 ]; then
         NPJOBS=$2
     else
-        NPJOBS=10
+        NPJOBS=9
     fi
 
     LISTA_JOBS=lista_jobs.txt
