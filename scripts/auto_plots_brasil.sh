@@ -10,7 +10,7 @@ METAREPO=`get_abspath ..`
 # update site repo and look for the trigger commit
 cd $METAREPO/site
 git pull --ff-only --commit
-trigger=`git log --since=yesterday --pretty=oneline | grep "automatic nowcasting started"`
+trigger=`git log --since=yesterday --pretty=oneline | grep "novas tabelas e plots estado RR-RR"`
 
 if [ -z "$trigger" ]; then
     echo "Sem commit de disparo ainda, saindo..."
@@ -18,7 +18,7 @@ if [ -z "$trigger" ]; then
 fi
 
 # get date from the commit message
-date=`echo $trigger | sed 's/.*started \(20[0-9][0-9]_[0-9][0-9]_[0-9][0-9]\).*/\1/g'`
+date=`echo $trigger | sed 's/.*RR-RR \(20[0-9][0-9]_[0-9][0-9]_[0-9][0-9]\).*/\1/g'`
 if [ ${#date} -ne 10 ]; then
     echo "Data não reconhecida, saindo..."
     exit 0

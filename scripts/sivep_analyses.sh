@@ -93,7 +93,9 @@ if [ $? -eq 0 ]; then
     fi
     mv ${FNAME}.xz "${FNAME}.21.xz" tmp/
 
-    integridade $date & sumario_SIVEP $date
+    integridade $date
+
+    sumario_SIVEP $date
 
     nowcast $date
 
