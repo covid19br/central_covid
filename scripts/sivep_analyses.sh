@@ -3,7 +3,7 @@
 ## CONFIGURAÇÂO E PASTAS
 
 # script assume que o meta-repo tem a estrutura usual
-SCRIPT_FOLDER=`dirname $0`
+SCRIPT_FOLDER=$(readlink -f $(dirname $0))
 cd $SCRIPT_FOLDER
 
 METAREPO=`readlink -f ..`
@@ -58,7 +58,7 @@ nowcast(){
         NPJOBS=9
     fi
 
-    LISTA_JOBS=lista_jobs.txt
+    LISTA_JOBS="lista_jobs.txt"
 
     # make starter commit
     git commit --allow-empty -m ":robot: automatic nowcasting started $date" && git push
@@ -67,7 +67,7 @@ nowcast(){
         mkdir ../../logs
     fi
     echo "Rodando: parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DADOS $date"
-    parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DADOS $date
+    parallel -a "$LISTA_JOBS" --colsep ' ' -j "$NPJOBS" ./single_job.sh "$DADOS" "$date"
 
     popd
 }
