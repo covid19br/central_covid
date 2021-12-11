@@ -61,14 +61,23 @@ for(i in 1:length(datas.novas)){
 ## PIP: sim, é um loop com um rbind dentro. Feio mas funciona, aguardo experts para dar mais elegância e efetividade a esta parte
 ## Primeiro passo do loop: cria um data.frame com uma linha
 dados <-  read_xls(paste0("onibus/",datas.texto[1],".xls"), skip=2)
-onibus.19.21 <- data.frame(data = dados$Data[1], tot.pass = sum(dados[,"Tot Passageiros Transportados"]))
+onibus.19.21 <- data.frame(data = dados$Data[1],
+                           tot.pass = sum(dados[,"Tot Passageiros Transportados"]),
+                           est.pagantes = sum(dados[,"Passageiros Pagtes Estudante"]),
+                           est.grat = sum(dados[,"Passageiros Com Gratuidade Est"]),
+                           tot.grat = sum(dados[,"Passageiros Com Gratuidade"]))
 onibus.19.21$data <- as_date(parse_date_time(onibus.19.21$data, c("dmY", "Ymd", "dmy", "dmy HMs", "Ymd HMs")))
 ## O loop: vai colando linha a este data.frame
 dir.all <- str_sub(dir("onibus/"), end = 9)
 nomes <- dir.all[ dir.all %in% datas.texto]
 for(i in  nomes){
     dados <-  read_xls(paste0("onibus/",i,".xls"), skip=2)
-    dados2 <- data.frame(data = dados$Data[1], tot.pass = sum( dados[,"Tot Passageiros Transportados"]))
+    ## dados2 <- data.frame(data = dados$Data[1], tot.pass = sum( dados[,"Tot Passageiros Transportados"]))
+    dados2 <-  data.frame(data = dados$Data[1],
+                           tot.pass = sum(dados[,"Tot Passageiros Transportados"]),
+                           est.pagantes = sum(dados[,"Passageiros Pagtes Estudante"]),
+                           est.grat = sum(dados[,"Passageiros Com Gratuidade Est"]),
+                           tot.grat = sum(dados[,"Passageiros Com Gratuidade"]))
     dados2$data <- as_date(parse_date_time(dados2$data, c("dmY", "Ymd", "dmy", "dmy HMs", "Ymd HMs")))
     onibus.19.21 <- rbind(onibus.19.21, dados2)
 }
@@ -86,14 +95,22 @@ onibus.19.21 %<>%
     mutate(semana = date2week(data, floor_day = TRUE),
            semana.num = date2week(data, numeric = TRUE),
            semana.dia1 = week2date(semana),
-           ano = format(data, "%Y"))
+           ano = format(data, "%Y"),
+           estudantes = est.grat + est.pagantes,
+           grat.no.est = tot.grat - est.grat)
 ## Por semana
 onibus.sem  <- 
     onibus.19.21 %>%
     group_by(semana.dia1) %>%
-    summarise(mean.pass=mean(tot.pass, na.rm=TRUE)) %>%
+    summarise(mean.pass = mean(tot.pass, na.rm=TRUE),
+              mean.estudante = mean(estudantes, na.rm=TRUE),
+              mean.grat = mean(tot.grat, na.rm=TRUE),
+              mean.grat.noest = mean(grat.no.est, na.rm=TRUE)) %>%
     ungroup() %>%
-    mutate(dif.53 = 100*(mean.pass- lag(mean.pass, 53))/mean.pass)
+    mutate(dif.53 = 100*(mean.pass- lag(mean.pass, 53))/mean.pass,
+           prop.est = mean.estudante/mean.pass,
+           prop.grat = mean.grat/mean.pass,
+           prop.grat.noest = mean.grat.noest/mean.pass)
 
 ## Graficos
 png("passageiros_onibus_19_21_sampa%1d.png", width = 600)
@@ -114,6 +131,60 @@ onibus.sem %>%
     theme_bw() +
     xlab("Data início da semana epidemiológica") +
     ylab("Média passageiros/dia")
+
+onibus.sem %>%
+    ##fortify() %>%
+    ggplot(aes(semana.dia1, mean.estudante)) +
+    geom_line(col="grey") +
+    geom_point() +
+    theme_bw() +
+    xlab("Data início da semana epidemiológica") +
+    ylab("Média passageiros estudantes/dia")
+
+onibus.sem %>%
+    ##fortify() %>%
+    ggplot(aes(semana.dia1, mean.grat)) +
+    geom_line(col="grey") +
+    geom_point() +
+    theme_bw() +
+    xlab("Data início da semana epidemiológica") +
+    ylab("Média passageiros gratuidade/dia")
+
+onibus.sem %>%
+    ##fortify() %>%
+    ggplot(aes(semana.dia1, mean.grat)) +
+    geom_line(col="grey") +
+    geom_point() +
+    theme_bw() +
+    xlab("Data início da semana epidemiológica") +
+    ylab("Média passageiros gratuidade/dia")
+
+onibus.sem %>%
+    ##fortify() %>%
+    ggplot(aes(semana.dia1, prop.est)) +
+    geom_line(col="grey") +
+    geom_point() +
+    theme_bw() +
+    xlab("Data início da semana epidemiológica") +
+    ylab("Poporcao estudantes")
+
+onibus.sem %>%
+    ##fortify() %>%
+    ggplot(aes(semana.dia1, prop.grat)) +
+    geom_line(col="grey") +
+    geom_point() +
+    theme_bw() +
+    xlab("Data início da semana epidemiológica") +
+    ylab("Poporcao viagens gratuitas")
+
+onibus.sem %>%
+    ##fortify() %>%
+    ggplot(aes(semana.dia1, prop.grat.noest)) +
+    geom_line(col="grey") +
+    geom_point() +
+    theme_bw() +
+    xlab("Data início da semana epidemiológica") +
+    ylab("Poporcao viagens gratuitas exceto estudantes")
 
 onibus.sem %>%
     fortify() %>%
