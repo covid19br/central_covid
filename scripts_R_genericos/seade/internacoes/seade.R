@@ -221,12 +221,54 @@ p.oc <-
     labs(x="",
          y="Leitos COVID ocupados (%)",
          title="Ocupação de leitos no Município de São Paulo",
-         caption = caption) +
+         #caption = caption
+         ) +
     theme_bw()
 p.oc
 
+## Apenas pontos
+filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-09-01")) %>% select(datahora, pacientes_ultimo_dia) %>% tail()
+    ggplot(aes(datahora)) +
+    geom_point(aes(y = ocupacao_dia)) +
+    labs(x="Data",
+         y="Leitos COVID ocupados (%)",
+         title="Ocupação de leitos no Município de São Paulo",
+         #caption = caption
+         ) +
+    theme_bw(base_size = 16)
+ggsave("Ocupacao_leitos_municipio_SP.png")
+
+## Internações diárias Baixada santista
+dados.oc %>%
+    filter(nome_drs == "DRS 04 Baixada Santista" & datahora>=as.Date("2021-09-01")) %>%
+    ggplot() +
+    geom_point(aes(x=datahora, y=internacoes_ultimo_dia)) +
+    labs(x="data",
+         y="Hospitalizações",
+         title="DRS-04 Baixada Santista",
+         caption=caption) +
+    ##facet_geo(~nome_drs, grid=grid_drs3, scales="free") +
+    theme_bw( base_size=16)
+ggsave("internacoes_diarias_DRS_04_censo_hospitalar.png")
+
+
 ## Apenas de dezembro até agora
 p.oc %+% filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-09-01"))
+
+## Todas as DRS
+dados.oc %>%
+    filter(nome_drs != "Estado de São Paulo" & datahora>=as.Date("2021-09-01")) %>%
+    ggplot() +
+    geom_point(aes(x=datahora, y=internacoes_ultimo_dia), size=0.5) +
+    labs(x="data",
+         y="Hospitalizações",
+         ##title="Internações nos últimos 7 dias",
+         caption=caption) +
+    facet_geo(~nome_drs, grid=grid_drs3, scales="free") +
+    theme_bw()
+ggsave("internacoes_diarias_DRS_censo_hospitalar.png", width = 10, height=7)
+
+
 
 ## O bom e velho plot
 png("ocupacao_total_leitos_Sampa.png")
@@ -234,5 +276,5 @@ filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-
     plot(ocupacao_dia ~ datahora, data = . ,
          xlab="",
          ylab = "Leitos COVID ocupados (%)",
-         main = "Município de São Paulo")
+         main = "Ocupação de leitos no município de São Paulo")
 dev.off()
