@@ -251,6 +251,19 @@ dados.oc %>%
     theme_bw( base_size=16)
 ggsave("internacoes_diarias_DRS_04_censo_hospitalar.png")
 
+## Internações diárias Sampa
+dados.oc %>%
+    filter(nome_drs == "Município de São Paulo" & datahora>=as.Date("2021-09-01")) %>%
+    ggplot() +
+    geom_line(aes(x=datahora, y=internacoes_ultimo_dia)) +
+    labs(x="data",
+         y="Hospitalizações",
+         title="Munciípio de São Paulo",
+         caption=caption) +
+    ##facet_geo(~nome_drs, grid=grid_drs3, scales="free") +
+    theme_bw( base_size=16)
+ggsave("internacoes_diarias_MSP_censo_hospitalar.png")
+
 
 ## Apenas de dezembro até agora
 p.oc %+% filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-09-01"))
