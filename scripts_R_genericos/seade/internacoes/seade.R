@@ -227,7 +227,8 @@ p.oc <-
 p.oc
 
 ## Apenas pontos
-filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-09-01")) %>% select(datahora, pacientes_ultimo_dia) %>% tail()
+filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-09-01")) %>%
+    select(datahora, pacientes_ultimo_dia)
     ggplot(aes(datahora)) +
     geom_point(aes(y = ocupacao_dia)) +
     labs(x="Data",
@@ -255,7 +256,7 @@ ggsave("internacoes_diarias_DRS_04_censo_hospitalar.png")
 dados.oc %>%
     filter(nome_drs == "Município de São Paulo" & datahora>=as.Date("2021-09-01")) %>%
     ggplot() +
-    geom_line(aes(x=datahora, y=internacoes_ultimo_dia)) +
+    geom_point(aes(x=datahora, y=internacoes_ultimo_dia)) +
     labs(x="data",
          y="Hospitalizações",
          title="Munciípio de São Paulo",
