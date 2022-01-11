@@ -259,7 +259,7 @@ dados.oc %>%
     geom_point(aes(x=datahora, y=internacoes_ultimo_dia)) +
     labs(x="data",
          y="Hospitalizações",
-         title="Munciípio de São Paulo",
+         title="Município de São Paulo",
          caption=caption) +
     ##facet_geo(~nome_drs, grid=grid_drs3, scales="free") +
     theme_bw( base_size=16)
