@@ -89,6 +89,7 @@ dados_casos %>%
     group_by(epiweek, nome_drs) %>%
     summarise(n = sum(casos_novos)) %>%
     as.data.frame() -> dados_casos_drs
+
 # yoy
 dados_casos_drs$nome_drs <- sapply(dados_casos_drs$nome_drs, converte.nome.drs)
 dados_casos_drs$nome_drs[dados_casos_drs$nome_drs == "DRS 01 Grande São Paulo"] <- "DRS 01 Grande SP"
@@ -270,6 +271,7 @@ ggsave("internacoes_diarias_MSP_censo_hospitalar.png")
 p.oc %+% filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-09-01"))
 
 ## Todas as DRS
+## Internacoes diarias
 dados.oc %>%
     filter(nome_drs != "Estado de São Paulo" & datahora>=as.Date("2021-09-01")) %>%
     ggplot() +
@@ -281,6 +283,19 @@ dados.oc %>%
     facet_geo(~nome_drs, grid=grid_drs3, scales="free") +
     theme_bw()
 ggsave("internacoes_diarias_DRS_censo_hospitalar.png", width = 10, height=7)
+
+
+dados.oc %>%
+    filter(nome_drs != "Estado de São Paulo" & datahora>=as.Date("2021-09-01")) %>%
+    ggplot() +
+    geom_line(aes(x=datahora, y=internacoes_7d), size=0.5) +
+    labs(x="data",
+         y="Hospitalizações",
+         title="Internações nos últimos 7 dias",
+         caption=caption) +
+    facet_geo(~nome_drs, grid=grid_drs3, scales="free") +
+    theme_bw()
+ggsave("internacoes_7dias_DRS_censo_hospitalar.png", width = 10, height=7)
 
 
 
