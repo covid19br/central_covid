@@ -18,17 +18,21 @@ def find_last_date(output_folder):
             date_max = max(data, date_max)
     return date_max
 
-def check_for_new_file(index_page_address, last_date):
+def check_for_new_file(index_page_address, last_date, year):
     page = requests.get(index_page_address, verify=False, timeout=10)
     tree = html.fromstring(page.content)
     resources = tree.xpath('//li[@class="resource-item"]')
-    reg = re.compile(r".*SRAG (\d\d/\d\d/\d\d\d\d).*",
+    reg = re.compile(r".*SRAG (202[0-9])*(?: - )*(\d\d/\d\d(?:/\d\d\d\d)*).*",
             re.DOTALL|re.MULTILINE|re.IGNORECASE)
     for item in resources:
         g = reg.match(item.text_content())
         if g:
-            data_read = datetime.strptime(g.groups()[0], "%d/%m/%Y").date()
-            if data_read > last_date:
+            year_read = g.groups()[0]
+            data_read = g.groups()[1]
+            if len(data_read) <= 5:
+                data_read += "/" + str(datetime.now().year)
+            data_read = datetime.strptime(data_read, "%d/%m/%Y").date()
+            if data_read > last_date and year_read == str(year):
                 address = item.xpath('.//a[@class="resource-url-analytics"]')[0].attrib['href']
                 return (data_read, address)
     return False
@@ -45,15 +49,16 @@ def get_file(download_address, output_file):
 if __name__ == '__main__':
     data = date.today()
 
-    index_page_address20 = "https://opendatasus.saude.gov.br/dataset/bd-srag-2020"
-    index_page_address21 = "https://opendatasus.saude.gov.br/dataset/bd-srag-2021"
+    index_page_address20 = "https://opendatasus.saude.gov.br/dataset/srag-2020"
+    index_page_address21 = "https://opendatasus.saude.gov.br/dataset/srag-2021-e-2022"
     output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/SIVEP-Gripe')
     gitUpdate = True
 
     last_date = find_last_date(output_folder)
-    newfile20 = check_for_new_file(index_page_address20, last_date)
-    newfile21 = check_for_new_file(index_page_address21, last_date)
-    if newfile20 and newfile21 and (newfile20[0] == newfile21[0]):
+    newfile20 = check_for_new_file(index_page_address20, last_date, 2020)
+    newfile21 = check_for_new_file(index_page_address21, last_date, 2021)
+    newfile22 = check_for_new_file(index_page_address21, last_date, 2022)
+    if newfile20 and newfile21 and newfile22 and (newfile20[0] == newfile21[0] == newfile22[0]):
         output_fname = "SRAGHospitalizado_{data}.csv".format(data=newfile20[0].strftime("%Y_%m_%d"))
         outfile = os.path.join(output_folder, output_fname)
 
@@ -71,17 +76,21 @@ if __name__ == '__main__':
         print("Downloading new SIVEP database...")
         get_file(newfile20[1], outfile)
         get_file(newfile21[1], outfile + '.21')
+        get_file(newfile22[1], outfile + '.22')
         os.system(f'''cd {output_folder} &&
                    xz -k -9 -T4 {output_fname} &&
                    xz -k -9 -T4 {output_fname + ".21"} &&
+                   xz -k -9 -T4 {output_fname + ".22"} &&
                    tail -n +2 {output_fname + ".21"} >>  {output_fname} &&
-                   rm {output_fname + ".21"}''')
+                   tail -n +2 {output_fname + ".22"} >>  {output_fname} &&
+                   rm {output_fname + ".21"} &&
+                   rm {output_fname + ".22"}''')
         # add to git and let the other robots work
         if gitUpdate:
             site_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../site')
             data_base = newfile20[0].strftime("%Y_%m_%d")
             os.system(f'''cd {output_folder} &&
-                   git add {output_fname}.xz {output_fname + ".21"}.xz &&
+                   git add {output_fname}.xz {output_fname + ".21"}.xz {output_fname + ".22"}.xz &&
                    git commit -m "[auto] base SIVEP-Gripe de {data_base}" &&
                    git push''')
             # POG!
@@ -92,7 +101,7 @@ if __name__ == '__main__':
                    git commit --allow-empty -m "[auto] trigger nowcasting update {data_base}" &&
                    git push''')
                 os.system(f'''cd {output_folder} &&
-                        mv {output_fname}.xz {output_fname + ".21"}.xz tmp/''')
+                        mv {output_fname}.xz {output_fname + ".21"}.xz {output_fname + ".22"}.xz tmp/''')
                 nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
                 os.system(f'''cd {nowcast_folder} &&
                         Rscript checa_base.R --updateGit TRUE''')
@@ -106,7 +115,7 @@ if __name__ == '__main__':
                         git commit age_db.info.csv age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz -m ":robot: atualizando diff de bases por idade {data}" &&
                         git push''')
                 os.system(f'''cd {output_folder} &&
-                        mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz . &&
+                        mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz tmp/{output_fname + ".21"}.xz . &&
                         mv {output_fname} tmp/''')
     else:
         sys.exit(1)

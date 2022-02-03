@@ -91,7 +91,7 @@ if [ $? -eq 0 ]; then
     if [ ! -d "tmp" ]; then
         mkdir tmp
     fi
-    mv ${FNAME}.xz "${FNAME}.21.xz" tmp/
+    mv ${FNAME}.xz "${FNAME}.21.xz" "${FNAME}.22.xz" tmp/
 
     integridade $date
 
@@ -101,7 +101,7 @@ if [ $? -eq 0 ]; then
 
     # limpando
     cd $DADOS/tmp
-    mv ${FNAME}.xz "${FNAME}.21.xz" ../
+    mv ${FNAME}.xz "${FNAME}.21.xz" "${FNAME}.22.xz" ../
     cd ..
     rm ${FNAME}
 fi
