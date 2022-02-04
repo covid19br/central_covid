@@ -229,9 +229,9 @@ p.oc
 
 ## Apenas pontos
 filter(dados.oc, nome_drs=="Município de São Paulo" & datahora>=as.Date("2021-09-01")) %>%
-    select(datahora, pacientes_ultimo_dia)
-    ggplot(aes(datahora)) +
-    geom_point(aes(y = ocupacao_dia)) +
+    select(datahora, pacientes_ultimo_dia) %>%
+    ggplot() +
+    geom_point(aes(x=datahora, y = pacientes_ultimo_dia)) +
     labs(x="Data",
          y="Leitos COVID ocupados (%)",
          title="Ocupação de leitos no Município de São Paulo",
