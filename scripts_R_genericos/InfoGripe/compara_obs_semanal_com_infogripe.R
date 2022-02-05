@@ -1,5 +1,6 @@
 library(plyr)
 library(dplyr)
+library(vroom)
 library(magrittr)
 library(ggplot2)
 library(zip)
@@ -7,6 +8,7 @@ library(aweek)
 library(lubridate)
 library(rmarkdown)
 source("../../nowcasting/fct/get.last.date.R")
+source("functions.R")
 set_week_start("Sunday")
 
 ## check if this is being run automatically to auto-update
@@ -21,7 +23,8 @@ if (sys.nframe() == 0L) {
 }
 
 ## Dicionario de nomes de estados, do InfoGripe
-dic.territ <- read.csv("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/base_territorial/DICIONARIO_territorios_id.csv")
+##dic.territ <- read.csv("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/base_territorial/DICIONARIO_territorios_id.csv")
+dic.territ <- read.csv("https://gitlab.fiocruz.br/marcelo.gomes/infogripe/-/raw/master/Dados/InfoGripe/base_territorial/DICIONARIO_territorios_id.csv")
 dic.estados <- filter(dic.territ, tipo_id ==1 & id != 99)
 dic.estados$id.regiao <- as.integer(substring(dic.estados$id, 1, 1))
 dic.estados <- merge(dic.estados, data.frame(id.regiao = 1:5, regiao = c("Norte", "Nordeste", "Sudeste", "Sul", "Centro-Oeste")),
@@ -72,7 +75,8 @@ observ.seman <- merge(observ.now[, -3], observ.ncasos, by = c("estado", "data"),
 ## Adiciona semana epidemiologica
 observ.seman %<>% mutate(data = as.Date(data)-1,
                          semana = date2week(data, numeric = TRUE),
-                         semana = ifelse(data>as.Date("2021-01-02"), semana+53, semana)) ## POG para ter os dois anos epidemiologicos, consertar isso
+                         semana = ifelse(data>as.Date("2021-01-02"), semana+53, semana),
+                         semana = ifelse(data>as.Date("2022-01-01"), semana+52, semana)) ## POG para ter os tres anos epidemiologicos, consertar isso
 
 
 ## Maiores datas em cada estado
@@ -85,38 +89,19 @@ observ.data.max <- observ.seman %>%
 ## Dados do Infogripe sem filtros
 ################################################################################
 ## Leitura 
-infogripe <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_sintomas.csv")
+## infogripe <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_sintomas.csv")
+infogripe <- vroom("https://gitlab.fiocruz.br/marcelo.gomes/infogripe/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_sintomas.csv.gz",  delim=";" , locale=locale(decimal_mark=',')) %>%
+    as.data.frame()
+
 ##infogripe$data.de.publicação <- as.Date(infogripe$data.de.publicação)
-infogr.last.date <- format(as.Date(max(infogripe$data.de.publicação)), format = "%Y_%m_%d")
+infogr.last.date <- format(as.Date(max(infogripe[,"data de publicação"])), format = "%Y_%m_%d")
 print(paste('data nowcasting InfoGripe:', infogr.last.date))
 # last report is more recent than latest data
 if (AUTO && last_update > infogr.last.date)
     quit(save = "no", status = 1)
 
-## Filtra apenas os dados de casos de srag do estado
-infogr.estado <- filter(infogripe, Tipo == "Estado"&
-                                   Ano.epidemiológico > 2019 &
-                                   ## data.de.publicação == max(data.de.publicação) &
-                                   dado == "srag" &
-                                   escala == "casos") %>%
-    select(UF,
-           Unidade.da.Federação,
-           Ano.epidemiológico,
-           Semana.epidemiológica,
-           Casos.semanais.reportados.até.a.última.atualização,
-           limite.inferior.da.estimativa,
-           casos.estimados,
-           limite.superior.da.estimativa) %>%
-    merge(dic.estados[, 2:3], by.x = "UF", by.y = "id") %>%
-    dplyr::rename(id.estado = UF,
-           nome.estado = Unidade.da.Federação,
-           semana = Semana.epidemiológica,
-           casos.obs = Casos.semanais.reportados.até.a.última.atualização,
-           lower = limite.inferior.da.estimativa,
-           casos.est = casos.estimados,
-           upper = limite.superior.da.estimativa,
-           sigla.estado = sigla) %>%
-    mutate(semana = ifelse(Ano.epidemiológico == 2021, semana + 53, semana))
+## Filtra apenas os dados de casos de srag do estado e preparar o dataframe
+infogr.estado <- info.estado(infogripe)
 
 ## Ultima semana e sua última data no Infogripe
 ##ultima.sem <- max(infogr.estado$semana)
@@ -128,69 +113,33 @@ infogr.estado <- filter(infogripe, Tipo == "Estado"&
 ##     as.data.frame()
 
 ################################################################################
-## Dados do Infogripe sem filtros
+## Dados do Infogripe com filtros
 ################################################################################
 ## Leitura 
-infogripe2 <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes.csv")
+## infogripe2 <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes.csv")
+
+infogripe2 <- vroom("https://gitlab.fiocruz.br/marcelo.gomes/infogripe/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes.csv.gz", delim=";", locale=locale(decimal_mark=',')) %>%
+    as.data.frame()
 
 ## Filtra apenas os dados de casos de srag do estado
-infogr2.estado <- filter(infogripe2, Tipo == "Estado"&
-                                   Ano.epidemiológico > 2019 &
-                                   ## data.de.publicação == max(data.de.publicação) &
-                                   dado == "srag" &
-                                   escala == "casos") %>%
-    select(UF,
-           Unidade.da.Federação,
-           Semana.epidemiológica,
-           Ano.epidemiológico,
-           Casos.semanais.reportados.até.a.última.atualização,
-           limite.inferior.da.estimativa,
-           casos.estimados,
-           limite.superior.da.estimativa) %>%
-    merge(dic.estados[, 2:3], by.x = "UF", by.y = "id") %>%
-    dplyr::rename(id.estado = UF,
-           nome.estado = Unidade.da.Federação,
-           semana = Semana.epidemiológica,
-           casos.obs = Casos.semanais.reportados.até.a.última.atualização,
-           lower = limite.inferior.da.estimativa,
-           casos.est = casos.estimados,
-           upper = limite.superior.da.estimativa,
-           sigla.estado = sigla) %>%
-    mutate(semana = ifelse(Ano.epidemiológico == 2021, semana + 53, semana))
+infogr2.estado <- info.estado(infogripe2)
+
 
 ################################################################################
-## Dados do Infogripe com filtros de febre
+## Dados do Infogripe sem filtros de febre
 ################################################################################
 ## Leitura 
-infogripe3 <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_febre.csv")
+##infogripe3 <- read.csv2("https://gitlab.procc.fiocruz.br/mave/repo/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_febre.csv")
+
+infogripe3 <- vroom("https://gitlab.fiocruz.br/marcelo.gomes/infogripe/-/raw/master/Dados/InfoGripe/serie_temporal_com_estimativas_recentes_sem_filtro_febre.csv.gz", delim=";", locale=locale(decimal_mark=',')) %>%
+    as.data.frame()
 
 ## Filtra apenas os dados de casos de srag do estado
-infogr3.estado <- filter(infogripe3, Tipo == "Estado"&
-                                   Ano.epidemiológico > 2019 &
-                                   ## data.de.publicação == max(data.de.publicação) &
-                                   dado == "srag" &
-                                   escala == "casos") %>%
-    select(UF,
-           Unidade.da.Federação,
-           Semana.epidemiológica,
-           Ano.epidemiológico,
-           Casos.semanais.reportados.até.a.última.atualização,
-           limite.inferior.da.estimativa,
-           casos.estimados,
-           limite.superior.da.estimativa) %>%
-    merge(dic.estados[, 2:3], by.x = "UF", by.y = "id") %>%
-    dplyr::rename(id.estado = UF,
-           nome.estado = Unidade.da.Federação,
-           semana = Semana.epidemiológica,
-           casos.obs = Casos.semanais.reportados.até.a.última.atualização,
-           lower = limite.inferior.da.estimativa,
-           casos.est = casos.estimados,
-           upper = limite.superior.da.estimativa,
-           sigla.estado = sigla) %>%
-    mutate(semana = ifelse(Ano.epidemiológico == 2021, semana + 53, semana))
+infogr3.estado <- info.estado(infogripe3)
 
 ################################################################################
 ## Nowcasting por diferença de bases, por Leo Bastos
+## PI: não tá funfando
 ################################################################################
 difsragh <- read.csv("https://gitlab.procc.fiocruz.br/lsbastos/nowcasting_data/-/raw/master/csvs/tbl.UF.h.srag.csv") %>%
     filter(Estado!="Brasil") %>%
@@ -209,69 +158,6 @@ print(paste('data nowcasting diff bases:', difsragh.last.date))
 if (AUTO && last_update > difsragh.last.date)
     quit(save = "no", status = 1)
 
-################################################################################
-## Funcoes para graficos
-################################################################################
-
-
-## Funcao para graficos semanais de SRAG: todos os filtros do Infogripe e o nowcasting Observatório
-plot.seman <- function(sigla){
-    ##max.sem <- observ.data.max$sem.max[observ.data.max$estado==sigla]
-    data1  <-  infogr.estado %>% filter(sigla.estado == sigla) 
-    ##data2 <- observ.seman %>% filter(semana <= (max.sem) & sigla.estado == sigla)
-    data2 <- observ.seman %>% filter(estado == sigla)
-    data3  <-  infogr2.estado %>% filter(sigla.estado == sigla)
-    data4  <-  infogr3.estado %>% filter(sigla.estado == sigla) 
-    p1 <- ggplot(data1, aes(semana)) +
-        geom_line(aes(y=casos.obs, color = "InfoGripe sem filtros"), lty =2 ) +
-        geom_line(aes(y=casos.est, color = "InfoGripe sem filtros")) +
-        geom_ribbon(aes(ymin = lower, ymax = upper, fill= "InfoGripe sem filtros"), alpha =0.1) +
-        geom_line(data = data3, aes(y=casos.obs, color = "InfoGripe com filtros"), lty =2) +
-        geom_line(data = data3, aes(y=casos.est, color = "InfoGripe com filtros")) +
-        geom_ribbon(data=data3, aes(ymin = lower, ymax = upper, fill = "InfoGripe com filtros"), alpha =0.1) +
-        geom_line(data = data4, aes(y=casos.obs, color = "InfoGripe filtro febre"), lty =2) +
-        geom_line(data = data4, aes(y=casos.est, color = "InfoGripe filtro febre")) +
-        geom_ribbon(data = data4, aes(ymin = lower, ymax = upper, fill = "InfoGripe filtro febre"), alpha =0.1) +
-        geom_line(data = data2, aes(y=n.casos, color= "Observatório"), lty =2 ) +
-        geom_line(data = data2, aes(y=estimate, color= "Observatório")) +
-        geom_ribbon(data = data2, aes(ymin = lower.merged.pred, ymax = upper.merged.pred, fill= "Observatório"),
-                    alpha =0.1) +
-        xlab("Semana epidemiológica dos sintomas") +
-            ylab("N de casos semanais SRAG") +
-        scale_color_manual(name="", values = 5:2) +
-        scale_fill_manual(name = "", values = 5:2) +
-        ggtitle(sigla) +
-        theme_bw() +
-        theme(legend.position = c(0.15, 0.8))
-    p1
-}
-
-## SRAG sem filtros Infogripe, nowcasting por dif de bases e Observatório
-plot.seman2 <- function(sigla){
-    data1  <-  infogr.estado %>% filter(sigla.estado == sigla) 
-    data2 <- observ.seman %>% filter(estado == sigla)
-    data3  <-  difsragh %>% filter(sigla.estado == sigla)
-    p1 <-
-        ggplot(data1, aes(semana)) +
-        geom_line(aes(y=casos.obs, color = "InfoGripe sem filtros"), lty =2 ) +
-        geom_line(aes(y=casos.est, color = "InfoGripe sem filtros")) +
-        geom_ribbon(aes(ymin = lower, ymax = upper, fill= "InfoGripe sem filtros"), alpha =0.2) +
-        geom_line(data = data3, aes(y=casos.obs, color = "Dif. bases"), lty =2) +
-        geom_line(data = data3, aes(y=casos.est, color = "Dif. bases")) +
-        geom_ribbon(data=data3, aes(ymin = lower, ymax = upper, fill = "Dif. bases"), alpha =0.2) +
-        geom_line(data = data2, aes(y=n.casos, color= "Observatório"), lty =2 ) +
-        geom_line(data = data2, aes(y=estimate, color= "Observatório")) +
-        geom_ribbon(data = data2, aes(ymin = lower.merged.pred, ymax = upper.merged.pred, fill= "Observatório"),
-                    alpha =0.2) +
-        xlab("Semana epidemiológica dos sintomas") +
-            ylab("N de casos semanais SRAG") +
-        scale_color_manual(name="", values = 4:2) +
-        scale_fill_manual(name = "", values = 4:2) +
-        ggtitle(sigla) +
-        theme_bw() +
-        theme(legend.position = c(0.15, 0.8))
-    p1
-}
 
 
 ################################################################################
