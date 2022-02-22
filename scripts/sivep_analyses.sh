@@ -69,6 +69,17 @@ nowcast(){
     echo "Rodando: parallel -a $LISTA_JOBS --colsep ' ' -j $NPJOBS ./single_job.sh $DADOS $date"
     parallel -a "$LISTA_JOBS" --colsep ' ' -j "$NPJOBS" ./single_job.sh "$DADOS" "$date"
 
+    # rodando entradas que não saíram
+    ./detecta_faltantes.sh "$date"
+    MISS_FILE="todo_${data}.txt"
+    if [ -f $MISS_FILE ]; then
+        echo "Rodando novamente entradas que deram erro:"
+        cat $MISS_FILE
+        # reduzindo em 2 o n de cores, por via das dúvidas
+        NPJOBS_RED=$((NPJOBS - 2 > 0 ? NPJOBS - 2 : 1))
+        parallel -a "$MISS_FILE" --colsep ' ' -j "$NPJOBS_RED" ./single_job.sh "$DADOS" "$date" 
+    fi
+
     popd
 }
 
@@ -93,7 +104,7 @@ if [ $? -eq 0 ]; then
     fi
     mv ${FNAME}.xz "${FNAME}.21.xz" "${FNAME}.22.xz" tmp/
 
-    integridade $date
+    #integridade $date
 
     sumario_SIVEP $date
 
