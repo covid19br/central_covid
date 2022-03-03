@@ -71,7 +71,7 @@ nowcast(){
 
     # rodando entradas que não saíram
     ./detecta_faltantes.sh "$date"
-    MISS_FILE="todo_${data}.txt"
+    MISS_FILE="todo_${date}.txt"
     if [ -f $MISS_FILE ]; then
         echo "Rodando novamente entradas que deram erro:"
         cat $MISS_FILE
