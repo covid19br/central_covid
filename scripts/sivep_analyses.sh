@@ -80,6 +80,18 @@ nowcast(){
         parallel -a "$MISS_FILE" --colsep ' ' -j "$NPJOBS_RED" ./single_job.sh "$DADOS" "$date" 
     fi
 
+	# update brasil plots
+	pushd $SITE/_src
+	Rscript update_plots_brasil.R
+	if [ $? -eq 0 ]; then
+	    # commit new plots
+	    pushd ../web/brasil
+	    git commit plot_nowcast_{ob_,}{srag,covid}.png -m ":robot: update plots Brasil $date" &&
+	        git push
+        popd
+    fi
+    popd
+
     popd
 }
 
