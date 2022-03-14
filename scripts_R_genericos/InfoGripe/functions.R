@@ -30,6 +30,12 @@ info.estado <- function(x){
                semana = ifelse(`Ano epidemiológico` == 2022, semana + 52, semana))
 }
 
+## Transforma o par ano, semana dos dados Infogripe no formato de epiweek
+epi.data <- function(semana, ano){
+    sem.f <- as.character(semana)
+    sem.f <- ifelse(semana <10, paste0("0",sem.f), sem.f)
+    paste0(ano,"-W",sem.f,"-",1)
+    }
 
 ################################################################################
 ## Funcoes para graficos
