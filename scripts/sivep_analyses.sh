@@ -10,6 +10,7 @@ METAREPO=`readlink -f ..`
 
 DADOS=$METAREPO/dados/SIVEP-Gripe
 SITE=$METAREPO/site
+SITE_DADOS=$METAREPO/site_dados
 NOWCAST=$METAREPO/nowcasting
 NOWCAST2=$METAREPO/nowcasting2
 
@@ -55,7 +56,7 @@ nowcast(){
     if [ ${#@} -gt 1 ]; then
         NPJOBS=$2
     else
-        NPJOBS=9
+        NPJOBS=7
     fi
 
     LISTA_JOBS="lista_jobs.txt"
@@ -81,11 +82,11 @@ nowcast(){
     fi
 
 	# update brasil plots
-	pushd $SITE/_src
-	Rscript update_plots_brasil.R
+	pushd ${SITE_DADOS}/src
+	Rscript update_plots_brasil.R --plotDir ${SITE}/web
 	if [ $? -eq 0 ]; then
 	    # commit new plots
-	    pushd ../web/brasil
+	    pushd ${SITE}/web/brasil
 	    git commit plot_nowcast_{ob_,}{srag,covid}.png -m ":robot: update plots Brasil $date" &&
 	        git push
         popd

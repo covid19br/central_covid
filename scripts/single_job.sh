@@ -12,6 +12,7 @@ METAREPO=`get_abspath ..`
 # script assume que o meta-repo tem a estrutura usual:
 # nowcasting: repo nowcasting
 # site: repo site
+# site_dados: repo de dados públicos
 
 trim=5
 # método de cálculo de R efetivo = Cori | old_Cori
@@ -29,11 +30,14 @@ geocode=$5
 nome=$6
 
 abssitefolder=$METAREPO/site
+abssitedadosfolder=$METAREPO/site_dados
 absoutfolder=$METAREPO/dados_processados/nowcasting
 LOGFILE=$METAREPO/../logs/"${escala}_${estado}_${nome}.log"
 
 cd $METAREPO/scripts
 source functions.sh
+
+## caminhos daqui em diante devem ser independentes de $METAREPO
 
 # esta é arcana...
 output_files="nowcasting_{acumulado,diario}_{,obitos_}{covid,srag}_${data}.csv
@@ -71,42 +75,61 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-## mandando pro site
-
-# atualiza repo site
-cd $METAREPO/site/_src
-
-# cria destino se não existe
-if [ ! -d $abssitefolder/dados/$path/tabelas_nowcasting_para_grafico/ ]; then
-    mkdir --parents $abssitefolder/dados/$path/tabelas_nowcasting_para_grafico
-fi
-
-pushd $absoutfolder/$path/tabelas_nowcasting_para_grafico/
-cp $output_files $abssitefolder/dados/$path/tabelas_nowcasting_para_grafico/
-popd
-
-echo "===== UPDATE PLOTS SITE =====" >> $LOGFILE
-Rscript update_plots_nowcasting.R --escala $escala --sigla $estado --geocode $geocode --dataBase $data >> $LOGFILE 2>&1
-if [ $? != 0 ]; then
-    echo "update_plots falhou para $estado $nome. Saindo..." >> $LOGFILE 2>&1
-    exit 1
-fi
+## commit dos dados
+cd $abssitedadosfolder
 
 ## DANGER
 # isto é feito a cada passo do loop - mais seguro?
 git pull --ff-only
 
-BUSYGIT=$METAREPO/scripts/busygit.tmp
+BUSYGIT=busygit.tmp
 # poor man's semaphore
 while [ -f $BUSYGIT ]; do sleep 1; done
 touch $BUSYGIT
-pushd $abssitefolder/dados/$path/tabelas_nowcasting_para_grafico/
+pushd dados/$path
 git add $output_files >> $LOGFILE 2>&1
 popd
-pushd $abssitefolder/web/$path
+git commit -m ":robot: novas tabelas ${escala} ${estado}-${nome} ${data}" &&
+git push >> $LOGFILE 2>&1
+rm $BUSYGIT
+
+
+## mandando pro site
+
+# atualiza repo site
+cd $abssitedadosfolder/src
+
+# cria destino se não existe
+if [ ! -d $abssitedadosfolder/dados/$path/ ]; then
+    mkdir --parents $abssitedadosfolder/dados/$path
+fi
+
+pushd $absoutfolder/$path/tabelas_nowcasting_para_grafico/
+cp $output_files $abssitedadosfolder/dados/$path/
+popd
+
+echo "===== UPDATE PLOTS SITE =====" >> $LOGFILE
+Rscript update_plots_nowcasting.R --escala $escala --sigla $estado --geocode $geocode --dataBase $data --plotDir "$abssitefolder/web/" >> $LOGFILE 2>&1
+if [ $? != 0 ]; then
+    echo "update_plots falhou para $estado $nome. Saindo..." >> $LOGFILE 2>&1
+    exit 1
+fi
+
+## commit dos plots
+cd $abssitefolder
+
+## DANGER
+# isto é feito a cada passo do loop - mais seguro?
+git pull --ff-only
+
+BUSYGIT=busygit.tmp
+# poor man's semaphore
+while [ -f $BUSYGIT ]; do sleep 1; done
+touch $BUSYGIT
+pushd web/$path
 git add $web_output_files >> $LOGFILE 2>&1
 popd
-git commit -m ":robot: novas tabelas e plots ${escala} ${estado}-${nome} ${data}" &&
+git commit -m ":robot: novos plots ${escala} ${estado}-${nome} ${data}" &&
 git push >> $LOGFILE 2>&1
 rm $BUSYGIT
 
