@@ -53,6 +53,8 @@ central_covid.Rproj
 /dados_processados/nowcasting/R_novo/*/*/*/output_nowcasting/*_traj_*.csv
 /nowcasting
 /site
+/site_dados
+/site_antigo
 /R_eff
 /subprefeituras_SP
 /scripts/*.run
