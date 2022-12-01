@@ -83,7 +83,7 @@ nowcast(){
 
 	# update brasil plots
 	pushd ${SITE_DADOS}/src
-	Rscript update_plots_brasil.R --plotDir ${SITE}/web
+	Rscript update_plots_brasil.R --plotDir ${SITE}/web/
 	if [ $? -eq 0 ]; then
 	    # commit new plots
 	    pushd ${SITE}/web/brasil
