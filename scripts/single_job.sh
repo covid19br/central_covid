@@ -75,7 +75,18 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-## commit dos dados
+## mandando dados pro site_dados
+
+# cria destino se não existe
+if [ ! -d $abssitedadosfolder/dados/$path/ ]; then
+    mkdir --parents $abssitedadosfolder/dados/$path
+fi
+
+pushd $absoutfolder/$path/tabelas_nowcasting_para_grafico/
+mv $output_files $abssitedadosfolder/dados/$path/
+popd
+
+# commit dos dados
 cd $abssitedadosfolder
 
 ## DANGER
@@ -94,19 +105,9 @@ git push >> $LOGFILE 2>&1
 rm $BUSYGIT
 
 
-## mandando pro site
+## gerando plots
 
-# atualiza repo site
 cd $abssitedadosfolder/src
-
-# cria destino se não existe
-if [ ! -d $abssitedadosfolder/dados/$path/ ]; then
-    mkdir --parents $abssitedadosfolder/dados/$path
-fi
-
-pushd $absoutfolder/$path/tabelas_nowcasting_para_grafico/
-cp $output_files $abssitedadosfolder/dados/$path/
-popd
 
 echo "===== UPDATE PLOTS SITE =====" >> $LOGFILE
 Rscript update_plots_nowcasting.R --escala $escala --sigla $estado --geocode $geocode --dataBase $data --plotDir "$abssitefolder/web/" >> $LOGFILE 2>&1
@@ -130,6 +131,6 @@ pushd web/$path
 git add $web_output_files >> $LOGFILE 2>&1
 popd
 git commit -m ":robot: novos plots ${escala} ${estado}-${nome} ${data}" &&
-git push >> $LOGFILE 2>&1
+    git push >> $LOGFILE 2>&1
 rm $BUSYGIT
 
