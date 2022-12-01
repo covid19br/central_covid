@@ -13,7 +13,7 @@ OUT="todo_${data}.txt"
 
 pushd $SITE
 TMP=`mktemp -p .`
-git log --oneline | grep $data | awk '{print $7" "$8}' | sort > $TMP
+git log --oneline | grep $data | awk '{print $5" "$6}' | sort > $TMP
 popd
 
 mv $SITE/$TMP .
