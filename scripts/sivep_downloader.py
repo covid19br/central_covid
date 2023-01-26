@@ -50,7 +50,7 @@ if __name__ == '__main__':
     data = date.today()
 
     index_page_address20 = "https://opendatasus.saude.gov.br/dataset/srag-2020"
-    index_page_address21 = "https://opendatasus.saude.gov.br/dataset/srag-2021-e-2022"
+    index_page_address21 = "https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023"
     output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dados/SIVEP-Gripe')
     gitUpdate = True
 
@@ -58,7 +58,8 @@ if __name__ == '__main__':
     newfile20 = check_for_new_file(index_page_address20, last_date, 2020)
     newfile21 = check_for_new_file(index_page_address21, last_date, 2021)
     newfile22 = check_for_new_file(index_page_address21, last_date, 2022)
-    if newfile20 and newfile21 and newfile22 and (newfile20[0] == newfile21[0] == newfile22[0]):
+    newfile23 = check_for_new_file(index_page_address21, last_date, 2023)
+    if newfile20 and newfile21 and newfile22 and newfile23 and (newfile20[0] == newfile21[0] == newfile22[0] == newfile23[0]):
         output_fname = "SRAGHospitalizado_{data}.csv".format(data=newfile20[0].strftime("%Y_%m_%d"))
         outfile = os.path.join(output_folder, output_fname)
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
         os.system('''echo -e "Nova base SIVEP-Gripe atualizada.\n
         O relatório de integridade será disponibilizado em alguns minutos no {link}\n
         Atenciosamente,\nRobot mailer" | 
-            mail -s "nova base SIVEP-Gripe de {data}" {emails}'''.format(
+            s-nail -s "nova base SIVEP-Gripe de {data}" {emails}'''.format(
                         data=newfile20[0].strftime("%Y_%m_%d"),
                         link="https://github.com/covid19br/central_covid/blob/master/dados_processados/integridade_SIVEP/integridade_SIVEP_{data}.html".format(data=newfile20[0].strftime("%Y-%m-%d")),
                         emails=emails))
@@ -77,20 +78,24 @@ if __name__ == '__main__':
         get_file(newfile20[1], outfile)
         get_file(newfile21[1], outfile + '.21')
         get_file(newfile22[1], outfile + '.22')
+        get_file(newfile23[1], outfile + '.23')
         os.system(f'''cd {output_folder} &&
                    xz -k -9 -T4 {output_fname} &&
                    xz -k -9 -T4 {output_fname + ".21"} &&
                    xz -k -9 -T4 {output_fname + ".22"} &&
+                   xz -k -9 -T4 {output_fname + ".23"} &&
                    tail -n +2 {output_fname + ".21"} >>  {output_fname} &&
                    tail -n +2 {output_fname + ".22"} >>  {output_fname} &&
+                   tail -n +2 {output_fname + ".23"} >>  {output_fname} &&
                    rm {output_fname + ".21"} &&
-                   rm {output_fname + ".22"}''')
+                   rm {output_fname + ".22"} &&
+                   rm {output_fname + ".23"}''')
         # add to git and let the other robots work
         if gitUpdate:
             site_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../site')
             data_base = newfile20[0].strftime("%Y_%m_%d")
             os.system(f'''cd {output_folder} &&
-                   git add {output_fname}.xz {output_fname + ".21"}.xz {output_fname + ".22"}.xz &&
+                   git add {output_fname}.xz {output_fname + ".21"}.xz {output_fname + ".22"}.xz {output_fname + ".23"}.xz &&
                    git commit -m "[auto] base SIVEP-Gripe de {data_base}" &&
                    git push''')
             # POG!
@@ -101,7 +106,7 @@ if __name__ == '__main__':
                    git commit --allow-empty -m "[auto] trigger nowcasting update {data_base}" &&
                    git push''')
                 os.system(f'''cd {output_folder} &&
-                        mv {output_fname}.xz {output_fname + ".21"}.xz {output_fname + ".22"}.xz tmp/''')
+                        mv {output_fname}.xz {output_fname + ".21"}.xz {output_fname + ".22"}.xz {output_fname + ".23"}.xz tmp/''')
                 nowcast_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../nowcasting')
                 os.system(f'''cd {nowcast_folder} &&
                         Rscript checa_base.R --updateGit TRUE''')
@@ -115,7 +120,7 @@ if __name__ == '__main__':
                         git commit age_db.info.csv age_dados_{{,ob}}{{covid,srag}}_{{br,est}}.csv.xz -m ":robot: atualizando diff de bases por idade {data}" &&
                         git push''')
                 os.system(f'''cd {output_folder} &&
-                        mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz tmp/{output_fname + ".21"}.xz . &&
+                        mv tmp/{output_fname}.xz tmp/{output_fname + ".21"}.xz tmp/{output_fname + ".22"}.xz tmp/{output_fname + ".23"}.xz . &&
                         mv {output_fname} tmp/''')
     else:
         sys.exit(1)
